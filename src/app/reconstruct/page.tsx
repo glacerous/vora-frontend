@@ -28,7 +28,8 @@ export default function Reconstruct() {
   // State for the submitted tree code — shown prominently after pipeline starts
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [removeBackground, setRemoveBackground] = useState(true);
+  const [removeBackground] = useState(false);
+  const isCancelledRef = React.useRef(false);
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
@@ -56,8 +57,20 @@ export default function Reconstruct() {
     }
   };
 
+  const handleCancel = async () => {
+    try {
+      isCancelledRef.current = true;
+      setProgressMsg("Cancelling active job...");
+      await fetch(`${BACKEND_URL}/cancel`, { method: "POST" });
+    } catch (err) {}
+    setLoading(false);
+    setProgressMsg("");
+    setError("Reconstruction cancelled.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    isCancelledRef.current = false;
     setError(null);
     setSubmittedCode(null);
     const selectedCode = treeCode.trim() || `POHON-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -89,8 +102,16 @@ export default function Reconstruct() {
             throw new Error("Frame extraction took too long. Please try a shorter video walkthrough.");
           }
           
+          if (isCancelledRef.current) {
+            throw new Error("Reconstruction cancelled.");
+          }
+          
           await new Promise((resolve) => setTimeout(resolve, pollInterval));
           attempts++;
+
+          if (isCancelledRef.current) {
+            throw new Error("Reconstruction cancelled.");
+          }
 
           const statusRes = await fetch(`${BACKEND_URL}/status`);
           if (!statusRes.ok) continue;
@@ -301,26 +322,20 @@ export default function Reconstruct() {
                   </div>
                 )}
 
-                {/* Background removal toggle */}
-                <div className="flex items-center gap-2.5 px-1 py-1">
-                  <input
-                    type="checkbox"
-                    id="removeBg"
-                    checked={removeBackground}
-                    onChange={(e) => setRemoveBackground(e.target.checked)}
-                    disabled={loading}
-                    className="w-4 h-4 rounded border-slate-300 text-[#191919] focus:ring-[#191919] accent-[#191919]"
-                  />
-                  <label htmlFor="removeBg" className="text-xs font-semibold uppercase tracking-widest text-slate-500 select-none cursor-pointer">
-                    Remove Background <span className="normal-case tracking-normal font-normal text-slate-400">(recommended for noisy scenes)</span>
-                  </label>
-                </div>
-
-                {/* Progress */}
+                {/* Progress with Cancel button */}
                 {loading && (
-                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
-                    <p className="text-xs text-slate-600">{progressMsg}</p>
+                  <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
+                      <p className="text-xs text-slate-600">{progressMsg}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-100 transition"
+                    >
+                      Cancel Reconstruction
+                    </button>
                   </div>
                 )}
 
