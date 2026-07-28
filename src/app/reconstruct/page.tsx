@@ -74,6 +74,36 @@ export default function Reconstruct() {
         fd.append("blur_thresh", blurThresh.toString());
         const r = await fetch(`${BACKEND_URL}/upload_video`, { method: "POST", body: fd });
         if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Video upload failed"); }
+
+        // Start polling status until stage is "extracted"
+        let isExtracted = false;
+        let attempts = 0;
+        const maxAttempts = 60; // 60 attempts * 1.5s = 90 seconds max
+        const pollInterval = 1500;
+
+        while (!isExtracted) {
+          if (attempts >= maxAttempts) {
+            throw new Error("Frame extraction took too long. Please try a shorter video walkthrough.");
+          }
+          setProgressMsg(`Uploading complete. Waiting for server to start frame extraction…`);
+          
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+          attempts++;
+
+          const statusRes = await fetch(`${BACKEND_URL}/status`);
+          if (!statusRes.ok) continue;
+
+          const statusData = await statusRes.json();
+          if (statusData.stage === "error") {
+            throw new Error(statusData.error || "Frame extraction failed on the server.");
+          }
+
+          if (statusData.stage === "extracted") {
+            isExtracted = true;
+          } else if (statusData.stage === "extracting") {
+            setProgressMsg(`Extracting frames: ${statusData.message}`);
+          }
+        }
       } else if (activeTab === "photos" && photoFiles) {
         setProgressMsg(`Uploading ${photoFiles.length} photos…`);
         const fd = new FormData();
