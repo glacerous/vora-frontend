@@ -60,9 +60,9 @@ export default function Home() {
           <a href="#pricing" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Pricing
           </a>
-          <a href="#company" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Company
-          </a>
+          <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+            History
+          </Link>
         </div>
 
         {/* CTA right */}
