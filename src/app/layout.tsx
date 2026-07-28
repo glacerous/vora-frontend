@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
-import { Anton, Outfit } from "next/font/google";
+import { Inter, Anton, Outfit } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
 
 const anton = Anton({
   variable: "--font-anton",
@@ -16,8 +23,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vora — 3D Carbon Dashboard",
-  description: "WebGL 3D tree scan visualization and carbon analysis metrics dashboard.",
+  title: "Vora — Measure Forest Carbon",
+  description: "3D Gaussian Splatting and carbon metrics estimation for environmental conservation.",
 };
 
 export default function RootLayout({
@@ -28,9 +35,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${anton.variable} ${outfit.variable} h-full antialiased`}
+      className={`${inter.variable} ${anton.variable} ${outfit.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-slate-900 text-slate-100">
+      <body className="min-h-full flex flex-col font-sans bg-white text-[#191919]">
         {children}
       </body>
     </html>

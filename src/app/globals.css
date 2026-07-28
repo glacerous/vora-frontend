@@ -1,10 +1,17 @@
+@import url("https://db.onlinewebfonts.com/c/9d4d074c9335825a23cce178ee03b498?family=P22+Mackinac+W01+Book");
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-serif: "P22 Mackinac W01 Book", Georgia, serif;
   --font-head: var(--font-anton), Impact, sans-serif;
+  --font-outfit: var(--font-outfit), sans-serif;
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: #191919;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
