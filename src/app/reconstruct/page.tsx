@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const BACKEND_URL = "https://vora-52k9.onrender.com";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
 const LogoMark = () => (
   <svg viewBox="0 0 256 256" fill="currentColor" className="w-6 h-6 text-[#191919]">
