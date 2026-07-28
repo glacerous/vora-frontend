@@ -78,6 +78,13 @@ export default function Home() {
       <section className="relative flex flex-col items-center overflow-hidden h-screen z-10 select-none">
         {/* Boomerang looping video background (scaled 100%, zoomed out building) */}
         <BoomerangVideoBg />
+        {/* Soft radial white overlay to keep typography readable and clean */}
+        <div
+          className="absolute inset-0 pointer-events-none z-1"
+          style={{
+            background: "radial-gradient(circle at center, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0) 100%)",
+          }}
+        />
 
         {/* Content Overlay */}
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-between">
