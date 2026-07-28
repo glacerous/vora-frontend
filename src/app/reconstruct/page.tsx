@@ -18,7 +18,7 @@ export default function Reconstruct() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"video" | "photos">("video");
   const [treeCode, setTreeCode] = useState("");
-  const [frames, setFrames] = useState(25);
+  const [frames, setFrames] = useState(60);
   const [blurThresh, setBlurThresh] = useState(80);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
