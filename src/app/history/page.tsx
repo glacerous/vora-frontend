@@ -14,6 +14,7 @@ interface ScanRecord {
   co2e_kg: number;
   splat_file_url: string;
   confidence_note?: string;
+  thumbnail_url?: string;
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -24,16 +25,6 @@ const LogoMark = () => (
     <path d="M 256 207.5 L 200 256 L 200 56 L 0 56 L 48 0 L 256 0 Z" />
     <path d="M 0 204.402 L 0 112 L 92.402 112 Z" />
   </svg>
-);
-
-const MetricBadge = ({ label, value, unit }: { label: string; value: string; unit: string }) => (
-  <div className="flex flex-col gap-0.5">
-    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
-    <div className="flex items-baseline gap-1">
-      <span className="text-lg font-serif text-[#191919]">{value}</span>
-      <span className="text-[10px] text-slate-400">{unit}</span>
-    </div>
-  </div>
 );
 
 export default function HistoryPage() {
@@ -47,8 +38,7 @@ export default function HistoryPage() {
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("id-ID", {
-        day: "2-digit", month: "long", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
+        day: "2-digit", month: "short", year: "numeric"
       });
     } catch { return dateStr; }
   };
@@ -101,8 +91,8 @@ export default function HistoryPage() {
       </nav>
 
       {/* ── Main ────────────────────────────────────────────────── */}
-      <main className="flex-1 pt-28 pb-20 px-4">
-        <div className="max-w-2xl mx-auto">
+      <main className="flex-1 pt-28 pb-20 px-6">
+        <div className="max-w-5xl mx-auto">
 
           {/* Heading */}
           <div className="mb-10">
@@ -115,7 +105,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Search box */}
-          <form onSubmit={handleSearch} className="flex gap-3 mb-10">
+          <form onSubmit={handleSearch} className="flex gap-3 mb-12 max-w-2xl">
             <input
               type="text"
               value={input}
@@ -135,83 +125,99 @@ export default function HistoryPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="flex items-center gap-3 text-slate-400 py-4">
+            <div className="flex items-center gap-3 text-slate-400 py-6">
               <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
-              <span className="text-sm">Fetching records for {activeCode}…</span>
+              <span className="text-sm font-medium">Fetching records for {activeCode}…</span>
             </div>
           )}
 
           {/* Error */}
           {error && searched && !loading && (
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-6 text-center">
-              <p className="text-sm text-slate-500">{error}</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-8 text-center max-w-2xl">
+              <p className="text-sm text-slate-500 font-medium">{error}</p>
               <p className="text-xs text-slate-400 mt-2">
                 Make sure the code is correct, then try again.
               </p>
             </div>
           )}
 
-          {/* Results */}
+          {/* Results Grid */}
           {history.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   {history.length} scan{history.length > 1 ? "s" : ""} found for{" "}
                   <span className="text-[#191919] font-mono">{activeCode}</span>
                 </h2>
                 <Link
                   href={`/estimator?code=${encodeURIComponent(activeCode)}`}
-                  className="text-xs font-semibold text-[#191919] hover:opacity-70 transition"
+                  className="text-xs font-semibold text-[#191919] hover:opacity-75 transition"
                 >
-                  View in 3D Estimator →
+                  Open in 3D Estimator →
                 </Link>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {history.map((record, idx) => (
-                  <div
+                  <Link
                     key={record.id}
-                    className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition"
+                    href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
+                    className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-slate-100 cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-slate-50 flex flex-col"
                   >
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                            Scan #{idx + 1}
-                          </span>
-                          {idx === 0 && (
-                            <span className="text-[9px] font-bold uppercase tracking-widest bg-[#191919] text-white px-2 py-0.5 rounded-full">
-                              Latest
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-400 mt-0.5">{formatDate(record.scan_date)}</p>
+                    {/* Cover Thumbnail Image */}
+                    {record.thumbnail_url ? (
+                      <img
+                        src={record.thumbnail_url}
+                        alt={`Thumbnail for ${record.tree_code}`}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center text-slate-400">
+                        <span className="text-3xl mb-1 opacity-45">🌳</span>
+                        <span className="text-[10px] uppercase font-bold tracking-widest opacity-35">No Preview</span>
                       </div>
-                      <Link
-                        href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
-                        className="text-xs font-semibold text-[#191919] border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition"
-                      >
-                        Open 3D →
-                      </Link>
-                    </div>
-
-                    {/* Metrics grid */}
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 pt-4 border-t border-slate-100">
-                      <MetricBadge label="DBH" value={record.dbh_cm.toFixed(1)} unit="cm" />
-                      <MetricBadge label="Height" value={record.tinggi_m.toFixed(1)} unit="m" />
-                      <MetricBadge label="Biomass" value={record.biomassa_kg.toFixed(1)} unit="kg" />
-                      <MetricBadge label="Carbon" value={record.karbon_kg.toFixed(1)} unit="kg" />
-                      <MetricBadge label="CO₂e" value={record.co2e_kg.toFixed(1)} unit="kg" />
-                    </div>
-
-                    {/* Confidence note */}
-                    {record.confidence_note && (
-                      <p className="text-[10px] text-slate-400 mt-3 leading-relaxed">
-                        {record.confidence_note}
-                      </p>
                     )}
-                  </div>
+
+                    {/* Gradient Overlay for Readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pt-12" />
+
+                    {/* Top Right: CO2e Value Badge */}
+                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-center shadow-sm">
+                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">CO₂e</span>
+                      <span className="text-sm font-head font-normal text-[#191919] leading-none">
+                        {record.co2e_kg ? record.co2e_kg.toFixed(0) : "-"}
+                        <span className="text-[9px] font-sans font-semibold text-slate-400 ml-0.5">kg</span>
+                      </span>
+                    </div>
+
+                    {/* Top Left: Scan Order Indicator badge */}
+                    <div className="absolute top-3 left-3 flex gap-1">
+                      {idx === 0 && (
+                        <span className="text-[8px] font-bold uppercase tracking-widest bg-emerald-500 text-white px-2 py-1 rounded-lg">
+                          Latest
+                        </span>
+                      )}
+                      <span className="text-[8px] font-bold uppercase tracking-widest bg-black/40 backdrop-blur-sm text-white/90 px-2 py-1 rounded-lg">
+                        #{history.length - idx}
+                      </span>
+                    </div>
+
+                    {/* Bottom Metadata Panel */}
+                    <div className="mt-auto relative z-10 p-4 text-white flex flex-col">
+                      <span className="text-[10px] text-white/60 font-medium mb-0.5">
+                        {formatDate(record.scan_date)}
+                      </span>
+                      <h3 className="text-sm font-bold tracking-wider uppercase font-mono">
+                        {record.tree_code}
+                      </h3>
+
+                      {/* Pill Mini Metrics Row */}
+                      <div className="flex gap-3 mt-2 text-[10px] text-white/70 border-t border-white/10 pt-2">
+                        <span>DBH: <strong>{record.dbh_cm ? record.dbh_cm.toFixed(1) : "-"} cm</strong></span>
+                        <span>Height: <strong>{record.tinggi_m ? record.tinggi_m.toFixed(1) : "-"} m</strong></span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -219,9 +225,10 @@ export default function HistoryPage() {
 
           {/* Empty first state */}
           {!loading && !searched && (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-slate-300 gap-2">
-              <span className="text-4xl">🌳</span>
-              <p className="text-sm font-medium mt-2">Enter a tree code above to load its scan history</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-300 gap-2 max-w-2xl">
+              <span className="text-4xl opacity-50">🌳</span>
+              <p className="text-sm font-semibold mt-2 text-slate-400">Enter a tree code above to load its scan history</p>
+              <p className="text-xs text-slate-300 max-w-xs mt-1">If you just submitted a scan, please allow a few minutes for the pipeline process to finish before looking it up.</p>
             </div>
           )}
 
