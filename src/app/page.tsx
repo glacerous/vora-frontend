@@ -62,8 +62,8 @@ const ArrowRight = () => (
 
 export default function Home() {
   // Search & State variables
-  const [searchInput, setSearchInput] = useState("TEST-0001");
-  const [activeTreeCode, setActiveTreeCode] = useState("TEST-0001");
+  const [searchInput, setSearchInput] = useState("");
+  const [activeTreeCode, setActiveTreeCode] = useState("");
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [currentScan, setCurrentScan] = useState<ScanRecord | null>(null);
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
@@ -158,14 +158,19 @@ export default function Home() {
     setLines(newLines);
   };
 
-  // Initial load
+  // Fetch tree data only when activeTreeCode is populated (e.g. after search or example button click)
   useEffect(() => {
-    fetchTreeHistory(activeTreeCode);
-    pollStatus();
+    if (activeTreeCode) {
+      fetchTreeHistory(activeTreeCode);
+    }
+  }, [activeTreeCode]);
 
+  // Poll status independently on mount
+  useEffect(() => {
+    pollStatus();
     const statusInterval = setInterval(pollStatus, 3000);
     return () => clearInterval(statusInterval);
-  }, [activeTreeCode]);
+  }, []);
 
   // Adjust lines on resize or state change
   useEffect(() => {
@@ -343,10 +348,10 @@ export default function Home() {
       <section
         ref={dashboardRef}
         id="dashboard"
-        className="min-h-screen bg-gradient-to-b from-sky-400 to-emerald-500 text-slate-900 relative p-4 md:p-6 lg:p-8 flex flex-col justify-center z-20"
+        className="min-h-screen bg-slate-50 border-t border-slate-200 text-[#191919] relative p-4 md:p-6 lg:p-8 flex flex-col justify-center z-20"
       >
         {/* Inner header bar */}
-        <div className="w-full max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center bg-white/85 backdrop-blur-md border border-white/50 shadow-lg rounded-2xl p-4 mb-6 gap-4">
+        <div className="w-full max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center bg-white border border-slate-200 rounded-2xl p-4 mb-6 gap-4 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="w-4 h-4 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 animate-pulse" />
             <h3 className="font-head text-2xl uppercase tracking-wider text-slate-800">
@@ -354,7 +359,7 @@ export default function Home() {
             </h3>
           </div>
           
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-950/5 rounded-full border border-slate-950/10">
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full border border-slate-200">
             <span className={`w-2 h-2 rounded-full ${pipelineStatus?.stage === "idle" ? "bg-emerald-500" : "bg-amber-500 animate-ping"}`} />
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
               Modal GPU: {pipelineStatus?.stage === "idle" ? "Ready" : pipelineStatus?.stage || "Connecting"}
@@ -363,12 +368,12 @@ export default function Home() {
         </div>
 
         {/* Dashboard Grid */}
-        <div className="w-full max-w-[1400px] mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div className="w-full max-w-[1400px] mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8">
           
           {/* Search & History Column */}
           <div className="lg:col-span-3 flex flex-col gap-6">
             {/* Search Card */}
-            <div className="bg-white/85 backdrop-blur-md border border-white/50 rounded-2xl shadow-md p-5">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
               <span className="font-bold text-xs uppercase tracking-wider text-slate-400 block mb-2">
                 Tree Lookup
               </span>
@@ -378,7 +383,7 @@ export default function Home() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="TEST-0001"
-                  className="flex-1 px-4 py-2 rounded-xl bg-slate-950/5 border border-slate-950/15 focus:outline-none focus:border-sky-500 transition text-slate-800 text-sm font-semibold"
+                  className="flex-1 px-4 py-2 rounded-xl bg-slate-950/5 border border-slate-950/15 focus:outline-none focus:border-slate-450 transition text-slate-800 text-sm font-semibold"
                 />
                 <button
                   type="submit"
@@ -387,11 +392,22 @@ export default function Home() {
                   Go
                 </button>
               </form>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput("TEST-0001");
+                  setActiveTreeCode("TEST-0001");
+                }}
+                className="mt-3 w-full bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] font-medium text-xs py-2.5 px-3 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm"
+              >
+                <span>🌳</span> Load Example Scan (TEST-0001)
+              </button>
             </div>
 
             {/* Polling Banner */}
             {pipelineStatus && pipelineStatus.stage !== "idle" && (
-              <div className="bg-amber-500/10 border border-amber-500/30 backdrop-blur-md rounded-2xl p-5 shadow-sm">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                   <span className="font-bold text-xs uppercase tracking-wider text-amber-800">
@@ -405,14 +421,14 @@ export default function Home() {
             )}
 
             {/* History Card */}
-            <div className="bg-white/85 backdrop-blur-md border border-white/50 rounded-2xl shadow-md p-5 flex-1 flex flex-col">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex-1 flex flex-col">
               <span className="font-bold text-xs uppercase tracking-wider text-slate-400 block mb-3">
                 Scans Database ({history.length})
               </span>
               
               {loading ? (
                 <div className="flex-1 flex items-center justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-slate-450 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : history.length > 0 ? (
                 <div className="flex-1 overflow-y-auto max-h-[300px] lg:max-h-none pr-1 flex flex-col gap-2">
@@ -422,8 +438,8 @@ export default function Home() {
                       onClick={() => setCurrentScan(record)}
                       className={`w-full text-left p-3 rounded-xl border transition ${
                         currentScan?.id === record.id
-                          ? "bg-gradient-to-r from-sky-50/70 to-emerald-50/70 border-sky-500/50 shadow-sm"
-                          : "bg-transparent border-slate-950/5 hover:border-slate-950/15 hover:bg-slate-950/5"
+                          ? "bg-slate-100 border-[#191919]/10 shadow-sm"
+                          : "bg-transparent border-transparent hover:border-slate-200 hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-1">
@@ -452,7 +468,7 @@ export default function Home() {
           <div className="lg:col-span-6 flex flex-col">
             <div
               ref={iframeWrapperRef}
-              className="flex-1 relative min-h-[400px] lg:min-h-none bg-slate-950/20 rounded-2xl overflow-hidden border border-white/40 shadow-2xl flex flex-col"
+              className="flex-1 relative min-h-[450px] lg:min-h-none bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col"
             >
               {currentScan ? (
                 <iframe
@@ -467,10 +483,10 @@ export default function Home() {
                   }}
                 />
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 bg-white/10 backdrop-blur-sm">
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl">
                   <span className="text-4xl mb-3">🌳</span>
                   <h4 className="font-bold text-sm mb-1">No Scan Selected</h4>
-                  <p className="text-xs text-slate-450 max-w-xs">
+                  <p className="text-xs text-slate-400 max-w-xs">
                     Select an item from the scans database list to visualize the 3D model.
                   </p>
                 </div>
@@ -489,9 +505,9 @@ export default function Home() {
                         width: "10px",
                         height: "10px",
                         borderRadius: "50%",
-                        backgroundColor: "#0284c7",
+                        backgroundColor: "#191919",
                         border: "1.5px solid #ffffff",
-                        boxShadow: "0 0 8px rgba(2, 132, 199, 0.8)",
+                        boxShadow: "0 0 8px rgba(25, 25, 25, 0.4)",
                       }}
                     />
                   ))}
@@ -507,12 +523,12 @@ export default function Home() {
               {/* DBH */}
               <div
                 id="pill-dbh"
-                className="bg-white/85 backdrop-blur-md border-2 border-white/50 rounded-2xl p-4 shadow-md flex flex-col gap-1 transition duration-250 hover:-translate-x-1 hover:border-sky-500 pointer-events-auto"
+                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-1 transition duration-200 hover:-translate-x-1 hover:border-[#191919]/50 pointer-events-auto"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Trunk Diameter (DBH)
                 </span>
-                <span className="font-head text-4xl text-slate-850 flex items-baseline gap-1">
+                <span className="font-head text-4xl text-[#191919] flex items-baseline gap-1">
                   {currentScan ? currentScan.dbh_cm.toFixed(1) : "-"}
                   <span className="font-sans text-xs font-semibold text-slate-400 tracking-normal lowercase">
                     cm
@@ -523,12 +539,12 @@ export default function Home() {
               {/* Height */}
               <div
                 id="pill-height"
-                className="bg-white/85 backdrop-blur-md border-2 border-white/50 rounded-2xl p-4 shadow-md flex flex-col gap-1 transition duration-250 hover:-translate-x-1 hover:border-sky-500 pointer-events-auto"
+                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-1 transition duration-200 hover:-translate-x-1 hover:border-[#191919]/50 pointer-events-auto"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Tree Height
                 </span>
-                <span className="font-head text-4xl text-slate-850 flex items-baseline gap-1">
+                <span className="font-head text-4xl text-[#191919] flex items-baseline gap-1">
                   {currentScan ? currentScan.tinggi_m.toFixed(1) : "-"}
                   <span className="font-sans text-xs font-semibold text-slate-400 tracking-normal lowercase">
                     m
@@ -539,12 +555,12 @@ export default function Home() {
               {/* Biomass */}
               <div
                 id="pill-biomass"
-                className="bg-white/85 backdrop-blur-md border-2 border-white/50 rounded-2xl p-4 shadow-md flex flex-col gap-1 transition duration-250 hover:-translate-x-1 hover:border-sky-500 pointer-events-auto"
+                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-1 transition duration-200 hover:-translate-x-1 hover:border-[#191919]/50 pointer-events-auto"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Estimated Biomass
                 </span>
-                <span className="font-head text-4xl text-slate-850 flex items-baseline gap-1">
+                <span className="font-head text-4xl text-[#191919] flex items-baseline gap-1">
                   {currentScan ? currentScan.biomassa_kg.toFixed(1) : "-"}
                   <span className="font-sans text-xs font-semibold text-slate-400 tracking-normal lowercase">
                     kg
@@ -555,12 +571,12 @@ export default function Home() {
               {/* Stored Carbon */}
               <div
                 id="pill-carbon"
-                className="bg-white/85 backdrop-blur-md border-2 border-white/50 rounded-2xl p-4 shadow-md flex flex-col gap-1 transition duration-250 hover:-translate-x-1 hover:border-sky-500 pointer-events-auto"
+                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-1 transition duration-200 hover:-translate-x-1 hover:border-[#191919]/50 pointer-events-auto"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Stored Carbon
                 </span>
-                <span className="font-head text-4xl text-slate-850 flex items-baseline gap-1">
+                <span className="font-head text-4xl text-[#191919] flex items-baseline gap-1">
                   {currentScan ? currentScan.karbon_kg.toFixed(1) : "-"}
                   <span className="font-sans text-xs font-semibold text-slate-400 tracking-normal lowercase">
                     kg
@@ -571,12 +587,12 @@ export default function Home() {
               {/* CO2 equivalent */}
               <div
                 id="pill-co2e"
-                className="bg-white/85 backdrop-blur-md border-2 border-white/50 rounded-2xl p-4 shadow-md flex flex-col gap-1 transition duration-250 hover:-translate-x-1 hover:border-sky-500 pointer-events-auto"
+                className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-1 transition duration-200 hover:-translate-x-1 hover:border-[#191919]/50 pointer-events-auto"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   CO2 Equivalent (CO2e)
                 </span>
-                <span className="font-head text-4xl text-slate-850 flex items-baseline gap-1">
+                <span className="font-head text-4xl text-[#191919] flex items-baseline gap-1">
                   {currentScan ? currentScan.co2e_kg.toFixed(1) : "-"}
                   <span className="font-sans text-xs font-semibold text-slate-400 tracking-normal lowercase">
                     kg
@@ -602,7 +618,7 @@ export default function Home() {
                 y1={line.y1}
                 x2={line.x2}
                 y2={line.y2}
-                stroke="rgba(8, 29, 42, 0.35)"
+                stroke="rgba(25, 25, 25, 0.2)"
                 strokeWidth="1.5"
                 strokeDasharray="4 4"
               />
@@ -611,6 +627,19 @@ export default function Home() {
         )}
 
       </section>
+
+      {/* ── Footer ──────────────────────────────────────────────────────── */}
+      <footer className="bg-[#191919] border-t border-[#191919] py-12 px-6 sm:px-10 text-center">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/50">
+          <p>© 2026 Vora. All rights reserved.</p>
+          <div className="flex gap-6">
+            <a href="#product" className="hover:text-white transition-colors duration-150">Product</a>
+            <a href="#solutions" className="hover:text-white transition-colors duration-150">Solutions</a>
+            <a href="#privacy" className="hover:text-white transition-colors duration-150">Privacy Policy</a>
+            <a href="#terms" className="hover:text-white transition-colors duration-150">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
 
       {/* Fixed Error Toast */}
       {error && (
