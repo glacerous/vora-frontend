@@ -29,38 +29,11 @@ interface PipelineStatus {
 const BACKEND_URL = "https://vora-52k9.onrender.com";
 
 const LogoMark = () => (
-  <svg viewBox="0 0 256 256" fill="currentColor" className="w-5 h-5 text-[#191919]">
+  <svg viewBox="0 0 256 256" fill="currentColor" className="w-6 h-6 text-[#191919]">
     <path d="M 144 256 L 27.598 256 L 144 139.598 Z" />
     <path d="M 256 207.5 L 200 256 L 200 56 L 0 56 L 48 0 L 256 0 Z" />
     <path d="M 0 204.402 L 0 112 L 92.402 112 Z" />
   </svg>
-);
-
-const MetricCard = ({
-  id,
-  label,
-  value,
-  unit,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  unit: string;
-}) => (
-  <div
-    id={id}
-    className="flex flex-col gap-0.5 bg-white/90 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 shadow-sm"
-  >
-    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-      {label}
-    </span>
-    <div className="flex items-baseline gap-1">
-      <span className="text-2xl font-serif font-normal text-[#191919] leading-tight">
-        {value}
-      </span>
-      <span className="text-[10px] text-slate-400 font-medium">{unit}</span>
-    </div>
-  </div>
 );
 
 export default function Dashboard() {
@@ -113,7 +86,7 @@ export default function Dashboard() {
     return () => clearInterval(iv);
   }, []);
 
-  // Check URL search params on mount (from /reconstruct redirect)
+  // Seed tree code from URL params (redirect from /reconstruct)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const code = new URLSearchParams(window.location.search).get("code");
@@ -141,157 +114,160 @@ export default function Dashboard() {
   return (
     <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919]">
 
-      {/* ── Full-screen 3D Viewer ──────────────────────────────────── */}
-      <div className="absolute inset-0 z-0">
+      {/* ── Full-screen 3D Viewer ──────────────────────────────── */}
+      <div className="absolute inset-0 z-0 bg-white">
         {currentScan ? (
           <iframe
             src={`${BACKEND_URL}/viewer.html?url=${encodeURIComponent(currentScan.splat_file_url)}`}
             allow="xr-spatial-tracking; autoplay; fullscreen"
             className="w-full h-full border-none"
-            title="WebGL Tree Splat Viewer"
+            title="3D Tree Gaussian Splat Viewer"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-white gap-4">
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             {loading ? (
-              <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin" />
+              <div className="w-7 h-7 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
             ) : (
-              <>
-                <span className="text-5xl opacity-10">🌳</span>
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-slate-400">No scan loaded</p>
-                  <p className="text-xs text-slate-300 mt-1">Search a tree code to begin</p>
-                </div>
-              </>
+              <div className="text-center">
+                <p className="text-sm text-slate-300 font-medium tracking-wide mb-1">No scan loaded</p>
+                <p className="text-xs text-slate-200">Enter a tree code to begin</p>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ── Top Bar ──────────────────────────────────────────────────── */}
-      <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-5 py-3.5 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+      {/* ── Navbar — exact match to landing page ──────────────── */}
+      <nav className="absolute top-0 left-0 right-0 z-30 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
+        <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
           <LogoMark />
-          <span className="font-semibold text-sm tracking-tight">Vora</span>
+          <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
         </Link>
 
-        {/* Centre: search */}
+        {/* Centre: search form */}
         <form onSubmit={handleSearch} className="hidden sm:flex items-center gap-2">
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Enter tree code…"
-            className="w-52 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-semibold"
+            className="w-48 px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium"
           />
           <button
             type="submit"
-            className="px-4 py-1.5 bg-[#191919] text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition"
+            className="px-5 py-2 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
           >
             Search
           </button>
         </form>
 
-        {/* Right actions */}
+        {/* Right */}
         <div className="flex items-center gap-3">
-          {/* GPU status pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200">
-            <span className={`w-1.5 h-1.5 rounded-full ${pipelineStatus?.stage === "idle" ? "bg-emerald-500" : "bg-amber-400 animate-ping"}`} />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              {pipelineStatus?.stage === "idle" ? "GPU Ready" : pipelineStatus?.stage || "…"}
-            </span>
-          </div>
-          {/* Toggle scan list */}
           {history.length > 0 && (
             <button
               onClick={() => setSidebarOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#191919] text-white text-[10px] font-bold uppercase tracking-wider transition hover:bg-slate-700"
+              className="px-5 py-2.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
             >
               {sidebarOpen ? "Close" : `Scans (${history.length})`}
             </button>
           )}
-          <Link href="/example" className="text-xs font-medium text-slate-500 hover:text-[#191919] transition">
-            Example →
+          <Link
+            href="/example"
+            className="hidden sm:block text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200"
+          >
+            Example
           </Link>
         </div>
-      </div>
+      </nav>
 
-      {/* ── Right Sidebar: scan list ──────────────────────────────── */}
+      {/* ── Slide-in sidebar — scan list ──────────────────────── */}
       <div
-        className={`absolute top-[57px] right-0 bottom-0 z-20 w-72 bg-white/95 backdrop-blur-lg border-l border-slate-200/70 flex flex-col transition-transform duration-300 ${
+        className={`absolute top-[65px] right-0 bottom-0 z-20 w-72 bg-white border-l border-slate-100 flex flex-col transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+        <div className="flex-1 overflow-y-auto p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
             Scans for {activeTreeCode} ({history.length})
           </p>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
+            <div className="flex items-center justify-center py-10">
+              <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
             </div>
-          ) : history.map((record) => (
-            <button
-              key={record.id}
-              onClick={() => { setCurrentScan(record); }}
-              className={`w-full text-left px-3 py-2.5 rounded-xl border transition text-xs ${
-                currentScan?.id === record.id
-                  ? "bg-[#191919] text-white border-[#191919]"
-                  : "bg-transparent border-transparent hover:bg-slate-100 text-slate-700"
-              }`}
-            >
-              <div className="flex justify-between items-center mb-0.5">
-                <span className="font-bold uppercase">{record.tree_code}</span>
-                <span className={`${currentScan?.id === record.id ? "text-white/50" : "text-slate-400"}`}>#{record.id}</span>
-              </div>
-              <span className={`text-[10px] ${currentScan?.id === record.id ? "text-white/60" : "text-slate-400"}`}>
-                {formatDate(record.scan_date)}
-              </span>
-            </button>
-          ))}
+          ) : (
+            <div className="flex flex-col gap-1">
+              {history.map((record) => (
+                <button
+                  key={record.id}
+                  onClick={() => setCurrentScan(record)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl border transition text-xs ${
+                    currentScan?.id === record.id
+                      ? "bg-[#191919] text-white border-[#191919]"
+                      : "border-transparent hover:bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-0.5">
+                    <span className="font-semibold uppercase">{record.tree_code}</span>
+                    <span className={currentScan?.id === record.id ? "text-white/50" : "text-slate-300"}>#{record.id}</span>
+                  </div>
+                  <span className={`text-[10px] ${currentScan?.id === record.id ? "text-white/60" : "text-slate-400"}`}>
+                    {formatDate(record.scan_date)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Upload CTA at sidebar bottom */}
+        <div className="p-4 border-t border-slate-100">
+          <Link
+            href="/reconstruct"
+            className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-[#191919] transition"
+          >
+            Upload New Scan →
+          </Link>
         </div>
       </div>
 
-      {/* ── Metrics Overlay (bottom-left) ────────────────────────── */}
+      {/* ── Carbon metrics — bottom-left overlay ──────────────── */}
       {currentScan && (
-        <div className="absolute bottom-6 left-5 z-20 flex flex-col gap-2">
-          <MetricCard id="pill-dbh" label="Trunk Diameter (DBH)" value={currentScan.dbh_cm.toFixed(1)} unit="cm" />
-          <MetricCard id="pill-height" label="Tree Height" value={currentScan.tinggi_m.toFixed(1)} unit="m" />
-          <MetricCard id="pill-biomass" label="Biomass" value={currentScan.biomassa_kg.toFixed(1)} unit="kg" />
-          <MetricCard id="pill-carbon" label="Stored Carbon" value={currentScan.karbon_kg.toFixed(1)} unit="kg" />
-          <MetricCard id="pill-co2e" label="CO₂ Equivalent" value={currentScan.co2e_kg.toFixed(1)} unit="kg" />
+        <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2">
+          {[
+            { label: "DBH", value: currentScan.dbh_cm.toFixed(1), unit: "cm" },
+            { label: "Height", value: currentScan.tinggi_m.toFixed(1), unit: "m" },
+            { label: "Biomass", value: currentScan.biomassa_kg.toFixed(1), unit: "kg" },
+            { label: "Carbon", value: currentScan.karbon_kg.toFixed(1), unit: "kg" },
+            { label: "CO₂e", value: currentScan.co2e_kg.toFixed(1), unit: "kg" },
+          ].map(({ label, value, unit }) => (
+            <div
+              key={label}
+              className="flex items-baseline gap-2 bg-white/90 backdrop-blur-md border border-slate-100 rounded-xl px-4 py-2.5 shadow-sm"
+            >
+              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 w-14">{label}</span>
+              <span className="font-serif text-xl text-[#191919] leading-none">{value}</span>
+              <span className="text-[10px] text-slate-400">{unit}</span>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* ── Upload CTA (bottom-right when no scan) ───────────────── */}
-      {!currentScan && !loading && (
-        <div className="absolute bottom-6 right-5 z-20">
-          <Link
-            href="/reconstruct"
-            className="flex items-center gap-2 px-5 py-3 bg-[#191919] text-white text-xs font-bold rounded-2xl shadow-lg hover:bg-slate-800 transition"
-          >
-            <span>Upload New Scan</span>
-            <span>→</span>
-          </Link>
-        </div>
-      )}
-
-      {/* ── Reconstruction status banner ─────────────────────────── */}
+      {/* ── Pipeline status banner ─────────────────────────────── */}
       {pipelineStatus && pipelineStatus.stage !== "idle" && (
-        <div className="absolute bottom-6 right-5 z-20 max-w-xs bg-amber-50/95 backdrop-blur-md border border-amber-200 rounded-2xl px-4 py-3 shadow-md">
+        <div className="absolute bottom-6 right-6 z-20 max-w-xs bg-white border border-amber-100 rounded-2xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Reconstruction Active</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Reconstruction Active</span>
           </div>
-          <p className="text-xs text-amber-700/80 leading-relaxed italic">{pipelineStatus.message}</p>
+          <p className="text-xs text-slate-500 leading-relaxed">{pipelineStatus.message}</p>
         </div>
       )}
 
-      {/* ── Error toast ──────────────────────────────────────────── */}
+      {/* ── Error toast ───────────────────────────────────────── */}
       {error && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-white text-xs px-5 py-3 rounded-2xl shadow-xl">
-          <span>⚠️ {error}</span>
-          <button onClick={() => setError(null)} className="opacity-60 hover:opacity-100 transition">✕</button>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-white text-xs px-5 py-3 rounded-xl shadow-lg">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="opacity-50 hover:opacity-100 transition">✕</button>
         </div>
       )}
     </div>
