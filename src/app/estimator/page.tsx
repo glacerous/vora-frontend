@@ -147,6 +147,17 @@ export default function Dashboard() {
     return () => clearInterval(statusInterval);
   }, []);
 
+  // Check URL search parameters on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (code) {
+        setSearchInput(code);
+        setActiveTreeCode(code);
+      }
+    }
+  }, []);
+
   // Update lines on resize
   useEffect(() => {
     updateLineCoordinates();

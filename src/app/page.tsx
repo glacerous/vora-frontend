@@ -107,7 +107,7 @@ export default function Home() {
             
             <div className="flex gap-4 mt-6 sm:mt-8 md:mt-10">
               <Link
-                href="/estimator"
+                href="/reconstruct"
                 className="px-8 py-3.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-md"
               >
                 Start Analyzing
@@ -147,7 +147,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-4">
                 
                 <Link
-                  href="/estimator"
+                  href="/reconstruct"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
                   <div className="text-sm text-[#191919] flex items-center">
