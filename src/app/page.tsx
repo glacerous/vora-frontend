@@ -75,7 +75,7 @@ export default function Home() {
       </nav>
 
       {/* ── Section 1: Hero Landing Fold ─────────────────────────────────── */}
-      <section className="relative flex flex-col items-center overflow-hidden h-screen z-10 select-none">
+      <section className="relative flex flex-col items-center overflow-hidden min-h-screen z-10 select-none pb-16 sm:pb-24">
         {/* Boomerang looping video background (scaled 100%, zoomed out building) */}
         <BoomerangVideoBg />
         {/* Soft radial white overlay to keep typography readable and clean */}
@@ -122,7 +122,7 @@ export default function Home() {
           </div>
 
           {/* Bottom info panel (Floating Card) */}
-          <div className="w-full max-w-5xl px-4 sm:px-6 mt-auto mb-8 sm:mb-12 md:mb-16">
+          <div className="w-full max-w-5xl px-4 sm:px-6 mt-28 sm:mt-36 md:mt-44 mb-16">
             <div className="bg-white/95 backdrop-blur-sm border border-gray-200 pt-8 sm:pt-10 md:pt-12 px-6 sm:px-8 md:px-12 pb-8 shadow-md rounded-3xl">
               
               {/* Row 1 — 2 cols */}
