@@ -26,7 +26,7 @@ interface PipelineStatus {
   has_result: boolean;
 }
 
-const BACKEND_URL = "https://vora-52k9.onrender.com";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
 // Custom SVG Logo Mark
 const LogoMark = () => (
