@@ -28,6 +28,7 @@ export default function Reconstruct() {
   // State for the submitted tree code — shown prominently after pipeline starts
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [removeBackground, setRemoveBackground] = useState(true);
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
@@ -116,7 +117,10 @@ export default function Reconstruct() {
       const r = await fetch(`${BACKEND_URL}/reconstruct`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tree_code: selectedCode }),
+        body: JSON.stringify({ 
+          tree_code: selectedCode,
+          remove_background: removeBackground
+        }),
       });
       if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Reconstruction queuing failed"); }
 
@@ -295,6 +299,21 @@ export default function Reconstruct() {
                     </div>
                   </div>
                 )}
+
+                {/* Background removal toggle */}
+                <div className="flex items-center gap-2.5 px-1 py-1">
+                  <input
+                    type="checkbox"
+                    id="removeBg"
+                    checked={removeBackground}
+                    onChange={(e) => setRemoveBackground(e.target.checked)}
+                    disabled={loading}
+                    className="w-4 h-4 rounded border-slate-300 text-[#191919] focus:ring-[#191919] accent-[#191919]"
+                  />
+                  <label htmlFor="removeBg" className="text-xs font-semibold uppercase tracking-widest text-slate-500 select-none cursor-pointer">
+                    Remove Background <span className="normal-case tracking-normal font-normal text-slate-400">(recommended for noisy scenes)</span>
+                  </label>
+                </div>
 
                 {/* Progress */}
                 {loading && (
