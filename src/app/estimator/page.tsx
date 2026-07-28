@@ -172,6 +172,12 @@ export default function Dashboard() {
             </button>
           )}
           <Link
+            href="/history"
+            className="hidden sm:block text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200"
+          >
+            Gallery
+          </Link>
+          <Link
             href="/example"
             className="hidden sm:block text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200"
           >

@@ -144,11 +144,11 @@ export default function Reconstruct() {
           <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
         </Link>
         <div className="flex items-center gap-6">
+          <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+            Gallery
+          </Link>
           <Link href="/estimator" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Estimator
-          </Link>
-          <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Home
           </Link>
         </div>
       </nav>
@@ -167,36 +167,27 @@ export default function Reconstruct() {
             </p>
           </div>
 
-          {/* ── Tree code confirmation card (shown after submit) ── */}
+          {/* ── Reconstruct success card (shown after submit) ── */}
           {submittedCode && (
-            <div className="mb-6 bg-[#191919] text-white rounded-2xl p-6">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/50 mb-1">
-                Your tree code — save this now
-              </p>
-              <div className="flex items-center gap-3 mt-3">
-                <code className="flex-1 text-2xl font-mono font-bold tracking-wider">
-                  {submittedCode}
-                </code>
-                <button
-                  onClick={handleCopy}
-                  className="shrink-0 px-4 py-2 text-xs font-semibold rounded-xl border border-white/20 hover:bg-white/10 transition"
-                >
-                  {copied ? "✓ Copied" : "Copy"}
-                </button>
+            <div className="mb-6 bg-[#191919] text-white rounded-2xl p-6 flex flex-col gap-4 shadow-md">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">
+                  ✓ Pipeline Started Successfully
+                </p>
+                <p className="text-sm text-white/80 leading-relaxed mt-2">
+                  Your 3D tree reconstruction and carbon estimation pipeline has been queued. Processing typically takes 5–15 minutes.
+                </p>
               </div>
-              <p className="text-xs text-white/50 mt-3 leading-relaxed">
-                Use this code in the Estimator to view your scan results once the GPU pipeline completes (typically 5–15 minutes).
-              </p>
-              <div className="flex gap-3 mt-5">
+              <div className="flex gap-3 mt-2">
                 <Link
                   href={`/estimator?code=${encodeURIComponent(submittedCode)}`}
-                  className="flex-1 text-center py-2.5 bg-white text-[#191919] text-sm font-semibold rounded-xl hover:bg-white/90 transition"
+                  className="flex-1 text-center py-3 bg-white text-[#191919] text-sm font-semibold rounded-xl hover:bg-white/90 transition shadow-sm"
                 >
-                  View in Estimator →
+                  View your scan →
                 </Link>
                 <button
                   onClick={() => { setSubmittedCode(null); setProgressMsg(""); setVideoFile(null); setPhotoFiles(null); setTreeCode(""); }}
-                  className="px-4 py-2.5 text-sm text-white/60 hover:text-white rounded-xl border border-white/20 hover:bg-white/10 transition"
+                  className="px-5 py-3 text-sm text-white/70 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition"
                 >
                   New scan
                 </button>

@@ -61,7 +61,7 @@ export default function Home() {
             Pricing
           </a>
           <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            History
+            Gallery
           </Link>
         </div>
 

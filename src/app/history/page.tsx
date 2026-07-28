@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface ScanRecord {
@@ -18,6 +18,7 @@ interface ScanRecord {
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
+const PAGE_LIMIT = 12;
 
 const LogoMark = () => (
   <svg viewBox="0 0 256 256" fill="currentColor" className="w-6 h-6 text-[#191919]">
@@ -28,12 +29,11 @@ const LogoMark = () => (
 );
 
 export default function HistoryPage() {
-  const [input, setInput] = useState("");
-  const [activeCode, setActiveCode] = useState("");
-  const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [scans, setScans] = useState<ScanRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -43,32 +43,45 @@ export default function HistoryPage() {
     } catch { return dateStr; }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const code = input.trim().toUpperCase();
-    if (!code) return;
-
+  const fetchScans = async (currentOffset: number, append: boolean = true) => {
     setLoading(true);
     setError(null);
-    setHistory([]);
-    setSearched(false);
-    setActiveCode(code);
-
     try {
-      const res = await fetch(`${BACKEND_URL}/history/${encodeURIComponent(code)}`);
+      const res = await fetch(`${BACKEND_URL}/scans?limit=${PAGE_LIMIT}&offset=${currentOffset}`);
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
-      if (data.success && data.history?.length > 0) {
-        setHistory(data.history);
+      
+      if (data.success && data.scans) {
+        if (append) {
+          setScans((prev) => [...prev, ...data.scans]);
+        } else {
+          setScans(data.scans);
+        }
+        
+        if (data.scans.length < PAGE_LIMIT) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+        }
       } else {
-        setError(`No scan records found for tree code "${code}".`);
+        throw new Error("Failed to load scan history payload.");
       }
     } catch (err: any) {
       setError(err.message || "Failed to reach backend.");
     } finally {
       setLoading(false);
-      setSearched(true);
     }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchScans(0, false);
+  }, []);
+
+  const handleLoadMore = () => {
+    const nextOffset = offset + PAGE_LIMIT;
+    setOffset(nextOffset);
+    fetchScans(nextOffset, true);
   };
 
   return (
@@ -97,70 +110,33 @@ export default function HistoryPage() {
           {/* Heading */}
           <div className="mb-10">
             <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
-              Scan history
+              Scan Gallery
             </h1>
             <p className="text-sm text-[#191919]/50 leading-relaxed">
-              Enter your tree code to retrieve all previous scan results and carbon estimates.
+              Browse all public tree scan results and forest carbon estimations.
             </p>
           </div>
 
-          {/* Search box */}
-          <form onSubmit={handleSearch} className="flex gap-3 mb-12 max-w-2xl">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter tree code — e.g. POHON-1234"
-              className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="px-6 py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-sm font-medium rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? "…" : "Lookup"}
-            </button>
-          </form>
-
-          {/* Loading */}
-          {loading && (
-            <div className="flex items-center gap-3 text-slate-400 py-6">
-              <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
-              <span className="text-sm font-medium">Fetching records for {activeCode}…</span>
-            </div>
-          )}
-
           {/* Error */}
-          {error && searched && !loading && (
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-8 text-center max-w-2xl">
+          {error && !loading && (
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-8 text-center max-w-2xl mb-8">
               <p className="text-sm text-slate-500 font-medium">{error}</p>
-              <p className="text-xs text-slate-400 mt-2">
-                Make sure the code is correct, then try again.
-              </p>
+              <button 
+                onClick={() => { setOffset(0); fetchScans(0, false); }}
+                className="mt-4 px-4 py-2 bg-[#191919] text-white text-xs font-semibold rounded-xl hover:opacity-90 transition"
+              >
+                Retry
+              </button>
             </div>
           )}
 
           {/* Results Grid */}
-          {history.length > 0 && (
+          {scans.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-100">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                  {history.length} scan{history.length > 1 ? "s" : ""} found for{" "}
-                  <span className="text-[#191919] font-mono">{activeCode}</span>
-                </h2>
-                <Link
-                  href={`/estimator?code=${encodeURIComponent(activeCode)}`}
-                  className="text-xs font-semibold text-[#191919] hover:opacity-75 transition"
-                >
-                  Open in 3D Estimator →
-                </Link>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {history.map((record, idx) => (
+                {scans.map((record, idx) => (
                   <Link
-                    key={record.id}
+                    key={`${record.id}-${idx}`}
                     href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
                     className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-slate-100 cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-slate-50 flex flex-col"
                   >
@@ -190,7 +166,7 @@ export default function HistoryPage() {
                       </span>
                     </div>
 
-                    {/* Top Left: Scan Order Indicator badge */}
+                    {/* Top Left: Scan Counter badge */}
                     <div className="absolute top-3 left-3 flex gap-1">
                       {idx === 0 && (
                         <span className="text-[8px] font-bold uppercase tracking-widest bg-emerald-500 text-white px-2 py-1 rounded-lg">
@@ -198,7 +174,7 @@ export default function HistoryPage() {
                         </span>
                       )}
                       <span className="text-[8px] font-bold uppercase tracking-widest bg-black/40 backdrop-blur-sm text-white/90 px-2 py-1 rounded-lg">
-                        #{history.length - idx}
+                        #{scans.length - idx}
                       </span>
                     </div>
 
@@ -220,15 +196,39 @@ export default function HistoryPage() {
                   </Link>
                 ))}
               </div>
+
+              {/* Load More Pagination Button */}
+              {hasMore && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                    className="px-8 py-3 border border-slate-200 text-sm font-semibold rounded-2xl hover:bg-slate-50 transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5"
+                  >
+                    {loading && (
+                      <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                    )}
+                    Load more scans
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Empty first state */}
-          {!loading && !searched && (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-300 gap-2 max-w-2xl">
+          {/* Empty state */}
+          {scans.length === 0 && !loading && !error && (
+            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-300 gap-2">
               <span className="text-4xl opacity-50">🌳</span>
-              <p className="text-sm font-semibold mt-2 text-slate-400">Enter a tree code above to load its scan history</p>
-              <p className="text-xs text-slate-300 max-w-xs mt-1">If you just submitted a scan, please allow a few minutes for the pipeline process to finish before looking it up.</p>
+              <p className="text-sm font-semibold mt-2 text-slate-400">No scans found in the gallery</p>
+              <p className="text-xs text-slate-300 max-w-xs mt-1">Upload a video in the New Scan page to generate your first 3D reconstruction.</p>
+            </div>
+          )}
+
+          {/* Center Loading Spinner for first page */}
+          {loading && scans.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+              <div className="w-8 h-8 border-3 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+              <p className="text-xs text-slate-400 font-medium">Loading gallery scans…</p>
             </div>
           )}
 
