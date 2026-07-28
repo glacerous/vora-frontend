@@ -85,6 +85,13 @@ export default function Home() {
             background: "radial-gradient(circle at center, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0) 100%)",
           }}
         />
+        {/* Bottom linear white fade to blend the video seamlessly into the next white section */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-1"
+          style={{
+            background: "linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%)",
+          }}
+        />
 
         {/* Content Overlay */}
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-between">
@@ -114,9 +121,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bottom info panel */}
-          <div className="w-full max-w-5xl px-4 sm:px-6 mt-auto">
-            <div className="bg-white/90 backdrop-blur-sm border border-gray-200 border-b-0 pt-8 sm:pt-10 md:pt-12 px-6 sm:px-8 md:px-12 pb-0 shadow-sm rounded-t-2xl">
+          {/* Bottom info panel (Floating Card) */}
+          <div className="w-full max-w-5xl px-4 sm:px-6 mt-auto mb-8 sm:mb-12 md:mb-16">
+            <div className="bg-white/95 backdrop-blur-sm border border-gray-200 pt-8 sm:pt-10 md:pt-12 px-6 sm:px-8 md:px-12 pb-8 shadow-md rounded-3xl">
               
               {/* Row 1 — 2 cols */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 items-end pb-6 sm:pb-8">
