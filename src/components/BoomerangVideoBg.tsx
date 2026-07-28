@@ -139,7 +139,7 @@ export default function BoomerangVideoBg() {
   };
 
   return (
-    <div className="absolute inset-0 z-0 scale-[1.15] origin-top overflow-hidden w-full h-full">
+    <div className="absolute inset-0 z-0 overflow-hidden w-full h-full">
       <video
         ref={videoRef}
         src={VIDEO_URL}
