@@ -79,14 +79,15 @@ export default function Reconstruct() {
         // Start polling status until stage is "extracted"
         let isExtracted = false;
         let attempts = 0;
-        const maxAttempts = 60; // 60 attempts * 1.5s = 90 seconds max
+        const maxAttempts = 100; // 100 attempts * 1.5s = 150 seconds max
         const pollInterval = 1500;
+
+        setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
 
         while (!isExtracted) {
           if (attempts >= maxAttempts) {
             throw new Error("Frame extraction took too long. Please try a shorter video walkthrough.");
           }
-          setProgressMsg(`Uploading complete. Waiting for server to start frame extraction…`);
           
           await new Promise((resolve) => setTimeout(resolve, pollInterval));
           attempts++;
