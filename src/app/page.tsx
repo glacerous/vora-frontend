@@ -41,13 +41,13 @@ export default function Home() {
     <div className="min-h-screen bg-white overflow-x-hidden flex flex-col font-sans">
       
       {/* ── Fixed navbar ────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center transition-all duration-300">
-        <div className="flex items-center gap-2.5 cursor-pointer">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
+        <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
           <LogoMark />
           <span className="font-semibold text-base tracking-tight text-[#191919]">
             Vora
           </span>
-        </div>
+        </Link>
 
         {/* Center links (hidden below md) */}
         <div className="hidden md:flex items-center gap-8">
@@ -67,10 +67,10 @@ export default function Home() {
 
         {/* CTA right */}
         <Link
-          href="/dashboard"
+          href="/estimator"
           className="px-5 py-2.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
         >
-          View Dashboard
+          View Estimator
         </Link>
       </nav>
 
@@ -100,7 +100,7 @@ export default function Home() {
             
             <div className="flex gap-4 mt-6 sm:mt-8 md:mt-10">
               <Link
-                href="/dashboard"
+                href="/estimator"
                 className="px-8 py-3.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-md"
               >
                 Start Analyzing
@@ -140,7 +140,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-4">
                 
                 <Link
-                  href="/dashboard"
+                  href="/estimator"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
                   <div className="text-sm text-[#191919] flex items-center">
@@ -164,7 +164,7 @@ export default function Home() {
                 </Link>
 
                 <Link
-                  href="/dashboard"
+                  href="/estimator"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
                   <div className="text-sm text-[#191919] flex items-center">
@@ -183,13 +183,78 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Section 2: How Vora Works ────────────────────────────────────── */}
+      <section id="product" className="bg-white py-24 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
+        <div className="max-w-5xl mx-auto">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-4">
+            WORKFLOW WALKTHROUGH
+          </span>
+          <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#191919] mb-16 leading-tight">
+            Three steps to <br className="sm:hidden" /> compute carbon.
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-16">
+            
+            {/* Step 1 */}
+            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+              <span className="font-serif text-3xl text-[#191919]/30">01</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Reconstruct the Forest</h3>
+              <p className="text-sm text-[#191919]/70 leading-relaxed">
+                Record or upload drone imagery of target forest zones. Our pipeline maps coordinates and performs AI-driven 3D Gaussian Splatting of trees.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+              <span className="font-serif text-3xl text-[#191919]/30">02</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Analyze Splat Geometry</h3>
+              <p className="text-sm text-[#191919]/70 leading-relaxed">
+                Interact with the detailed 3D model in real time. Inspect specific tree trunks, crowns, and branch arrangements from any angle directly in your browser.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+              <span className="font-serif text-3xl text-[#191919]/30">03</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Estimate Biomass & CO2e</h3>
+              <p className="text-sm text-[#191919]/70 leading-relaxed">
+                Obtain instant estimations of Trunk Diameter (DBH), Tree Height, Biomass weight, Carbon content, and total CO2 equivalents stored.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div>
+              <h4 className="text-sm font-semibold text-[#191919]">Ready to see visual carbon tracking in action?</h4>
+              <p className="text-xs text-[#191919]/60 mt-1">Access the live estimator tool or view a pre-calculated model.</p>
+            </div>
+            <div className="flex gap-4">
+              <Link
+                href="/estimator"
+                className="px-6 py-3 bg-[#191919] text-white text-xs font-medium rounded-lg hover:bg-[#191919]/90 transition shadow-sm"
+              >
+                Open Estimator
+              </Link>
+              <Link
+                href="/example"
+                className="px-6 py-3 bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] text-xs font-medium rounded-lg transition border border-slate-200"
+              >
+                Load Example Scan
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <footer className="bg-[#191919] border-t border-[#191919] py-12 px-6 sm:px-10 text-center z-20">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/50">
           <p>© 2026 Vora. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
-            <Link href="/dashboard" className="hover:text-white transition">Dashboard</Link>
+            <Link href="/estimator" className="hover:text-white transition">Estimator</Link>
             <Link href="/example" className="hover:text-white transition">Example</Link>
             <a href="#privacy" className="hover:text-white transition">Privacy Policy</a>
             <a href="#terms" className="hover:text-white transition">Terms of Service</a>

@@ -474,58 +474,6 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* ── Section: How to Use Vora ───────────────────────────────────── */}
-      <section className="bg-white border-t border-slate-200 py-16 px-6 sm:px-10 md:px-14 z-10">
-        <div className="max-w-[1400px] mx-auto">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-3">
-            GUIDE & METHODOLOGY
-          </span>
-          <h2 className="text-3xl font-serif font-normal leading-tight tracking-tight text-[#191919] mb-12">
-            How to use the estimator.
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12">
-            
-            {/* Step 1 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 font-sans tracking-wide">01 / SCAN & UPLOAD</span>
-              <h3 className="font-serif text-lg text-[#191919] font-medium">Capture Video</h3>
-              <p className="text-sm text-[#191919]/70 leading-relaxed">
-                Record a smooth, continuous vertical sweep of the target tree trunk and crown. Upload the video using the Drag & Drop zone on the Home page.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 font-sans tracking-wide">02 / RECONSTRUCT</span>
-              <h3 className="font-serif text-lg text-[#191919] font-medium">3D Splatting</h3>
-              <p className="text-sm text-[#191919]/70 leading-relaxed">
-                Our Modal GPU backend automatically processes your frames to generate a high-fidelity 3D Gaussian Splatting model of the forest tree.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 font-sans tracking-wide">03 / MEASURE</span>
-              <h3 className="font-serif text-lg text-[#191919] font-medium">Trunk DBH & Height</h3>
-              <p className="text-sm text-[#191919]/70 leading-relaxed">
-                Vora locates coordinate anchors on the point cloud to measure trunk diameter (DBH) and total vertical tree height with sub-centimeter accuracy.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 font-sans tracking-wide">04 / ESTIMATE</span>
-              <h3 className="font-serif text-lg text-[#191919] font-medium">Carbon Stock</h3>
-              <p className="text-sm text-[#191919]/70 leading-relaxed">
-                Biomass regression algorithms estimate total stored carbon mass and CO2 equivalent mitigation values, updating the metrics cards instantly.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-[#191919] border-t border-[#191919] py-12 px-6 sm:px-10 text-center">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/50">
