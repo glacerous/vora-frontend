@@ -27,7 +27,7 @@ export default function BoomerangVideoBg() {
       if (!captureTimes.has(time)) {
         captureTimes.add(time);
 
-        const maxW = 960;
+        const maxW = 1920;
         const videoW = video.videoWidth;
         const videoH = video.videoHeight;
         if (videoW > 0 && videoH > 0) {
