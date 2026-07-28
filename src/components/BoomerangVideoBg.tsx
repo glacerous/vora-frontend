@@ -149,13 +149,13 @@ export default function BoomerangVideoBg() {
         preload="auto"
         crossOrigin="anonymous"
         style={{ display: framesReady ? "none" : "block" }}
-        className="w-full h-full object-cover object-[80%_top]"
+        className="w-full h-full object-cover object-[15%_top]"
       />
 
       <canvas
         ref={canvasRef}
         style={{ display: framesReady ? "block" : "none" }}
-        className="w-full h-full object-cover object-[80%_top]"
+        className="w-full h-full object-cover object-[15%_top]"
       />
     </div>
   );
