@@ -16,32 +16,40 @@ export default function BoomerangVideoBg() {
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    let frames: HTMLCanvasElement[] = [];
+    let frames: ImageBitmap[] = [];
     let captureTimes = new Set<number>();
     let isCapturing = true;
-    let animationId: number;
+    let captureAnimationId: number;
+    let playbackAnimationId: number;
+    let lastCaptureTime = 0;
 
-    const captureFrame = () => {
+    const captureFrame = async () => {
       if (!isCapturing || video.paused || video.ended) return;
 
+      const now = performance.now();
       const time = video.currentTime;
-      if (!captureTimes.has(time)) {
+
+      // Throttle capture to ~30fps max
+      if (now - lastCaptureTime >= 33 && !captureTimes.has(time)) {
+        lastCaptureTime = now;
         captureTimes.add(time);
 
-        const maxW = 1920;
+        const maxW = 800; // Downscale to 800px width for massive RAM reduction
         const videoW = video.videoWidth;
         const videoH = video.videoHeight;
         if (videoW > 0 && videoH > 0) {
           const capW = Math.min(videoW, maxW);
           const capH = (videoH * capW) / videoW;
 
-          const frameCanvas = document.createElement("canvas");
-          frameCanvas.width = capW;
-          frameCanvas.height = capH;
-          const ctx = frameCanvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(video, 0, 0, capW, capH);
-            frames.push(frameCanvas);
+          try {
+            const bitmap = await createImageBitmap(video, {
+              resizeWidth: capW,
+              resizeHeight: capH,
+              resizeQuality: "low",
+            });
+            frames.push(bitmap);
+          } catch (err) {
+            console.error("Frame capture error:", err);
           }
         }
       }
@@ -50,8 +58,56 @@ export default function BoomerangVideoBg() {
         // @ts-ignore
         video.requestVideoFrameCallback(captureFrame);
       } else {
-        animationId = requestAnimationFrame(captureFrame);
+        captureAnimationId = requestAnimationFrame(captureFrame);
       }
+    };
+
+    const startPlayback = (loadedFrames: ImageBitmap[]) => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx || loadedFrames.length === 0) return;
+
+      const sample = loadedFrames[0];
+      canvas.width = sample.width;
+      canvas.height = sample.height;
+
+      let frameIndex = 0;
+      let forward = true;
+
+      const interval = 1000 / 30; // 30 fps
+      let lastTime = performance.now();
+
+      const loop = (now: number) => {
+        const delta = now - lastTime;
+        if (delta >= interval) {
+          lastTime = now - (delta % interval);
+
+          const currentFrame = loadedFrames[frameIndex];
+          if (currentFrame) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(currentFrame, 0, 0);
+          }
+
+          if (forward) {
+            if (frameIndex < loadedFrames.length - 1) {
+              frameIndex++;
+            } else {
+              forward = false;
+              frameIndex--;
+            }
+          } else {
+            if (frameIndex > 0) {
+              frameIndex--;
+            } else {
+              forward = true;
+              frameIndex++;
+            }
+          }
+        }
+
+        playbackAnimationId = requestAnimationFrame(loop);
+      };
+
+      playbackAnimationId = requestAnimationFrame(loop);
     };
 
     const handlePlay = () => {
@@ -60,13 +116,13 @@ export default function BoomerangVideoBg() {
         // @ts-ignore
         video.requestVideoFrameCallback(captureFrame);
       } else {
-        animationId = requestAnimationFrame(captureFrame);
+        captureAnimationId = requestAnimationFrame(captureFrame);
       }
     };
 
     const handleEnded = () => {
       isCapturing = false;
-      if (animationId) cancelAnimationFrame(animationId);
+      if (captureAnimationId) cancelAnimationFrame(captureAnimationId);
 
       if (frames.length > 0) {
         setFramesReady(true);
@@ -83,61 +139,19 @@ export default function BoomerangVideoBg() {
 
     return () => {
       isCapturing = false;
-      if (animationId) cancelAnimationFrame(animationId);
+      if (captureAnimationId) cancelAnimationFrame(captureAnimationId);
+      if (playbackAnimationId) cancelAnimationFrame(playbackAnimationId);
       video.removeEventListener("play", handlePlay);
       video.removeEventListener("ended", handleEnded);
+
+      // Clean up ImageBitmap frames to release memory
+      frames.forEach((frame) => {
+        if (typeof frame.close === "function") {
+          frame.close();
+        }
+      });
     };
   }, []);
-
-  const startPlayback = (frames: HTMLCanvasElement[]) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const sample = frames[0];
-    canvas.width = sample.width;
-    canvas.height = sample.height;
-
-    let frameIndex = 0;
-    let forward = true;
-
-    const interval = 1000 / 30; // 30 fps
-    let lastTime = performance.now();
-
-    const loop = (now: number) => {
-      const delta = now - lastTime;
-      if (delta >= interval) {
-        lastTime = now - (delta % interval);
-
-        const currentFrame = frames[frameIndex];
-        if (currentFrame) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(currentFrame, 0, 0);
-        }
-
-        if (forward) {
-          if (frameIndex < frames.length - 1) {
-            frameIndex++;
-          } else {
-            forward = false;
-            frameIndex--;
-          }
-        } else {
-          if (frameIndex > 0) {
-            frameIndex--;
-          } else {
-            forward = true;
-            frameIndex++;
-          }
-        }
-      }
-
-      requestAnimationFrame(loop);
-    };
-
-    requestAnimationFrame(loop);
-  };
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden w-full h-full bg-[#f8fafc]">
