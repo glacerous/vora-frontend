@@ -178,13 +178,13 @@ export default function Home() {
       </section>
 
       {/* ── Section 2: How Vora Works ────────────────────────────────────── */}
-      <section id="product" className="bg-white py-24 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
+      <section id="product" className="bg-white pt-16 pb-36 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-4">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-2">
               WORKFLOW WALKTHROUGH
             </span>
-            <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#191919] mb-16 leading-tight">
+            <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#191919] mb-10 leading-tight">
               Three steps to <br className="sm:hidden" /> compute carbon.
             </h2>
           </Reveal>
@@ -192,27 +192,27 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-16">
             
             {/* Step 1 */}
-            <Reveal delay={0.06} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
-              <span className="font-serif text-3xl text-[#191919]/30">01</span>
-              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Reconstruct the Forest</h3>
+            <Reveal delay={0.06} className="flex flex-col border-t border-slate-200 pt-4">
+              <span className="font-serif text-3xl text-[#191919]/30 leading-none mb-3">01</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight leading-snug mb-2">Reconstruct the Forest</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Record or upload drone imagery of target forest zones. Our pipeline maps coordinates and performs AI-driven 3D Gaussian Splatting of trees.
               </p>
             </Reveal>
 
             {/* Step 2 */}
-            <Reveal delay={0.12} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
-              <span className="font-serif text-3xl text-[#191919]/30">02</span>
-              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Analyze Splat Geometry</h3>
+            <Reveal delay={0.12} className="flex flex-col border-t border-slate-200 pt-4">
+              <span className="font-serif text-3xl text-[#191919]/30 leading-none mb-3">02</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight leading-snug mb-2">Analyze Splat Geometry</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Interact with the detailed 3D model in real time. Inspect specific tree trunks, crowns, and branch arrangements from any angle directly in your browser.
               </p>
             </Reveal>
 
             {/* Step 3 */}
-            <Reveal delay={0.18} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
-              <span className="font-serif text-3xl text-[#191919]/30">03</span>
-              <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Estimate Biomass & CO2e</h3>
+            <Reveal delay={0.18} className="flex flex-col border-t border-slate-200 pt-4">
+              <span className="font-serif text-3xl text-[#191919]/30 leading-none mb-3">03</span>
+              <h3 className="text-lg font-semibold text-[#191919] tracking-tight leading-snug mb-2">Estimate Biomass & CO2e</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Obtain instant estimations of Trunk Diameter (DBH), Tree Height, Biomass weight, Carbon content, and total CO2 equivalents stored.
               </p>
@@ -220,7 +220,7 @@ export default function Home() {
 
           </div>
 
-          <Reveal delay={0.24} className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <Reveal delay={0.24} className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
             <div>
               <h4 className="text-sm font-semibold text-[#191919]">Ready to see visual carbon tracking in action?</h4>
               <p className="text-xs text-[#191919]/60 mt-1">Access the live estimator tool or view a pre-calculated model.</p>
