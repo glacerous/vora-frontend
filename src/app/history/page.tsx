@@ -134,67 +134,87 @@ export default function HistoryPage() {
           {scans.length > 0 && (
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {scans.map((record, idx) => (
-                  <Link
-                    key={`${record.id}-${idx}`}
-                    href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
-                    className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-slate-100 cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-slate-50 flex flex-col"
-                  >
-                    {/* Cover Thumbnail Image */}
-                    {record.thumbnail_url ? (
-                      <img
-                        src={record.thumbnail_url}
-                        alt={`Thumbnail for ${record.tree_code}`}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center text-slate-400">
-                        <span className="text-3xl mb-1 opacity-45">🌳</span>
-                        <span className="text-[10px] uppercase font-bold tracking-widest opacity-35">No Preview</span>
-                      </div>
-                    )}
-
-                    {/* Gradient Overlay for Readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pt-12" />
-
-                    {/* Top Right: CO2e Value Badge */}
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-center shadow-sm">
-                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">CO₂e</span>
-                      <span className="text-sm font-head font-normal text-[#191919] leading-none">
-                        {record.co2e_kg ? record.co2e_kg.toFixed(0) : "-"}
-                        <span className="text-[9px] font-sans font-semibold text-slate-400 ml-0.5">kg</span>
-                      </span>
-                    </div>
-
-                    {/* Top Left: Scan Counter badge */}
-                    <div className="absolute top-3 left-3 flex gap-1">
-                      {idx === 0 && (
-                        <span className="text-[8px] font-bold uppercase tracking-widest bg-emerald-500 text-white px-2 py-1 rounded-lg">
-                          Latest
-                        </span>
+                {scans.map((record, idx) => {
+                  const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
+                  return (
+                    <Link
+                      key={`${record.id}-${idx}`}
+                      href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
+                      className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-slate-100 cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-slate-50 flex flex-col"
+                    >
+                      {/* Cover Thumbnail Image */}
+                      {record.thumbnail_url ? (
+                        <img
+                          src={record.thumbnail_url}
+                          alt={`Thumbnail for ${record.tree_code}`}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center text-slate-400">
+                          <span className="text-3xl mb-1 opacity-45">🌳</span>
+                          <span className="text-[10px] uppercase font-bold tracking-widest opacity-35">No Preview</span>
+                        </div>
                       )}
-                      <span className="text-[8px] font-bold uppercase tracking-widest bg-black/40 backdrop-blur-sm text-white/90 px-2 py-1 rounded-lg">
-                        #{scans.length - idx}
-                      </span>
-                    </div>
 
-                    {/* Bottom Metadata Panel */}
-                    <div className="mt-auto relative z-10 p-4 text-white flex flex-col">
-                      <span className="text-[10px] text-white/60 font-medium mb-0.5">
-                        {formatDate(record.scan_date)}
-                      </span>
-                      <h3 className="text-sm font-bold tracking-wider uppercase font-mono">
-                        {record.tree_code}
-                      </h3>
+                      {/* Gradient Overlay for Readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pt-12" />
 
-                      {/* Pill Mini Metrics Row */}
-                      <div className="flex gap-3 mt-2 text-[10px] text-white/70 border-t border-white/10 pt-2">
-                        <span>DBH: <strong>{record.dbh_cm ? record.dbh_cm.toFixed(1) : "-"} cm</strong></span>
-                        <span>Height: <strong>{record.tinggi_m ? record.tinggi_m.toFixed(1) : "-"} m</strong></span>
+                      {/* Top Right: CO2e Value Badge */}
+                      {!isInvalid && (
+                        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-center shadow-sm">
+                          <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">CO₂e</span>
+                          <span className="text-sm font-head font-normal text-[#191919] leading-none">
+                            {record.co2e_kg ? record.co2e_kg.toFixed(0) : "-"}
+                            <span className="text-[9px] font-sans font-semibold text-slate-400 ml-0.5">kg</span>
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Top Left: Scan Counter / Invalid badge */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                        <div className="flex gap-1">
+                          {idx === 0 && !isInvalid && (
+                            <span className="text-[8px] font-bold uppercase tracking-widest bg-emerald-500 text-white px-2 py-1 rounded-lg">
+                              Latest
+                            </span>
+                          )}
+                          <span className="text-[8px] font-bold uppercase tracking-widest bg-black/40 backdrop-blur-sm text-white/90 px-2 py-1 rounded-lg">
+                            #{scans.length - idx}
+                          </span>
+                        </div>
+                        {isInvalid && (
+                          <span className="text-[8px] font-bold uppercase tracking-wide bg-rose-600 text-white px-2 py-1 rounded-lg shadow-sm border border-rose-500">
+                            ⚠️ Invalid
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+
+                      {/* Bottom Metadata Panel */}
+                      <div className="mt-auto relative z-10 p-4 text-white flex flex-col">
+                        <span className="text-[10px] text-white/60 font-medium mb-0.5">
+                          {formatDate(record.scan_date)}
+                        </span>
+                        <h3 className="text-sm font-bold tracking-wider uppercase font-mono">
+                          {record.tree_code}
+                        </h3>
+
+                        {/* Pill Mini Metrics Row */}
+                        <div className="flex gap-3 mt-2 text-[10px] text-white/70 border-t border-white/10 pt-2">
+                          {isInvalid ? (
+                            <span className="text-rose-300 font-medium truncate max-w-full">
+                              Reprocessing needed (Points3D missing)
+                            </span>
+                          ) : (
+                            <>
+                              <span>DBH: <strong>{record.dbh_cm ? record.dbh_cm.toFixed(1) : "-"} cm</strong></span>
+                              <span>Height: <strong>{record.tinggi_m ? record.tinggi_m.toFixed(1) : "-"} m</strong></span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
 
               {/* Load More Pagination Button */}
