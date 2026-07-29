@@ -102,6 +102,18 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Prevent browser Save Page (Ctrl+S / Cmd+S) shortcut globally on this page (Task 1)
+  useEffect(() => {
+    const handleGlobalKeydown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S" || e.code === "KeyS")) {
+        e.preventDefault();
+        console.log("Interacted with key S - Prevented default save behavior");
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeydown);
+    return () => window.removeEventListener("keydown", handleGlobalKeydown);
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchInput.trim()) setActiveTreeCode(searchInput.trim());
