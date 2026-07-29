@@ -14,6 +14,11 @@ interface ScanRecord {
   co2e_kg: number;
   splat_file_url: string;
   confidence_note?: string;
+  species_predictions?: Array<{
+    scientific_name: string;
+    common_name: string;
+    confidence: number;
+  }>;
 }
 
 interface PipelineStatus {
@@ -118,7 +123,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-0 bg-white">
         {currentScan ? (
           <iframe
-            src={`${BACKEND_URL}/viewer.html?v=2&url=${encodeURIComponent(currentScan.splat_file_url)}`}
+            src={`${BACKEND_URL}/viewer.html?v=5&url=${encodeURIComponent(currentScan.splat_file_url)}`}
             allow="xr-spatial-tracking; autoplay; fullscreen"
             className="w-full h-full border-none"
             title="3D Tree Gaussian Splat Viewer"
@@ -221,6 +226,49 @@ export default function Dashboard() {
                   </span>
                 </button>
               ))}
+            </div>
+          )}
+
+          {currentScan && (
+            <div className="mt-8 pt-6 border-t border-slate-100">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+                Detected Species (Pl@ntNet)
+              </p>
+              {currentScan.species_predictions && currentScan.species_predictions.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {currentScan.species_predictions.map((pred, idx) => (
+                    <div key={idx} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors duration-200">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs font-semibold text-[#191919] italic truncate max-w-[70%]">
+                          {pred.scientific_name}
+                        </span>
+                        <span className="text-[10px] font-bold text-[#191919]/60">
+                          {pred.confidence.toFixed(1)}%
+                        </span>
+                      </div>
+                      {pred.common_name && (
+                        <span className="text-[10px] text-slate-400 font-medium capitalize">
+                          {pred.common_name}
+                        </span>
+                      )}
+                      {/* Premium Subtle Progress Bar */}
+                      <div className="w-full h-1 bg-slate-200/60 rounded-full overflow-hidden mt-1">
+                        <div 
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-500" 
+                          style={{ width: `${pred.confidence}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center">
+                  <span className="text-sm opacity-50 block mb-1">🌿</span>
+                  <span className="text-[10px] font-semibold text-slate-400">
+                    {currentScan.dbh_cm === null ? "Scan failed" : "Species detection unavailable"}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
