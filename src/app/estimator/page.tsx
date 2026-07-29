@@ -478,7 +478,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Pipeline status banner ─────────────────────────────── */}
-      {pipelineStatus && pipelineStatus.stage !== "idle" && (
+      {sceneLoaded && pipelineStatus && pipelineStatus.stage !== "idle" && (
         <div className="absolute bottom-6 right-6 z-30 max-w-xs bg-white border border-amber-100 rounded-2xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
