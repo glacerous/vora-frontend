@@ -197,18 +197,38 @@ export default function HistoryPage() {
               {/* Toolbar: Search input + Segmented Filter Tabs */}
               <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 border border-slate-200/60 p-3 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                 {/* Search input with custom Uiverse style */}
-                <div className="search-group-custom">
-                  <svg className="search-icon-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tree code…"
-                    className="search-input-custom"
-                  />
-                </div>
+                {/* Search input with whatsapp style Uiverse component */}
+                <form onSubmit={(e) => e.preventDefault()} className="whatsapp-search-form">
+                  <label htmlFor="search">
+                    <input
+                      required
+                      autoComplete="off"
+                      placeholder="Search tree code…"
+                      id="search"
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <div className="whatsapp-search-icon">
+                      <svg strokeWidth="2.5" stroke="currentColor" viewBox="0 0 24 24" fill="none" className="whatsapp-search-swap-on">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinejoin="round" strokeLinecap="round"></path>
+                      </svg>
+                      <svg strokeWidth="2.5" stroke="currentColor" viewBox="0 0 24 24" fill="none" className="whatsapp-search-swap-off">
+                        <path d="M10 19l-7-7m0 0l7-7m-7 7h18" strokeLinejoin="round" strokeLinecap="round"></path>
+                      </svg>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setSearchQuery("")} 
+                      className="whatsapp-search-close-btn"
+                      aria-label="Clear search"
+                    >
+                      <svg viewBox="0 0 20 20" className="h-5 w-5 fill-current">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+                      </svg>
+                    </button>
+                  </label>
+                </form>
 
                 {/* Segmented Filter Tabs */}
                 <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200/50 rounded-xl self-start md:self-auto">

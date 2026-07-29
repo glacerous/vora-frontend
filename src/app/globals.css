@@ -98,58 +98,142 @@ html::-webkit-scrollbar {
   }
 }
 
-/* Custom Search Bar - Uiverse */
-.search-group-custom {
-  display: flex;
-  line-height: 28px;
-  align-items: center;
-  position: relative;
+/* Custom Search Bar - Whatsapp Style */
+.whatsapp-search-form {
+  --input-bg: #ffffff;
+  --padding: 1em;
+  --rotate: 80deg;
+  --gap: 2.25em;
+  --icon-change-color: #10b981;
+  --height: 44px;
   width: 100%;
   max-width: 280px;
+  padding-inline-end: 1em;
+  background: var(--input-bg);
+  position: relative;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-input-custom {
-  font-family: var(--font-sans), sans-serif;
+.whatsapp-search-form:hover {
+  border-color: #94a3b8;
+}
+
+.whatsapp-search-form:focus-within {
+  border-color: #191919;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.whatsapp-search-form label {
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: 45px;
-  padding-left: 2.5rem;
-  box-shadow: 0 0 0 1.5px #cbd5e1, 0 0 25px -17px #000;
-  border: 0;
-  border-radius: 12px;
-  background-color: #ffffff;
+  height: var(--height);
+  cursor: text;
+}
+
+.whatsapp-search-form input {
+  width: 100%;
+  padding-inline-start: calc(var(--padding) + var(--gap));
   outline: none;
+  background: none;
+  border: 0;
   color: #191919;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
-  cursor: text;
-  z-index: 0;
 }
 
-.search-input-custom::placeholder {
+.whatsapp-search-form input::placeholder {
   color: #94a3b8;
 }
 
-.search-input-custom:hover {
-  box-shadow: 0 0 0 2px #cbd5e1, 0px 0px 25px -15px #000;
-}
-
-.search-input-custom:active {
-  transform: scale(0.98);
-}
-
-.search-input-custom:focus {
-  box-shadow: 0 0 0 2px #191919;
-}
-
-.search-icon-custom {
+.whatsapp-search-form svg {
+  color: #64748b;
+  transition: 0.3s cubic-bezier(.4,0,.2,1);
   position: absolute;
-  left: 1rem;
-  fill: #64748b;
-  width: 1rem;
-  height: 1rem;
-  pointer-events: none;
-  z-index: 1;
+  height: 15px;
+  width: 15px;
+}
+
+.whatsapp-search-icon {
+  position: absolute;
+  left: var(--padding);
+  transition: 0.3s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.whatsapp-search-swap-off {
+  transform: rotate(-80deg);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.whatsapp-search-close-btn {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 0.75rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  padding: 0.1em;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  transition: 0.3s;
+  opacity: 0;
+  transform: scale(0);
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.whatsapp-search-close-btn:hover {
+  background-color: #f1f5f9;
+  color: #191919;
+}
+
+.whatsapp-search-form input:focus ~ .whatsapp-search-icon {
+  transform: rotate(var(--rotate)) scale(1.15);
+}
+
+.whatsapp-search-form input:focus ~ .whatsapp-search-icon .whatsapp-search-swap-off {
+  opacity: 1;
+  transform: rotate(-80deg);
+  visibility: visible;
+  color: var(--icon-change-color);
+}
+
+.whatsapp-search-form input:focus ~ .whatsapp-search-icon .whatsapp-search-swap-on {
+  opacity: 0;
+  visibility: visible;
+}
+
+.whatsapp-search-form input:valid ~ .whatsapp-search-icon {
+  transform: scale(1.15) rotate(var(--rotate))
+}
+
+.whatsapp-search-form input:valid ~ .whatsapp-search-icon .whatsapp-search-swap-off {
+  opacity: 1;
+  visibility: visible;
+  color: var(--icon-change-color);
+}
+
+.whatsapp-search-form input:valid ~ .whatsapp-search-icon .whatsapp-search-swap-on {
+  opacity: 0;
+  visibility: visible;
+}
+
+.whatsapp-search-form input:valid ~ .whatsapp-search-close-btn {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition: 0.3s;
 }
 
 /* Custom Job-style Card - Uiverse */
