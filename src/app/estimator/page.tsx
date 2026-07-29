@@ -163,7 +163,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Navbar — 100% identical to landing page ──────── */}
-      <nav className="fixed top-0 left-0 right-0 z-40 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
+      <nav className="fixed top-0 left-0 right-0 z-55 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
         <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
           <LogoMark />
           <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
@@ -188,9 +188,23 @@ export default function Dashboard() {
         {/* Right CTA button */}
         <button
           onClick={() => setSidebarOpen((v) => !v)}
-          className="px-5 py-2.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
+          className="px-4 py-2.5 bg-[#191919] text-white text-xs font-semibold rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm flex items-center gap-2"
         >
-          {sidebarOpen ? "Close Drawer" : "Tree Details / Search"}
+          {sidebarOpen ? (
+            <>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>Close</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
+              <span>Details</span>
+            </>
+          )}
         </button>
       </nav>
 
@@ -253,12 +267,12 @@ export default function Dashboard() {
 
       {/* ── Slide-in sidebar — Unified Tree Intelligence Panel ──────────────── */}
       <div
-        className={`fixed top-0 right-0 bottom-0 z-50 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white pt-24 md:pt-6">
+        <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
