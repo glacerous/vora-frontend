@@ -195,7 +195,7 @@ export default function HistoryPage() {
           {scans.length > 0 ? (
             <div>
               {/* Toolbar: Search input + Segmented Filter Tabs */}
-              <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 border border-slate-200/60 p-3 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 {/* Search input with custom Uiverse style */}
                 {/* Search input with whatsapp style Uiverse component */}
                 <form onSubmit={(e) => e.preventDefault()} className="whatsapp-search-form">
