@@ -34,6 +34,7 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const formatDate = (dateStr: string) => {
     try {
@@ -84,6 +85,11 @@ export default function HistoryPage() {
     fetchScans(nextOffset, true);
   };
 
+  // Dynamic filter for search bar
+  const filteredScans = scans.filter((scan) =>
+    scan.tree_code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans text-[#191919]">
 
@@ -124,27 +130,41 @@ export default function HistoryPage() {
         <div className="max-w-5xl mx-auto">
 
           {/* Heading Section */}
-          <div className="mb-12 border-b border-slate-100 pb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#191919]/50">Forest Carbon Registry</span>
-              </div>
-              <h1 className="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-[#191919] mb-3">
+              <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] mb-2">
                 Scan Gallery
               </h1>
-              <p className="text-sm text-[#191919]/65 max-w-2xl leading-relaxed">
-                Browse all public tree scan results, interactive 3D Gaussian Splat reconstructions, and estimated forest carbon sequestration datasets.
+              <p className="text-sm text-[#191919]/60 max-w-2xl leading-relaxed">
+                Browse all public tree scan results and forest carbon estimations.
               </p>
             </div>
             {scans.length > 0 && (
-              <div className="flex items-center gap-2 self-start md:self-auto px-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-semibold text-slate-600">
-                  {scans.length} Scan{scans.length !== 1 ? "s" : ""} Indexed
-                </span>
+              <div className="text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 self-start md:self-auto">
+                {scans.length} scan{scans.length !== 1 ? "s" : ""} loaded
               </div>
             )}
+          </div>
+
+          {/* Search Bar HUD */}
+          <div className="mb-8 max-w-md">
+            <div className="relative flex items-center shadow-sm rounded-xl bg-slate-50 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#191919]/10 focus-within:border-[#191919] transition-all">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tree code (e.g. POHON-6144)…"
+                className="w-full pl-9 pr-4 py-2.5 bg-transparent focus:outline-none text-xs font-semibold text-[#191919] placeholder:text-slate-400"
+              />
+              <svg
+                className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
           </div>
 
           {/* Error Message */}
@@ -161,117 +181,87 @@ export default function HistoryPage() {
           )}
 
           {/* Results Grid */}
-          {scans.length > 0 && (
+          {filteredScans.length > 0 ? (
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {scans.map((record, idx) => {
+                {filteredScans.map((record, idx) => {
                   const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                   return (
                     <Link
                       key={`${record.id}-${idx}`}
                       href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
-                      className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-slate-200/60 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-slate-50 flex flex-col"
+                      className="relative rounded-2xl overflow-hidden group border border-slate-200 hover:border-slate-350 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 bg-white flex flex-col"
                     >
-                      {/* Cover Thumbnail Image */}
-                      {record.thumbnail_url ? (
-                        <img
-                          src={record.thumbnail_url}
-                          alt={`Thumbnail for ${record.tree_code}`}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center text-slate-400">
-                          <span className="text-3xl mb-1 opacity-45">🌳</span>
-                          <span className="text-[10px] uppercase font-bold tracking-widest opacity-35">No Preview</span>
-                        </div>
-                      )}
-
-                      {/* Gradient Overlay for Readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pt-12" />
-
-                      {/* Top Right: CO2e Value Badge (Premium Dark Glass Look) */}
-                      {!isInvalid && (
-                        <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl text-center shadow-sm flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <div className="text-left">
-                            <span className="block text-[7px] font-bold text-slate-300 uppercase tracking-widest leading-none mb-0.5">CO₂e Sequestration</span>
-                            <span className="text-xs font-bold text-white font-mono leading-none">
-                              {record.co2e_kg ? record.co2e_kg.toFixed(0) : "-"}
-                              <span className="text-[9px] text-emerald-400 font-sans ml-0.5">kg</span>
-                            </span>
+                      {/* Top portion: Card Image */}
+                      <div className="h-44 w-full relative overflow-hidden bg-slate-50">
+                        {record.thumbnail_url ? (
+                          <img
+                            src={record.thumbnail_url}
+                            alt={`Thumbnail for ${record.tree_code}`}
+                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                            <span className="text-2xl mb-1">🌳</span>
+                            <span className="text-[9px] uppercase font-bold tracking-widest opacity-60">No Preview</span>
                           </div>
-                        </div>
-                      )}
-
-                      {/* Top Left: Scan Counter / Invalid badge */}
-                      <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start">
-                        <div className="flex gap-1">
-                          {idx === 0 && !isInvalid && (
-                            <span className="text-[8px] font-bold uppercase tracking-widest bg-emerald-500 text-white px-2 py-1 rounded-lg shadow-sm">
-                              Latest
+                        )}
+                        
+                        {/* Top corner count badge */}
+                        <div className="absolute top-3 left-3 flex gap-1 items-center">
+                          <span className="text-[8px] font-bold uppercase tracking-widest bg-[#191919]/60 backdrop-blur-sm text-white px-2 py-0.5 rounded">
+                            #{record.id}
+                          </span>
+                          {isInvalid && (
+                            <span className="text-[8px] font-bold uppercase tracking-widest bg-rose-600 text-white px-2 py-0.5 rounded shadow-sm">
+                              Invalid
                             </span>
                           )}
-                          <span className="text-[8px] font-bold uppercase tracking-widest bg-black/40 backdrop-blur-sm text-white/95 px-2 py-1 rounded-lg">
-                            #{scans.length - idx}
-                          </span>
                         </div>
-                        {isInvalid && (
-                          <span className="text-[8px] font-bold uppercase tracking-wide bg-rose-600 text-white px-2 py-1 rounded-lg shadow-sm border border-rose-500">
-                            ⚠️ Invalid
-                          </span>
-                        )}
                       </div>
 
-                      {/* Bottom Metadata Panel */}
-                      <div className="mt-auto relative z-10 p-5 text-white flex flex-col">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] text-white/65 font-medium tracking-wide">
-                            {formatDate(record.scan_date)}
-                          </span>
-                          <span className="text-[9px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full font-mono">
-                            ID: {record.id}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-base font-bold tracking-wider uppercase font-mono text-white group-hover:text-emerald-300 transition-colors">
-                            {record.tree_code}
-                          </h3>
-                          {/* Hover Arrow Indicator */}
-                          <svg
-                            className="w-4 h-4 text-white/60 transform translate-x-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-all duration-300"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-                        </div>
+                      {/* Bottom portion: Structured Metadata */}
+                      <div className="p-4 flex-1 flex flex-col bg-white">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+                          {formatDate(record.scan_date)}
+                        </span>
+                        <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-[#191919] group-hover:text-slate-600 transition-colors">
+                          {record.tree_code}
+                        </h3>
 
-                        {/* Pill Mini Metrics Row */}
-                        <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
-                          {isInvalid ? (
-                            <span className="text-rose-300 text-[10px] font-medium tracking-wide flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                              Reprocessing required
-                            </span>
-                          ) : (
-                            <>
-                              <div className="px-2 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[10px] font-mono text-white/95 flex items-center gap-1.5">
-                                <span className="text-white/50 text-[9px] uppercase font-sans">DBH</span>
-                                <strong>{record.dbh_cm ? record.dbh_cm.toFixed(1) : "-"} <span className="font-normal text-[9px]">cm</span></strong>
-                              </div>
-                              <div className="px-2 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[10px] font-mono text-white/95 flex items-center gap-1.5">
-                                <span className="text-white/50 text-[9px] uppercase font-sans">H</span>
-                                <strong>{record.tinggi_m ? record.tinggi_m.toFixed(1) : "-"} <span className="font-normal text-[9px]">m</span></strong>
-                              </div>
-                              <div className="px-2 py-1 bg-emerald-500/25 border border-emerald-500/20 backdrop-blur-md rounded-lg text-[10px] font-mono text-emerald-300 flex items-center gap-1.5 ml-auto">
-                                <span className="text-emerald-300/50 text-[9px] uppercase font-sans">Carbon</span>
-                                <strong>{record.karbon_kg ? record.karbon_kg.toFixed(1) : "-"} <span className="font-normal text-[9px]">kg</span></strong>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        {/* Thin divider */}
+                        <div className="h-px bg-slate-100 my-3" />
+
+                        {/* Metrics Table Grid */}
+                        {isInvalid ? (
+                          <span className="text-rose-500 text-[10px] font-medium tracking-wide">
+                            Points3D missing (reprocessing required)
+                          </span>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-2">
+                            {/* DBH */}
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                              <span className="text-xs font-semibold text-[#191919] mt-0.5 font-mono">
+                                {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "-"}
+                              </span>
+                            </div>
+                            {/* Height */}
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
+                              <span className="text-xs font-semibold text-[#191919] mt-0.5 font-mono">
+                                {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m` : "-"}
+                              </span>
+                            </div>
+                            {/* CO2e */}
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">CO₂e</span>
+                              <span className="text-xs font-bold text-emerald-700 mt-0.5 font-mono">
+                                {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg` : "-"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </Link>
                   );
@@ -279,12 +269,12 @@ export default function HistoryPage() {
               </div>
 
               {/* Load More Pagination Button */}
-              {hasMore && (
+              {hasMore && searchQuery === "" && (
                 <div className="flex justify-center mt-12">
                   <button
                     onClick={handleLoadMore}
                     disabled={loading}
-                    className="px-8 py-3 border border-slate-200 text-sm font-semibold rounded-2xl hover:bg-slate-50 hover:border-slate-350 transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-sm"
+                    className="px-8 py-3 border border-slate-200 text-sm font-semibold rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-sm"
                   >
                     {loading && (
                       <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
@@ -294,14 +284,12 @@ export default function HistoryPage() {
                 </div>
               )}
             </div>
-          )}
-
-          {/* Empty state */}
-          {scans.length === 0 && !loading && !error && (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-300 gap-2">
-              <span className="text-4xl opacity-50">🌳</span>
-              <p className="text-sm font-semibold mt-2 text-slate-400">No scans found in the gallery</p>
-              <p className="text-xs text-slate-300 max-w-xs mt-1">Upload a video in the New Scan page to generate your first 3D reconstruction.</p>
+          ) : (
+            /* Empty state (either query filter or no scans) */
+            <div className="flex flex-col items-center justify-center py-20 text-center text-slate-300 gap-2 bg-slate-50/55 rounded-2xl border border-dashed border-slate-200">
+              <span className="text-3xl opacity-50">🌳</span>
+              <p className="text-sm font-semibold text-slate-400">No matching scans found</p>
+              <p className="text-xs text-slate-300 max-w-xs mt-0.5">Try searching for a different tree code or adjust your query.</p>
             </div>
           )}
 
