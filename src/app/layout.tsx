@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Anton, Outfit } from "next/font/google";
 import "./globals.css";
+import SmoothScrollProvider from "@/components/SmoothScrollProvider";
+import ScrollProgressBar from "@/components/ScrollProgressBar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,7 +40,10 @@ export default function RootLayout({
       className={`${inter.variable} ${anton.variable} ${outfit.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col font-sans bg-white text-[#191919]">
-        {children}
+        <SmoothScrollProvider>
+          <ScrollProgressBar />
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );

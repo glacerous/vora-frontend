@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import BoomerangVideoBg from "@/components/BoomerangVideoBg";
+import Reveal from "@/components/Reveal";
 
 // Custom SVG Logo Mark
 const LogoMark = () => (
@@ -108,7 +109,7 @@ export default function Home() {
           </div>
 
           {/* Bottom info panel (Floating Card) */}
-          <div className="w-full max-w-5xl px-4 sm:px-6 mt-28 sm:mt-36 md:mt-44 mb-16">
+          <Reveal y={20} delay={0.1} className="w-full max-w-5xl px-4 sm:px-6 mt-28 sm:mt-36 md:mt-44 mb-16">
             <div className="bg-white/95 backdrop-blur-sm border border-gray-200 pt-8 sm:pt-10 md:pt-12 px-6 sm:px-8 md:px-12 pb-8 shadow-md rounded-3xl">
               
               {/* Row 1 — 2 cols */}
@@ -171,7 +172,7 @@ export default function Home() {
               </div>
 
             </div>
-          </div>
+          </Reveal>
 
         </div>
       </section>
@@ -179,45 +180,47 @@ export default function Home() {
       {/* ── Section 2: How Vora Works ────────────────────────────────────── */}
       <section id="product" className="bg-white py-24 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
         <div className="max-w-5xl mx-auto">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-4">
-            WORKFLOW WALKTHROUGH
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#191919] mb-16 leading-tight">
-            Three steps to <br className="sm:hidden" /> compute carbon.
-          </h2>
+          <Reveal>
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-4">
+              WORKFLOW WALKTHROUGH
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#191919] mb-16 leading-tight">
+              Three steps to <br className="sm:hidden" /> compute carbon.
+            </h2>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-16">
             
             {/* Step 1 */}
-            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+            <Reveal delay={0.06} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
               <span className="font-serif text-3xl text-[#191919]/30">01</span>
               <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Reconstruct the Forest</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Record or upload drone imagery of target forest zones. Our pipeline maps coordinates and performs AI-driven 3D Gaussian Splatting of trees.
               </p>
-            </div>
+            </Reveal>
 
             {/* Step 2 */}
-            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+            <Reveal delay={0.12} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
               <span className="font-serif text-3xl text-[#191919]/30">02</span>
               <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Analyze Splat Geometry</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Interact with the detailed 3D model in real time. Inspect specific tree trunks, crowns, and branch arrangements from any angle directly in your browser.
               </p>
-            </div>
+            </Reveal>
 
             {/* Step 3 */}
-            <div className="flex flex-col gap-5 border-t border-slate-200 pt-8">
+            <Reveal delay={0.18} className="flex flex-col gap-5 border-t border-slate-200 pt-8">
               <span className="font-serif text-3xl text-[#191919]/30">03</span>
               <h3 className="text-lg font-semibold text-[#191919] tracking-tight">Estimate Biomass & CO2e</h3>
               <p className="text-sm text-[#191919]/70 leading-relaxed">
                 Obtain instant estimations of Trunk Diameter (DBH), Tree Height, Biomass weight, Carbon content, and total CO2 equivalents stored.
               </p>
-            </div>
+            </Reveal>
 
           </div>
 
-          <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <Reveal delay={0.24} className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div>
               <h4 className="text-sm font-semibold text-[#191919]">Ready to see visual carbon tracking in action?</h4>
               <p className="text-xs text-[#191919]/60 mt-1">Access the live estimator tool or view a pre-calculated model.</p>
@@ -236,7 +239,7 @@ export default function Home() {
                 Load Example Scan
               </Link>
             </div>
-          </div>
+          </Reveal>
 
         </div>
       </section>

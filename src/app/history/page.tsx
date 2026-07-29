@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 
 interface ScanRecord {
   id: number;
@@ -241,73 +242,75 @@ export default function HistoryPage() {
                     {filteredScans.map((record, idx) => {
                       const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                       return (
-                        <div
+                        <Reveal
                           key={`${record.id}-${idx}`}
-                          className="vora-card"
+                          delay={(idx % 6) * 0.06}
                         >
-                          <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
-                            {/* Background Image/Icon filling the container */}
-                            {record.thumbnail_url ? (
-                              <img
-                                src={record.thumbnail_url}
-                                alt={`Thumbnail for ${record.tree_code}`}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                              />
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center text-amber-500/10 bg-[#fef4e2]">
-                                <TreeIcon className="w-16 h-16" />
-                              </div>
-                            )}
-
-                            {/* Dark text-overlay gradient for image readability */}
-                            {record.thumbnail_url && (
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-0" />
-                            )}
-
-                            <header className="vora-card-hero-header relative z-10 w-full">
-                              <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
-                                record.thumbnail_url 
-                                  ? "bg-black/30 border-white/10 text-white" 
-                                  : "bg-white/40 border-slate-200 text-slate-600"
-                              }`}>
-                                #{record.id}
-                              </span>
-                            </header>
-
-                            <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
-                              record.thumbnail_url 
-                                ? "text-white" 
-                                : "text-[#141417]"
-                            }`}>
-                              {record.tree_code}
-                            </p>
-                          </section>
-
-                          <footer className="vora-card-footer">
-                            <div className="vora-card-job-summary flex flex-col items-start">
-                              <div className="card__job text-base font-extrabold text-[#141417] leading-none mb-1">
-                                {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
-                              </div>
-                              {isInvalid ? (
-                                <span className="text-[10px] text-rose-500 font-semibold font-sans">
-                                  Invalid scan
-                                </span>
+                          <div className="vora-card">
+                            <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
+                              {/* Background Image/Icon filling the container */}
+                              {record.thumbnail_url ? (
+                                <img
+                                  src={record.thumbnail_url}
+                                  alt={`Thumbnail for ${record.tree_code}`}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                />
                               ) : (
-                                <div className="text-[10px] text-slate-400 font-semibold font-sans">
-                                  {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
+                                <div className="absolute inset-0 flex items-center justify-center text-amber-500/10 bg-[#fef4e2]">
+                                  <TreeIcon className="w-16 h-16" />
                                 </div>
                               )}
-                            </div>
-                            <div className="vora-card-view-save">
-                              <Link
-                                href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
-                                className="vora-card-btn"
-                              >
-                                View
-                              </Link>
-                            </div>
-                          </footer>
-                        </div>
+
+                              {/* Dark text-overlay gradient for image readability */}
+                              {record.thumbnail_url && (
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-0" />
+                              )}
+
+                              <header className="vora-card-hero-header relative z-10 w-full">
+                                <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
+                                  record.thumbnail_url 
+                                    ? "bg-black/30 border-white/10 text-white" 
+                                    : "bg-white/40 border-slate-200 text-slate-600"
+                                }`}>
+                                  #{record.id}
+                                </span>
+                              </header>
+
+                              <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
+                                record.thumbnail_url 
+                                  ? "text-white" 
+                                  : "text-[#141417]"
+                              }`}>
+                                {record.tree_code}
+                              </p>
+                            </section>
+
+                            <footer className="vora-card-footer">
+                              <div className="vora-card-job-summary flex flex-col items-start">
+                                <div className="card__job text-base font-extrabold text-[#141417] leading-none mb-1">
+                                  {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
+                                </div>
+                                {isInvalid ? (
+                                  <span className="text-[10px] text-rose-500 font-semibold font-sans">
+                                    Invalid scan
+                                  </span>
+                                ) : (
+                                  <div className="text-[10px] text-slate-400 font-semibold font-sans">
+                                    {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="vora-card-view-save">
+                                <Link
+                                  href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
+                                  className="vora-card-btn"
+                                >
+                                  View
+                                </Link>
+                              </div>
+                            </footer>
+                          </div>
+                        </Reveal>
                       );
                     })}
                   </div>

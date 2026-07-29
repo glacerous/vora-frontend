@@ -9,6 +9,7 @@ export default function BoomerangVideoBg() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [framesReady, setFramesReady] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -139,7 +140,14 @@ export default function BoomerangVideoBg() {
   };
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden w-full h-full">
+    <div className="absolute inset-0 z-0 overflow-hidden w-full h-full bg-[#f8fafc]">
+      {/* Skeleton Pulse Placeholder */}
+      <div 
+        className={`absolute inset-0 bg-[#e2e8f0]/40 animate-pulse transition-opacity duration-700 ease-out z-10 ${
+          videoLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`} 
+      />
+
       <video
         ref={videoRef}
         src={VIDEO_URL}
@@ -148,14 +156,19 @@ export default function BoomerangVideoBg() {
         autoPlay
         preload="auto"
         crossOrigin="anonymous"
+        onLoadedData={() => setVideoLoaded(true)}
         style={{ display: framesReady ? "none" : "block" }}
-        className="w-full h-full object-cover object-[15%_top]"
+        className={`w-full h-full object-cover object-[15%_top] transition-opacity duration-700 ease-out ${
+          videoLoaded ? "opacity-100" : "opacity-0"
+        }`}
       />
 
       <canvas
         ref={canvasRef}
         style={{ display: framesReady ? "block" : "none" }}
-        className="w-full h-full object-cover object-[15%_top]"
+        className={`w-full h-full object-cover object-[15%_top] transition-opacity duration-700 ease-out ${
+          framesReady ? "opacity-100" : "opacity-0"
+        }`}
       />
     </div>
   );

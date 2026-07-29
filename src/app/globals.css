@@ -6,6 +6,11 @@
   --font-serif: "P22 Mackinac W01 Book", Georgia, serif;
   --font-head: var(--font-anton), Impact, sans-serif;
   --font-outfit: var(--font-outfit), sans-serif;
+  
+  --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
 }
 
 body {
@@ -247,12 +252,16 @@ html::-webkit-scrollbar {
   color: #141417;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--duration-fast) var(--ease-out-smooth), box-shadow var(--duration-fast) var(--ease-out-smooth);
 }
 
 .vora-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.04), 0 4px 8px -2px rgba(0, 0, 0, 0.02);
+}
+
+.vora-card:active {
+  transform: translateY(-2px) scale(0.985);
 }
 
 .vora-card-hero {
@@ -346,11 +355,16 @@ html::-webkit-scrollbar {
   background-color: #141417;
   color: #fff;
   font-size: 0.875rem;
-  transition: opacity 0.2s;
+  transition: opacity var(--duration-fast) var(--ease-out-smooth), transform var(--duration-fast) var(--ease-out-smooth);
 }
 
 .vora-card-btn:hover {
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: scale(1.03);
+}
+
+.vora-card-btn:active {
+  transform: scale(0.97);
 }
 
 @media (min-width: 340px) {
