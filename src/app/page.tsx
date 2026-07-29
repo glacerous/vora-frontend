@@ -178,7 +178,7 @@ export default function Home() {
       </section>
 
       {/* ── Section 2: How Vora Works ────────────────────────────────────── */}
-      <section id="product" className="bg-white pt-16 pb-36 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
+      <section id="product" className="bg-white pt-16 pb-24 px-6 sm:px-10 md:px-14 border-t border-slate-100 z-20 relative">
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <span className="text-[11px] uppercase tracking-[0.2em] text-[#191919]/50 font-medium block mb-2">
@@ -220,26 +220,6 @@ export default function Home() {
 
           </div>
 
-          <Reveal delay={0.24} className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
-            <div>
-              <h4 className="text-sm font-semibold text-[#191919]">Ready to see visual carbon tracking in action?</h4>
-              <p className="text-xs text-[#191919]/60 mt-1">Access the live estimator tool or view a pre-calculated model.</p>
-            </div>
-            <div className="flex gap-4">
-              <Link
-                href="/estimator"
-                className="px-6 py-3 bg-[#191919] text-white text-xs font-medium rounded-lg hover:bg-[#191919]/90 transition shadow-sm"
-              >
-                Open Estimator
-              </Link>
-              <Link
-                href="/example"
-                className="px-6 py-3 bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] text-xs font-medium rounded-lg transition border border-slate-200"
-              >
-                Load Example Scan
-              </Link>
-            </div>
-          </Reveal>
 
         </div>
       </section>
