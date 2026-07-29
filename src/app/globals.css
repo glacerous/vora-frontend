@@ -26,247 +26,77 @@ html::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Custom Uiverse Box Loader - Vora Dark Theme */
-.loader-container {
+/* Newton's Cradle Loader - Vora Dark Theme */
+.newtons-cradle {
+  --uib-size: 50px;
+  --uib-speed: 1.2s;
+  --uib-color: #191919;
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  position: relative;
-  width: 112px;
-  height: 112px;
+  justify-content: center;
+  width: var(--uib-size);
+  height: var(--uib-size);
 }
 
-.loader {
-  width: 112px;
-  height: 112px;
+.newtons-cradle__dot {
   position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 25%;
+  transform-origin: center top;
 }
 
-.box1,
-.box2,
-.box3 {
-  border: 16px solid #191919;
-  box-sizing: border-box;
-  position: absolute;
+.newtons-cradle__dot::after {
+  content: '';
   display: block;
+  width: 100%;
+  height: 25%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
 }
 
-.box1 {
-  width: 112px;
-  height: 48px;
-  margin-top: 64px;
-  margin-left: 0px;
-  animation: abox1 4s 1s forwards ease-in-out infinite;
+.newtons-cradle__dot:first-child {
+  animation: swing var(--uib-speed) linear infinite;
 }
 
-.box2 {
-  width: 48px;
-  height: 48px;
-  margin-top: 0px;
-  margin-left: 0px;
-  animation: abox2 4s 1s forwards ease-in-out infinite;
+.newtons-cradle__dot:last-child {
+  animation: swing2 var(--uib-speed) linear infinite;
 }
 
-.box3 {
-  width: 48px;
-  height: 48px;
-  margin-top: 0px;
-  margin-left: 64px;
-  animation: abox3 4s 1s forwards ease-in-out infinite;
-}
-
-@keyframes abox1 {
+@keyframes swing {
   0% {
-    width: 112px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
-  }
-
-  12.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
+    transform: rotate(0deg);
+    animation-timing-function: ease-out;
   }
 
   25% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
-  }
-
-  37.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
+    transform: rotate(70deg);
+    animation-timing-function: ease-in;
   }
 
   50% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
-  }
-
-  62.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
-  }
-
-  75% {
-    width: 48px;
-    height: 112px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  87.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  100% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
+    transform: rotate(0deg);
+    animation-timing-function: linear;
   }
 }
 
-@keyframes abox2 {
+@keyframes swing2 {
   0% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  12.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  25% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  37.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
+    transform: rotate(0deg);
+    animation-timing-function: linear;
   }
 
   50% {
-    width: 112px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 0px;
-  }
-
-  62.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
+    transform: rotate(0deg);
+    animation-timing-function: ease-out;
   }
 
   75% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
-  }
-
-  87.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
-  }
-
-  100% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
+    transform: rotate(-70deg);
+    animation-timing-function: ease-in;
   }
 }
 
-@keyframes abox3 {
-  0% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
-  }
-
-  12.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 0px;
-    margin-left: 64px;
-  }
-
-  25% {
-    width: 48px;
-    height: 112px;
-    margin-top: 0px;
-    margin-left: 64px;
-  }
-
-  37.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 64px;
-  }
-
-  50% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 64px;
-  }
-
-  62.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 64px;
-  }
-
-  75% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 64px;
-  }
-
-  87.5% {
-    width: 48px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 64px;
-  }
-
-  100% {
-    width: 112px;
-    height: 48px;
-    margin-top: 64px;
-    margin-left: 0px;
-  }
-}
 

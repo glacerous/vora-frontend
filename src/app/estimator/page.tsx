@@ -42,12 +42,11 @@ const LogoMark = () => (
 );
 
 const UiverseLoader = () => (
-  <div className="loader-container">
-    <div className="loader">
-      <div className="box1"></div>
-      <div className="box2"></div>
-      <div className="box3"></div>
-    </div>
+  <div className="newtons-cradle">
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
   </div>
 );
 
@@ -399,10 +398,8 @@ export default function Dashboard() {
               </h3>
 
               {loading ? (
-                <div className="flex flex-col items-center justify-center py-8 gap-4">
-                  <div className="scale-50 h-[56px] w-[56px] flex items-center justify-center">
-                    <UiverseLoader />
-                  </div>
+                <div className="flex items-center justify-center py-8">
+                  <UiverseLoader />
                 </div>
               ) : (
                 <div className="relative pl-4 border-l border-slate-200 space-y-4">

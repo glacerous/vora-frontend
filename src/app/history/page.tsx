@@ -29,12 +29,11 @@ const LogoMark = () => (
 );
 
 const UiverseLoader = () => (
-  <div className="loader-container">
-    <div className="loader">
-      <div className="box1"></div>
-      <div className="box2"></div>
-      <div className="box3"></div>
-    </div>
+  <div className="newtons-cradle">
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
   </div>
 );
 
