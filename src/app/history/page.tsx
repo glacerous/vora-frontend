@@ -178,79 +178,36 @@ export default function HistoryPage() {
         <div className="max-w-5xl mx-auto">
 
           {/* Heading Section */}
-          <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-slate-200/50 pb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forest Registry Dashboard</span>
-              </div>
-              <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] mb-2">
-                Scan Gallery
-              </h1>
-              <p className="text-sm text-[#191919]/60 max-w-2xl leading-relaxed">
-                Browse all public tree scan results and forest carbon estimations.
-              </p>
+          <div className="mb-10 border-b border-slate-200/50 pb-6">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forest Registry Dashboard</span>
             </div>
-            {scans.length > 0 && (
-              <div className="text-xs font-semibold text-slate-500 bg-white border border-slate-200 shadow-sm rounded-xl px-3.5 py-2 self-start md:self-auto">
-                Total Forest Size: <span className="text-[#191919] font-bold">{scans.length} Tree{scans.length !== 1 ? "s" : ""}</span>
-              </div>
-            )}
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] mb-2">
+              Scan Gallery
+            </h1>
+            <p className="text-sm text-[#191919]/60 max-w-2xl leading-relaxed">
+              Browse all public tree scan results and forest carbon estimations.
+            </p>
           </div>
 
           {/* Main Content Interface (Rendered only once data is loaded or API call completes) */}
           {scans.length > 0 ? (
             <div>
-              {/* Real-time Aggregate Dashboard Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Forest Size</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-serif text-[#191919]">{scans.length}</span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">monitored trees</span>
-                  </div>
-                </div>
-                
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 block mb-1">Carbon Capture (CO₂e)</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-serif text-emerald-950 font-semibold">
-                      {totalCO2e.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wide">kg sequestered</span>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Avg Trunk Diameter</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-serif text-[#191919]">
-                      {averageDBH.toFixed(1)}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">cm DBH</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Toolbar: Search input + Segmented Filter Tabs */}
               <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 border border-slate-200/60 p-3 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                {/* Search Pill */}
-                <div className="relative w-full max-w-sm flex items-center bg-white border border-slate-200 rounded-full focus-within:ring-2 focus-within:ring-[#191919]/10 focus-within:border-[#191919] transition-all">
+                {/* Search input with custom Uiverse style */}
+                <div className="search-group-custom">
+                  <svg className="search-icon-custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tree code (e.g. POHON-6144)…"
-                    className="w-full pl-9 pr-4 py-2 bg-transparent focus:outline-none text-xs font-semibold text-[#191919] placeholder:text-slate-400"
+                    placeholder="Search tree code…"
+                    className="search-input-custom"
                   />
-                  <svg
-                    className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 pointer-events-none"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
                 </div>
 
                 {/* Segmented Filter Tabs */}
@@ -278,106 +235,74 @@ export default function HistoryPage() {
               {/* Results Grid / Filter Empty State */}
               {filteredScans.length > 0 ? (
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
                     {filteredScans.map((record, idx) => {
                       const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
-                      const indexProgress = Math.min(((record.co2e_kg || 0) / 1000) * 100, 100);
-                      
                       return (
-                        <Link
+                        <div
                           key={`${record.id}-${idx}`}
-                          href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
-                          className="relative rounded-2xl overflow-hidden group border border-slate-200/60 hover:border-slate-350 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 bg-white flex flex-col p-3"
+                          className="vora-card"
                         >
-                          {/* Polaroid Framed Top Portion */}
-                          <div className="h-44 w-full relative overflow-hidden bg-slate-50 rounded-xl border border-slate-100">
-                            {record.thumbnail_url ? (
-                              <img
-                                src={record.thumbnail_url}
-                                alt={`Thumbnail for ${record.tree_code}`}
-                                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center text-slate-350 bg-slate-50">
-                                <TreeIcon className="w-6 h-6 text-slate-300 mb-1" />
-                                <span className="text-[9px] uppercase font-bold tracking-widest opacity-60">No Preview</span>
+                          <section className="vora-card-hero">
+                            <header className="vora-card-hero-header">
+                              <div className="vora-card-job-icon overflow-hidden rounded-xl border border-amber-200/50 w-[45px] h-[45px] bg-white flex items-center justify-center shrink-0">
+                                {record.thumbnail_url ? (
+                                  <img
+                                    src={record.thumbnail_url}
+                                    alt={`Thumbnail for ${record.tree_code}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <TreeIcon className="w-5 h-5 text-amber-500" />
+                                )}
                               </div>
-                            )}
-                            
-                            <div className="absolute top-2.5 left-2.5 flex gap-1 items-center z-10">
-                              <span className="text-[8px] font-bold uppercase tracking-widest bg-[#191919]/60 backdrop-blur-sm text-white px-2 py-0.5 rounded">
-                                #{record.id}
-                              </span>
-                              {isInvalid && (
-                                <span className="text-[8px] font-bold uppercase tracking-widest bg-rose-600 text-white px-2 py-0.5 rounded">
-                                  Invalid
+                              <div className="vora-card-icon">
+                                <svg
+                                  height="20"
+                                  width="20"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                  ></path>
+                                </svg>
+                              </div>
+                            </header>
+                            <p className="vora-card-job-title tracking-tight font-sans font-extrabold text-[#141417]">
+                              {record.tree_code}
+                            </p>
+                          </section>
+
+                          <footer className="vora-card-footer">
+                            <div className="vora-card-job-summary flex flex-col items-start">
+                              <div className="card__job text-base font-extrabold text-[#141417] leading-none mb-1">
+                                {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
+                              </div>
+                              {isInvalid ? (
+                                <span className="text-[10px] text-rose-500 font-semibold font-sans">
+                                  Invalid scan
                                 </span>
+                              ) : (
+                                <div className="text-[10px] text-slate-400 font-semibold font-sans">
+                                  {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
+                                </div>
                               )}
                             </div>
-                          </div>
-
-                          {/* Polaroid Framed Bottom Portion */}
-                          <div className="pt-4 pb-2 px-1 flex-1 flex flex-col bg-white">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider">
-                                {formatDate(record.scan_date)}
-                              </span>
-                              <span className="text-[9px] text-slate-450 font-mono">
-                                IDX: {record.id}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-[#191919] group-hover:text-slate-600 transition-colors">
-                                {record.tree_code}
-                              </h3>
-                              <svg
-                                className="w-3.5 h-3.5 text-slate-400 transform translate-x-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-all duration-300"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            <div className="vora-card-view-save">
+                              <Link
+                                href={`/estimator?code=${encodeURIComponent(record.tree_code)}`}
+                                className="vora-card-btn"
                               >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                              </svg>
+                                View
+                              </Link>
                             </div>
-
-                            <div className="h-px bg-slate-100 my-3" />
-
-                            {isInvalid ? (
-                              <span className="text-rose-500 text-[10px] font-medium tracking-wide">
-                                Points3D missing (reprocessing required)
-                              </span>
-                            ) : (
-                              <div className="flex flex-col gap-3.5">
-                                <div className="grid grid-cols-2 gap-2 text-xs font-mono text-[#191919]">
-                                  <div>
-                                    <span className="block text-[8px] uppercase tracking-widest text-slate-400 font-sans font-bold">DBH</span>
-                                    <strong>{record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "-"}</strong>
-                                  </div>
-                                  <div>
-                                    <span className="block text-[8px] uppercase tracking-widest text-slate-400 font-sans font-bold">Height</span>
-                                    <strong>{record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m` : "-"}</strong>
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-1">
-                                    <div 
-                                      className="h-full bg-emerald-500 rounded-full transition-all duration-500" 
-                                      style={{ width: `${indexProgress}%` }}
-                                    />
-                                  </div>
-                                  <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold">
-                                    <span>CO₂e Sequestration Index</span>
-                                    <span className="text-emerald-700 font-mono font-bold">
-                                      {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg` : "-"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </Link>
+                          </footer>
+                        </div>
                       );
                     })}
                   </div>
