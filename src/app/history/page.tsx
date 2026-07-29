@@ -290,26 +290,6 @@ export default function HistoryPage() {
                               }`}>
                                 #{record.id}
                               </span>
-                              <div className={`vora-card-icon backdrop-blur-sm border transition-all ${
-                                record.thumbnail_url 
-                                  ? "bg-black/20 border-white/10 text-white hover:bg-black/30" 
-                                  : "bg-white border-slate-200 text-slate-500"
-                              }`}>
-                                <svg
-                                  height="14"
-                                  width="14"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-                                    strokeLinejoin="round"
-                                    strokeLinecap="round"
-                                  ></path>
-                                </svg>
-                              </div>
                             </header>
 
                             <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
