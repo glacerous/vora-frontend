@@ -149,21 +149,12 @@ export default function HistoryPage() {
         </Link>
 
         {/* Center links (matching landing page perfectly) */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           <Link href="/#product" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Product
           </Link>
-          <Link href="/#solutions" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Solutions
-          </Link>
-          <Link href="/#pricing" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Pricing
-          </Link>
           <Link href="/history" className="text-sm text-[#191919] font-medium transition-colors duration-200">
             Gallery
-          </Link>
-          <Link href="/estimator" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Estimator
           </Link>
         </div>
       </nav>

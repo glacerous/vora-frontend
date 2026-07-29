@@ -50,21 +50,12 @@ export default function Home() {
         </Link>
 
         {/* Center links (hidden below md) */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           <a href="#product" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Product
           </a>
-          <a href="#solutions" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Solutions
-          </a>
-          <a href="#pricing" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Pricing
-          </a>
           <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Gallery
-          </Link>
-          <Link href="/estimator" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Estimator
           </Link>
         </div>
       </nav>
