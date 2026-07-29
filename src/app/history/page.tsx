@@ -179,10 +179,6 @@ export default function HistoryPage() {
 
           {/* Heading Section */}
           <div className="mb-10 border-b border-slate-200/50 pb-6">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forest Registry Dashboard</span>
-            </div>
             <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] mb-2">
               Scan Gallery
             </h1>
