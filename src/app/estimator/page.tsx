@@ -164,9 +164,8 @@ export default function Dashboard() {
 
       {/* ── Navbar — 100% identical to landing page ──────── */}
       <nav className="fixed top-0 left-0 right-0 z-55 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
-        <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
-          <LogoMark />
-          <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
+        <Link href="/" className="flex items-center cursor-pointer">
+          <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
         </Link>
 
         {/* Center links (matching landing page perfectly) */}
