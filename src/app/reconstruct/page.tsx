@@ -169,12 +169,12 @@ export default function Reconstruct() {
           <LogoMark />
           <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          <Link href="/#product" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+            Product
+          </Link>
           <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Gallery
-          </Link>
-          <Link href="/estimator" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Estimator
           </Link>
         </div>
       </nav>

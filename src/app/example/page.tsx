@@ -127,43 +127,48 @@ export default function ExampleDashboard() {
           <span className="font-semibold text-base tracking-tight text-[#191919]">Vora</span>
         </Link>
 
-        {/* Centre: active scan identifier */}
-        <span className="hidden sm:block text-sm text-[#191919]/50 tracking-wide">
-          Example Scan &mdash; <span className="text-[#191919] font-medium">{activeTreeCode}</span>
-        </span>
-
-        {/* Right */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarOpen((v) => !v)}
-            className="px-5 py-2.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
-          >
-            {sidebarOpen ? "Close" : "Scans"}
-          </button>
-          <Link
-            href="/history"
-            className="hidden sm:block text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200"
-          >
-            Gallery
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          <Link href="/#product" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+            Product
           </Link>
-          <Link
-            href="/estimator"
-            className="hidden sm:block text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200"
-          >
-            Estimator
+          <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+            Gallery
           </Link>
         </div>
       </nav>
 
+      {/* Floating Sidebar Toggle Button */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-[88px] right-6 z-30 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95"
+          aria-label="Toggle Scans Drawer"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </button>
+      )}
+
       {/* ── Slide-in sidebar — scan list ──────────────────────── */}
       <div
-        className={`absolute top-[65px] right-0 bottom-0 z-20 w-72 bg-white border-l border-slate-100 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`absolute top-[65px] right-0 bottom-0 z-20 w-72 bg-white border-l border-slate-100 flex flex-col transition-transform duration-300 ease-in-out pt-[12px] ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* Drawer Header with Close Button */}
+        <div className="px-5 pt-4 pb-2 flex items-center justify-between">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tree Lookup</p>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-[10px] transition"
+          >
+            ✕
+          </button>
+        </div>
+
         {/* Search inside sidebar */}
-        <div className="p-5 border-b border-slate-100">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Tree Lookup</p>
+        <div className="px-5 pb-5 border-b border-slate-100">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="text"
