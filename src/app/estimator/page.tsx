@@ -41,6 +41,16 @@ const LogoMark = () => (
   </svg>
 );
 
+const UiverseLoader = () => (
+  <div className="loader-container">
+    <div className="loader">
+      <div className="box1"></div>
+      <div className="box2"></div>
+      <div className="box3"></div>
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   const [searchInput, setSearchInput] = useState("");
   const [activeTreeCode, setActiveTreeCode] = useState("");
@@ -142,7 +152,7 @@ export default function Dashboard() {
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             {loading ? (
-              <div className="w-7 h-7 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
+              <UiverseLoader />
             ) : (
               <div className="text-center">
                 <p className="text-sm text-slate-400 font-medium tracking-wide mb-1">No scan loaded</p>
@@ -389,8 +399,10 @@ export default function Dashboard() {
               </h3>
 
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
+                <div className="flex flex-col items-center justify-center py-8 gap-4">
+                  <div className="scale-50 h-[56px] w-[56px] flex items-center justify-center">
+                    <UiverseLoader />
+                  </div>
                 </div>
               ) : (
                 <div className="relative pl-4 border-l border-slate-200 space-y-4">

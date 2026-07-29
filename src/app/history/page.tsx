@@ -28,6 +28,16 @@ const LogoMark = () => (
   </svg>
 );
 
+const UiverseLoader = () => (
+  <div className="loader-container">
+    <div className="loader">
+      <div className="box1"></div>
+      <div className="box2"></div>
+      <div className="box3"></div>
+    </div>
+  </div>
+);
+
 export default function HistoryPage() {
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -396,8 +406,8 @@ export default function HistoryPage() {
 
           {/* Center Loading Spinner for first page */}
           {loading && scans.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-              <div className="w-8 h-8 border-3 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
+              <UiverseLoader />
               <p className="text-xs text-slate-450 font-medium">Loading gallery scans…</p>
             </div>
           )}
