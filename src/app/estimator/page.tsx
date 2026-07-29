@@ -59,6 +59,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sceneLoaded, setSceneLoaded] = useState(false);
 
   const fetchTreeHistory = async (code: string) => {
     setLoading(true);
@@ -122,6 +123,20 @@ export default function Dashboard() {
     return () => window.removeEventListener("keydown", handleGlobalKeydown);
   }, []);
 
+  // Listen for scene loaded message from iframe
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data === 'vora_scene_loaded') setSceneLoaded(true);
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // Reset scene loaded state when scan changes so the UI hides again while new scene loads
+  useEffect(() => {
+    if (currentScan) setSceneLoaded(false);
+  }, [currentScan?.id]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchInput.trim()) setActiveTreeCode(searchInput.trim());
@@ -143,7 +158,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-0 bg-white pt-[68px]">
         {currentScan ? (
           <iframe
-            src={`${BACKEND_URL}/viewer.html?v=10&url=${encodeURIComponent(currentScan.splat_file_url)}`}
+            src={`${BACKEND_URL}/viewer.html?v=11&url=${encodeURIComponent(currentScan.splat_file_url)}`}
             allow="xr-spatial-tracking; autoplay; fullscreen"
             className="w-full h-full border-none"
             title="3D Tree Gaussian Splat Viewer"
@@ -183,6 +198,7 @@ export default function Dashboard() {
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
+          style={{ opacity: sceneLoaded ? 1 : 0, pointerEvents: sceneLoaded ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.1s' }}
           className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95"
           aria-label="Toggle Details Drawer"
         >
@@ -194,7 +210,10 @@ export default function Dashboard() {
 
       {/* ── Carbon metrics — Unified Glassmorphism Command Dock ──────────────── */}
       {currentScan && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto">
+        <div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto"
+          style={{ opacity: sceneLoaded ? 1 : 0, transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`, transition: 'opacity 0.5s ease, transform 0.5s ease', pointerEvents: sceneLoaded ? 'auto' : 'none' }}
+        >
           <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
             
             {/* DBH */}
@@ -254,6 +273,7 @@ export default function Dashboard() {
         className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ opacity: sceneLoaded ? 1 : 0, pointerEvents: sceneLoaded ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.15s, transform 0.3s ease' }}
       >
         {/* Sidebar Header */}
         <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
