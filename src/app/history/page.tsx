@@ -37,9 +37,29 @@ const UiverseLoader = () => (
   </div>
 );
 
+const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="1.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 22V12" />
+    <path d="M12 12L8 8" />
+    <path d="M12 10L16 6" />
+    <path d="M12 15L7 10" />
+    <path d="M12 13L17 8" />
+    <path d="M12 7L9 4" />
+    <path d="M12 5L15 2" />
+  </svg>
+);
+
 export default function HistoryPage() {
   const [scans, setScans] = useState<ScanRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -279,7 +299,7 @@ export default function HistoryPage() {
                               />
                             ) : (
                               <div className="w-full h-full flex flex-col items-center justify-center text-slate-350 bg-slate-50">
-                                <span className="text-2xl mb-1">🌳</span>
+                                <TreeIcon className="w-6 h-6 text-slate-300 mb-1" />
                                 <span className="text-[9px] uppercase font-bold tracking-widest opacity-60">No Preview</span>
                               </div>
                             )}
@@ -381,7 +401,7 @@ export default function HistoryPage() {
               ) : (
                 /* Search Filter Empty State */
                 <div className="flex flex-col items-center justify-center py-20 text-center text-slate-350 gap-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <span className="text-3xl opacity-50">🌳</span>
+                  <TreeIcon className="w-10 h-10 text-slate-300 mb-1" />
                   <p className="text-sm font-semibold text-slate-455">No matching scans found</p>
                   <p className="text-xs text-slate-350 max-w-xs mt-0.5">Try searching for a different tree code or adjust your query filter.</p>
                 </div>
@@ -391,7 +411,7 @@ export default function HistoryPage() {
             /* Database is empty (scans.length === 0) */
             !loading && !error && (
               <div className="flex flex-col items-center justify-center py-20 text-center text-slate-350 gap-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <span className="text-4xl opacity-50">🌳</span>
+                <TreeIcon className="w-12 h-12 text-slate-300 mb-1" />
                 <p className="text-sm font-semibold mt-2 text-slate-400">No scans found in the gallery</p>
                 <p className="text-xs text-slate-300 max-w-xs mt-1">Upload a video in the New Scan page to generate your first 3D reconstruction.</p>
               </div>
