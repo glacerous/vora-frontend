@@ -243,25 +243,43 @@ export default function HistoryPage() {
                           key={`${record.id}-${idx}`}
                           className="vora-card"
                         >
-                          <section className="vora-card-hero">
-                            <header className="vora-card-hero-header">
-                              <div className="vora-card-job-icon overflow-hidden rounded-xl border border-amber-200/50 w-[45px] h-[45px] bg-white flex items-center justify-center shrink-0">
-                                {record.thumbnail_url ? (
-                                  <img
-                                    src={record.thumbnail_url}
-                                    alt={`Thumbnail for ${record.tree_code}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <TreeIcon className="w-5 h-5 text-amber-500" />
-                                )}
+                          <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
+                            {/* Background Image/Icon filling the container */}
+                            {record.thumbnail_url ? (
+                              <img
+                                src={record.thumbnail_url}
+                                alt={`Thumbnail for ${record.tree_code}`}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-amber-500/10 bg-[#fef4e2]">
+                                <TreeIcon className="w-16 h-16" />
                               </div>
-                              <div className="vora-card-icon">
+                            )}
+
+                            {/* Dark text-overlay gradient for image readability */}
+                            {record.thumbnail_url && (
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-0" />
+                            )}
+
+                            <header className="vora-card-hero-header relative z-10 w-full">
+                              <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
+                                record.thumbnail_url 
+                                  ? "bg-black/30 border-white/10 text-white" 
+                                  : "bg-white/40 border-slate-200 text-slate-600"
+                              }`}>
+                                #{record.id}
+                              </span>
+                              <div className={`vora-card-icon backdrop-blur-sm border transition-all ${
+                                record.thumbnail_url 
+                                  ? "bg-black/20 border-white/10 text-white hover:bg-black/30" 
+                                  : "bg-white border-slate-200 text-slate-500"
+                              }`}>
                                 <svg
-                                  height="20"
-                                  width="20"
+                                  height="14"
+                                  width="14"
                                   stroke="currentColor"
-                                  strokeWidth="1.5"
+                                  strokeWidth="2"
                                   viewBox="0 0 24 24"
                                   fill="none"
                                 >
@@ -273,7 +291,12 @@ export default function HistoryPage() {
                                 </svg>
                               </div>
                             </header>
-                            <p className="vora-card-job-title tracking-tight font-sans font-extrabold text-[#141417]">
+
+                            <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
+                              record.thumbnail_url 
+                                ? "text-white" 
+                                : "text-[#141417]"
+                            }`}>
                               {record.tree_code}
                             </p>
                           </section>

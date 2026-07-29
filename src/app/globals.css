@@ -113,12 +113,12 @@ html::-webkit-scrollbar {
   width: 100%;
   height: 45px;
   padding-left: 2.5rem;
-  box-shadow: 0 0 0 1.5px #2b2c37, 0 0 25px -17px #000;
+  box-shadow: 0 0 0 1.5px #cbd5e1, 0 0 25px -17px #000;
   border: 0;
   border-radius: 12px;
-  background-color: #16171d;
+  background-color: #ffffff;
   outline: none;
-  color: #bdbecb;
+  color: #191919;
   font-size: 13px;
   font-weight: 500;
   transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
@@ -127,25 +127,25 @@ html::-webkit-scrollbar {
 }
 
 .search-input-custom::placeholder {
-  color: #bdbecb;
+  color: #94a3b8;
 }
 
 .search-input-custom:hover {
-  box-shadow: 0 0 0 2.5px #2f303d, 0px 0px 25px -15px #000;
+  box-shadow: 0 0 0 2px #cbd5e1, 0px 0px 25px -15px #000;
 }
 
 .search-input-custom:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
 }
 
 .search-input-custom:focus {
-  box-shadow: 0 0 0 2.5px #2f303d;
+  box-shadow: 0 0 0 2px #191919;
 }
 
 .search-icon-custom {
   position: absolute;
   left: 1rem;
-  fill: #bdbecb;
+  fill: #64748b;
   width: 1rem;
   height: 1rem;
   pointer-events: none;
