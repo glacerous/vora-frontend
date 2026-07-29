@@ -186,27 +186,26 @@ export default function Dashboard() {
         </div>
 
         {/* Right CTA button */}
-        <button
-          onClick={() => setSidebarOpen((v) => !v)}
-          className="px-4 py-2.5 bg-[#191919] text-white text-xs font-semibold rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm flex items-center gap-2"
+        <Link
+          href="/estimator"
+          className="px-5 py-2.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-sm"
         >
-          {sidebarOpen ? (
-            <>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span>Close</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-              </svg>
-              <span>Details</span>
-            </>
-          )}
-        </button>
+          View Estimator
+        </Link>
       </nav>
+
+      {/* Floating Sidebar Toggle Button */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95"
+          aria-label="Toggle Details Drawer"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </button>
+      )}
 
       {/* ── Carbon metrics — Unified Glassmorphism Command Dock ──────────────── */}
       {currentScan && (
