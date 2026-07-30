@@ -29,6 +29,8 @@ export default function Reconstruct() {
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [removeBackground] = useState(false);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const isCancelledRef = React.useRef(false);
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +143,9 @@ export default function Reconstruct() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           tree_code: selectedCode,
-          remove_background: removeBackground
+          remove_background: removeBackground,
+          gps_lat: latitude ? parseFloat(latitude) : null,
+          gps_lon: longitude ? parseFloat(longitude) : null
         }),
       });
       if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Reconstruction queuing failed"); }
@@ -257,6 +261,38 @@ export default function Reconstruct() {
                     className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
                     disabled={loading}
                   />
+                </div>
+
+                {/* GPS Coordinates */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                      Latitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={latitude}
+                      onChange={(e) => setLatitude(e.target.value)}
+                      placeholder="e.g. -6.2000"
+                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                      Longitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={longitude}
+                      onChange={(e) => setLongitude(e.target.value)}
+                      placeholder="e.g. 106.8000"
+                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 {/* Video tab */}
