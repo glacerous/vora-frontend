@@ -19,6 +19,14 @@ interface ScanRecord {
     common_name: string;
     confidence: number;
   }>;
+  wood_density_used?: number;
+  wood_density_source?: string;
+  climate_zone_detected?: string;
+  formula_used?: string;
+  agb_kg?: number;
+  bgb_kg?: number;
+  gps_lat?: number;
+  gps_lon?: number;
 }
 
 interface PipelineStatus {
@@ -60,6 +68,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sceneLoaded, setSceneLoaded] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
 
   const fetchTreeHistory = async (code: string) => {
     setLoading(true);
@@ -403,6 +412,94 @@ export default function Dashboard() {
               ) : (
                 <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-100 text-center">
                   <span className="text-xs text-slate-400">Species classification unavailable for this scan</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Section 2.5: How This Was Calculated (Expandable Panel) */}
+          {currentScan && (
+            <div className="border border-slate-200/80 rounded-2xl bg-slate-50/40 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <button
+                onClick={() => setCalcOpen(!calcOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100/80 text-left transition-all duration-200"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-slate-450" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 7h.01M15 11h.01M15 7h.01M12 14h.01M9 11h.01M18 20V4a1 1 0 00-1-1H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1z" />
+                  </svg>
+                  How this was calculated
+                </span>
+                <span className="text-slate-450 text-[10px] font-bold">
+                  {calcOpen ? "▲" : "▼"}
+                </span>
+              </button>
+
+              {calcOpen && (
+                <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-slate-200/50 bg-white font-sans divide-y divide-slate-100">
+                  {/* Step 1: Input dimensions */}
+                  <div className="space-y-1.5">
+                    <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
+                    <div className="grid grid-cols-2 gap-2 text-slate-600 font-medium">
+                      <div>Diameter (DBH): <span className="font-semibold text-[#191919]">{currentScan.dbh_cm?.toFixed(1) ?? "-"} cm</span></div>
+                      <div>Tree Height: <span className="font-semibold text-[#191919]">{currentScan.tinggi_m?.toFixed(1) ?? "-"} m</span></div>
+                    </div>
+                  </div>
+
+                  {/* Step 2: Species & Wood Density */}
+                  <div className="pt-3 space-y-1.5">
+                    <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
+                    <div className="space-y-1 text-slate-600 font-medium">
+                      <div>Species Matched: <span className="font-semibold text-[#191919] italic">
+                        {currentScan.species_predictions?.[0] 
+                          ? `${currentScan.species_predictions[0].scientific_name} (${currentScan.species_predictions[0].confidence.toFixed(1)}%)` 
+                          : "None (Generic Fallback)"}
+                      </span></div>
+                      <div>Wood Density (ρ): <span className="font-semibold text-[#191919]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
+                      <div>Source: <span className="font-semibold text-[#191919] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Climate Zone */}
+                  <div className="pt-3 space-y-1.5">
+                    <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">3. Climate & Allometric Formula</p>
+                    <div className="space-y-1 text-slate-600 font-medium">
+                      <div>GPS Coordinates: <span className="font-semibold text-[#191919]">
+                        {currentScan.gps_lat !== null && currentScan.gps_lon !== null && currentScan.gps_lat !== undefined && currentScan.gps_lon !== undefined
+                          ? `${currentScan.gps_lat.toFixed(4)}, ${currentScan.gps_lon.toFixed(4)}`
+                          : "Not Available"}
+                      </span></div>
+                      <div>Climate Zone (Köppen): <span className="font-semibold text-[#191919]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
+                      <div>Formula Used: <span className="font-semibold text-emerald-800">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Biomass & Carbon Calculations */}
+                  <div className="pt-3 space-y-2">
+                    <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">4. Calculation Steps</p>
+                    <div className="space-y-1.5 text-slate-600 font-medium font-sans">
+                      <div className="flex justify-between">
+                        <span>Above-Ground Biomass (AGB):</span>
+                        <span className="font-semibold text-[#191919]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Below-Ground Biomass (BGB):</span>
+                        <span className="font-semibold text-[#191919]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(AGB × 0.24)</span></span>
+                      </div>
+                      <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5 font-bold">
+                        <span className="text-[#191919]">Total Dry Biomass:</span>
+                        <span className="text-[#191919]">{currentScan.biomassa_kg?.toFixed(1) ?? "-"} kg</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Stored Carbon Stock:</span>
+                        <span className="font-semibold text-emerald-800">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-emerald-600/70 font-normal">(Biomass × 0.47)</span></span>
+                      </div>
+                      <div className="flex justify-between border-t border-slate-150 pt-1.5 font-bold text-emerald-950">
+                        <span>CO₂ Equivalent (CO₂e):</span>
+                        <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(Carbon × 3.67)</span></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
