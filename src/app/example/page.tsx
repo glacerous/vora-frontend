@@ -130,7 +130,7 @@ export default function ExampleDashboard() {
           <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Home
           </Link>
-          <Link href="/history" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+          <Link href="/gallery" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Gallery
           </Link>
         </div>
