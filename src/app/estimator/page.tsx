@@ -132,10 +132,16 @@ export default function Dashboard() {
     return () => window.removeEventListener("keydown", handleGlobalKeydown);
   }, []);
 
-  // Listen for scene loaded message from iframe
+  // Listen for messages from iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (e.data === 'vora_scene_loaded') setSceneLoaded(true);
+      if (e.data === 'vora_scene_loaded') {
+        setSceneLoaded(true);
+      } else if (e.data?.type === 'vora_metrics_updated') {
+        if (e.data.tree_code) {
+          fetchTreeHistory(e.data.tree_code);
+        }
+      }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
