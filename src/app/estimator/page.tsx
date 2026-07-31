@@ -298,14 +298,26 @@ export default function Dashboard() {
       {/* ── Carbon metrics — Unified Glassmorphism Command Dock ──────────────── */}
       {currentScan && (
         <div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto flex flex-col gap-2"
           style={{ opacity: sceneLoaded ? 1 : 0, transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`, transition: 'opacity 0.5s ease, transform 0.5s ease', pointerEvents: sceneLoaded ? 'auto' : 'none' }}
         >
+          {currentScan.confidence_note?.includes("WARNING") && (
+            <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
+              <span className="text-sm shrink-0">⚠️</span>
+              <span>{currentScan.confidence_note}</span>
+            </div>
+          )}
+
           <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
             
             {/* DBH */}
             <div className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                {currentScan.confidence_note?.includes("WARNING") && (
+                  <span className="text-amber-500 font-bold text-xs" title="Warning: insufficient height">⚠️</span>
+                )}
+              </div>
               <div className="flex items-baseline">
                 <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
                 <span className="text-[11px] text-slate-400 font-medium ml-1">cm</span>
