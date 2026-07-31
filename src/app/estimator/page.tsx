@@ -27,6 +27,7 @@ interface ScanRecord {
   bgb_kg?: number;
   gps_lat?: number;
   gps_lon?: number;
+  thumbnail_url?: string;
 }
 
 interface PipelineStatus {
