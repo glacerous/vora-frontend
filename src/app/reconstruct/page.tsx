@@ -6,13 +6,7 @@ import { useRouter } from "next/navigation";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
-const LogoMark = () => (
-  <svg viewBox="0 0 256 256" fill="currentColor" className="w-6 h-6 text-[#191919]">
-    <path d="M 144 256 L 27.598 256 L 144 139.598 Z" />
-    <path d="M 256 207.5 L 200 256 L 200 56 L 0 56 L 48 0 L 256 0 Z" />
-    <path d="M 0 204.402 L 0 112 L 92.402 112 Z" />
-  </svg>
-);
+// ── Shared sub-components ───────────────────────────────────────────────────
 
 const UiverseLoader = () => (
   <div className="newtons-cradle">
@@ -23,9 +17,44 @@ const UiverseLoader = () => (
   </div>
 );
 
+// ── Types ───────────────────────────────────────────────────────────────────
+
+interface ScanRecord {
+  id: number;
+  scan_date: string;
+  tree_code: string;
+  dbh_cm: number | null;
+  tinggi_m: number | null;
+  biomassa_kg: number | null;
+  karbon_kg: number | null;
+  co2e_kg: number | null;
+  splat_file_url: string;
+  confidence_note?: string;
+  species_predictions?: Array<{
+    scientific_name: string;
+    common_name: string;
+    confidence: number;
+  }>;
+  wood_density_used?: number;
+  wood_density_source?: string;
+  climate_zone_detected?: string;
+  formula_used?: string;
+  agb_kg?: number | null;
+  bgb_kg?: number | null;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  thumbnail_url?: string;
+}
+
+// ── Main Page Component ─────────────────────────────────────────────────────
+
 export default function Reconstruct() {
   const router = useRouter();
+
+  // Phase management
   const [phase, setPhase] = useState<"upload" | "marking" | "processing" | "result">("upload");
+
+  // Upload form states
   const [activeTab, setActiveTab] = useState<"video" | "photos">("video");
   const [treeCode, setTreeCode] = useState("");
   const [frames, setFrames] = useState(60);
@@ -42,24 +71,26 @@ export default function Reconstruct() {
   const [longitude, setLongitude] = useState("");
   const isCancelledRef = React.useRef(false);
 
-  // Manual axis calibration states
-  const [calibrationMode, setCalibrationMode] = useState(false);
+  // Marking (Phase 2) states
   const [calibrationCode, setCalibrationCode] = useState("");
   const [calibrationPoints, setCalibrationPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
   const [calibrationImgSize, setCalibrationImgSize] = useState<{width: number, height: number} | null>(null);
   const [calibrationMousePos, setCalibrationMousePos] = useState<{x: number, y: number} | null>(null);
 
-  // Phase 3 (Processing) & Phase 4 (Result) states
-  const [activeTreeCode, setActiveTreeCode] = useState("");
+  // Processing (Phase 3) states
   const [pipelineStatus, setPipelineStatus] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [currentScan, setCurrentScan] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  // Result (Phase 4) states — mirrors original estimator/page.tsx exactly
+  const [activeTreeCode, setActiveTreeCode] = useState("");
+  const [currentScan, setCurrentScan] = useState<ScanRecord | null>(null);
+  const [history, setHistory] = useState<ScanRecord[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+
+  // Recalibration modal states (in Result phase)
   const [recalibModalOpen, setRecalibModalOpen] = useState(false);
   const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
   const [imgDimensions, setImgDimensions] = useState<{width: number, height: number} | null>(null);
@@ -68,12 +99,76 @@ export default function Reconstruct() {
   const [mousePos, setMousePos] = useState<{x: number, y: number} | null>(null);
   const lastSplatUrlRef = useRef<string | null>(null);
 
-  const fetchTreeHistory = async (code: string) => {
+  // ── URL sync helper ──────────────────────────────────────────────────────
+
+  /**
+   * FIX 2: Update the URL query params any time phase or activeTreeCode changes
+   * using router.replace (shallow, no full page reload).
+   */
+  const syncUrl = (newPhase: typeof phase, code?: string) => {
+    const params = new URLSearchParams();
+    if (code) params.set("code", code);
+    if (newPhase !== "upload") params.set("phase", newPhase);
+    const queryStr = params.toString();
+    router.replace(`/reconstruct${queryStr ? `?${queryStr}` : ""}`, { scroll: false });
+  };
+
+  // Wrapped setPhase that also syncs the URL
+  const transitionPhase = (newPhase: typeof phase, code?: string) => {
+    setPhase(newPhase);
+    syncUrl(newPhase, code ?? (activeTreeCode || undefined));
+  };
+
+  // ── Data fetching ────────────────────────────────────────────────────────
+
+  /**
+   * FIX 1: Fetch tree history with retry to handle D1 write-lag.
+   * After reconstruction completes, the record may take 1-3 seconds to appear
+   * in D1. We retry up to `maxRetries` times with `delayMs` between attempts.
+   */
+  const fetchTreeHistoryWithRetry = async (
+    code: string,
+    maxRetries = 5,
+    delayMs = 2000
+  ): Promise<void> => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/history/${code}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.success && data.history && data.history.length > 0) {
+          setHistory(data.history);
+          setCurrentScan(data.history[0]);
+          setSidebarOpen(true);
+          setError(null);
+          return; // success
+        }
+        // history is empty — may be a D1 write lag; retry unless last attempt
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, delayMs));
+        }
+      } catch (err: any) {
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, delayMs));
+        } else {
+          setError(err.message || "Failed to load scan data.");
+          setHistory([]);
+          setCurrentScan(null);
+        }
+      }
+    }
+    // Exhausted retries
+    setError(`No scan data found for "${code}" after waiting. The pipeline may have failed.`);
+    setHistory([]);
+    setCurrentScan(null);
+  };
+
+  const fetchTreeHistory = async (code: string): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${BACKEND_URL}/history/${code}`);
-      if (!res.ok) throw new Error(`Failed to fetch history (HTTP ${res.status})`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.success && data.history && data.history.length > 0) {
         setHistory(data.history);
@@ -93,7 +188,31 @@ export default function Reconstruct() {
     }
   };
 
-  // Phase 3 polling effect
+  // ── On-mount URL reading (FIX 2) ────────────────────────────────────────
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const urlPhase = params.get("phase") as typeof phase | null;
+
+    if (code) {
+      setActiveTreeCode(code);
+      if (urlPhase === "processing") {
+        // Resume polling — user refreshed during processing
+        setCalibrationCode(code);
+        setPhase("processing");
+      } else {
+        // Result view — direct load or ?phase=result
+        setPhase("result");
+        fetchTreeHistory(code);
+      }
+    }
+    // If no code, stay on upload phase (default)
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Phase 3 polling ──────────────────────────────────────────────────────
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (phase === "processing") {
@@ -104,12 +223,17 @@ export default function Reconstruct() {
             const data = await res.json();
             setPipelineStatus(data);
             if (data.stage === "done" && data.tree_code === calibrationCode) {
+              // FIX 1: use retry-enabled fetch so D1 write-lag is handled
+              const code = calibrationCode;
               setPhase("result");
-              setActiveTreeCode(calibrationCode);
-              await fetchTreeHistory(calibrationCode);
+              setActiveTreeCode(code);
+              syncUrl("result", code);
+              setLoading(true);
+              await fetchTreeHistoryWithRetry(code);
+              setLoading(false);
             } else if (data.stage === "error") {
               setError(data.error || "Reconstruction failed");
-              setPhase("upload");
+              transitionPhase("upload");
               setLoading(false);
             }
           }
@@ -123,15 +247,16 @@ export default function Reconstruct() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [phase, calibrationCode]);
+  }, [phase, calibrationCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Timer effect for Phase 3
+  // ── Timer for Phase 3 ───────────────────────────────────────────────────
+
   useEffect(() => {
     if (phase === "processing") {
       if (!timerRef.current) {
         setElapsedTime(0);
         timerRef.current = setInterval(() => {
-          setElapsedTime(prev => prev + 1);
+          setElapsedTime((prev) => prev + 1);
         }, 1000);
       }
     } else {
@@ -145,34 +270,22 @@ export default function Reconstruct() {
     };
   }, [phase]);
 
-  // Listen for messages from iframe
+  // ── Iframe message listener ──────────────────────────────────────────────
+
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (e.data === 'vora_scene_loaded') {
+      if (e.data === "vora_scene_loaded") {
         setSceneLoaded(true);
-      } else if (e.data?.type === 'vora_metrics_updated') {
-        if (e.data.tree_code) {
-          fetchTreeHistory(e.data.tree_code);
-        }
+      } else if (e.data?.type === "vora_metrics_updated") {
+        if (e.data.tree_code) fetchTreeHistory(e.data.tree_code);
       }
     };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, []);
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Seed tree code from URL params on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const code = new URLSearchParams(window.location.search).get("code");
-      if (code) {
-        setPhase("result");
-        setActiveTreeCode(code);
-        fetchTreeHistory(code);
-      }
-    }
-  }, []);
+  // ── Scene reload guard ───────────────────────────────────────────────────
 
-  // Reset scene loaded state on scan splat url change
   useEffect(() => {
     if (currentScan) {
       if (currentScan.splat_file_url !== lastSplatUrlRef.current) {
@@ -185,6 +298,8 @@ export default function Reconstruct() {
     }
   }, [currentScan?.id, currentScan?.splat_file_url]);
 
+  // ── Handlers ────────────────────────────────────────────────────────────
+
   const handleRecalibrate = async () => {
     if (clickedPoints.length < 2 || !imgDimensions || !currentScan) return;
     setRecalibLoading(true);
@@ -194,36 +309,32 @@ export default function Reconstruct() {
       const H_org = imgDimensions.height;
       const p1_org = [
         (clickedPoints[0].x / clickedPoints[0].dispWidth) * W_org,
-        (clickedPoints[0].y / clickedPoints[0].dispHeight) * H_org
+        (clickedPoints[0].y / clickedPoints[0].dispHeight) * H_org,
       ];
       const p2_org = [
         (clickedPoints[1].x / clickedPoints[1].dispWidth) * W_org,
-        (clickedPoints[1].y / clickedPoints[1].dispHeight) * H_org
+        (clickedPoints[1].y / clickedPoints[1].dispHeight) * H_org,
       ];
 
       const res = await fetch(`${BACKEND_URL}/scan/${currentScan.id}/recalculate`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          p1: p1_org,
-          p2: p2_org,
-          width: W_org,
-          height: H_org
-        })
+        body: JSON.stringify({ p1: p1_org, p2: p2_org, width: W_org, height: H_org }),
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || "Failed to recalculate scan");
-      }
+      if (!res.ok) throw new Error(data.detail || "Failed to recalculate scan");
 
       await fetchTreeHistory(currentScan.tree_code);
       setRecalibModalOpen(false);
       setClickedPoints([]);
 
-      const iframe = document.querySelector('iframe');
+      const iframe = document.querySelector("iframe");
       if (iframe?.contentWindow) {
-        iframe.contentWindow.postMessage({ type: 'vora_metrics_updated', tree_code: currentScan.tree_code }, '*');
+        iframe.contentWindow.postMessage(
+          { type: "vora_metrics_updated", tree_code: currentScan.tree_code },
+          "*"
+        );
       }
     } catch (err: any) {
       setRecalibError(err.message || "An unexpected error occurred.");
@@ -235,25 +346,32 @@ export default function Reconstruct() {
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setImgDimensions({
       width: e.currentTarget.naturalWidth,
-      height: e.currentTarget.naturalHeight
+      height: e.currentTarget.naturalHeight,
     });
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (treeCode.trim()) {
-      setActiveTreeCode(treeCode.trim());
-      fetchTreeHistory(treeCode.trim());
+      const code = treeCode.trim();
+      setActiveTreeCode(code);
+      syncUrl("result", code);
+      fetchTreeHistory(code);
     }
   };
 
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
-    } catch { return dateStr; }
+    } catch {
+      return dateStr;
+    }
   };
 
   const formatElapsed = (sec: number) => {
@@ -263,10 +381,17 @@ export default function Reconstruct() {
   };
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
+    if (e.target.files?.length) {
+      setVideoFile(e.target.files[0]);
+      setError(null);
+    }
   };
+
   const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) { setPhotoFiles(e.target.files); setError(null); }
+    if (e.target.files?.length) {
+      setPhotoFiles(e.target.files);
+      setError(null);
+    }
   };
 
   const handleCopy = async () => {
@@ -292,7 +417,7 @@ export default function Reconstruct() {
       isCancelledRef.current = true;
       setProgressMsg("Cancelling active job...");
       await fetch(`${BACKEND_URL}/cancel`, { method: "POST" });
-    } catch (err) {}
+    } catch {}
     setLoading(false);
     setProgressMsg("");
     setError("Reconstruction cancelled.");
@@ -309,7 +434,7 @@ export default function Reconstruct() {
       const r = await fetch(`${BACKEND_URL}/reconstruct`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           tree_code: code,
           remove_background: removeBackground,
           gps_lat: latitude ? parseFloat(latitude) : null,
@@ -317,23 +442,25 @@ export default function Reconstruct() {
           p1,
           p2,
           width,
-          height
+          height,
         }),
       });
-      if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Reconstruction queuing failed"); }
+      if (!r.ok) {
+        const d = await r.json();
+        throw new Error(d?.detail || "Reconstruction queuing failed");
+      }
 
       const data = await r.json();
       const finalCode = data.tree_code || code;
 
-      // Transition to Phase 3: Processing
-      setPhase("processing");
+      // Transition to Phase 3: Processing — sync URL
       setCalibrationCode(finalCode);
-      setCalibrationMode(false);
+      setActiveTreeCode(finalCode);
       setLoading(false);
+      transitionPhase("processing", finalCode);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
       setLoading(false);
-      setCalibrationMode(false);
     }
   };
 
@@ -347,18 +474,18 @@ export default function Reconstruct() {
     if (calibrationPoints.length < 2 || !calibrationImgSize) return;
     setLoading(true);
     setProgressMsg("Starting GPU reconstruction (Manual axis)…");
-    
+
     const W_org = calibrationImgSize.width;
     const H_org = calibrationImgSize.height;
     const p1_org = [
       (calibrationPoints[0].x / calibrationPoints[0].dispWidth) * W_org,
-      (calibrationPoints[0].y / calibrationPoints[0].dispHeight) * H_org
+      (calibrationPoints[0].y / calibrationPoints[0].dispHeight) * H_org,
     ];
     const p2_org = [
       (calibrationPoints[1].x / calibrationPoints[1].dispWidth) * W_org,
-      (calibrationPoints[1].y / calibrationPoints[1].dispHeight) * H_org
+      (calibrationPoints[1].y / calibrationPoints[1].dispHeight) * H_org,
     ];
-    
+
     await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org);
   };
 
@@ -367,10 +494,17 @@ export default function Reconstruct() {
     isCancelledRef.current = false;
     setError(null);
     setSubmittedCode(null);
-    const selectedCode = treeCode.trim() || `POHON-${Math.floor(1000 + Math.random() * 9000)}`;
+    const selectedCode =
+      treeCode.trim() || `POHON-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    if (activeTab === "video" && !videoFile) { setError("Please select a video file."); return; }
-    if (activeTab === "photos" && !photoFiles?.length) { setError("Please select at least one photo."); return; }
+    if (activeTab === "video" && !videoFile) {
+      setError("Please select a video file.");
+      return;
+    }
+    if (activeTab === "photos" && !photoFiles?.length) {
+      setError("Please select at least one photo.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -380,8 +514,14 @@ export default function Reconstruct() {
         fd.append("video", videoFile);
         fd.append("frames", frames.toString());
         fd.append("blur_thresh", blurThresh.toString());
-        const r = await fetch(`${BACKEND_URL}/upload_video`, { method: "POST", body: fd });
-        if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Video upload failed"); }
+        const r = await fetch(`${BACKEND_URL}/upload_video`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!r.ok) {
+          const d = await r.json();
+          throw new Error(d?.detail || "Video upload failed");
+        }
 
         let isExtracted = false;
         let attempts = 0;
@@ -392,19 +532,14 @@ export default function Reconstruct() {
 
         while (!isExtracted) {
           if (attempts >= maxAttempts) {
-            throw new Error("Frame extraction took too long. Please try a shorter video walkthrough.");
+            throw new Error(
+              "Frame extraction took too long. Please try a shorter video walkthrough."
+            );
           }
-          
-          if (isCancelledRef.current) {
-            throw new Error("Reconstruction cancelled.");
-          }
-          
+          if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
           await new Promise((resolve) => setTimeout(resolve, pollInterval));
           attempts++;
-
-          if (isCancelledRef.current) {
-            throw new Error("Reconstruction cancelled.");
-          }
+          if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
 
           const statusRes = await fetch(`${BACKEND_URL}/status`);
           if (!statusRes.ok) continue;
@@ -413,7 +548,6 @@ export default function Reconstruct() {
           if (statusData.stage === "error") {
             throw new Error(statusData.error || "Frame extraction failed on the server.");
           }
-
           if (statusData.stage === "extracted") {
             isExtracted = true;
           } else if (statusData.stage === "extracting") {
@@ -425,24 +559,87 @@ export default function Reconstruct() {
         const fd = new FormData();
         for (let i = 0; i < photoFiles.length; i++) fd.append("photos", photoFiles[i]);
         const r = await fetch(`${BACKEND_URL}/use_photos`, { method: "POST", body: fd });
-        if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Photos upload failed"); }
+        if (!r.ok) {
+          const d = await r.json();
+          throw new Error(d?.detail || "Photos upload failed");
+        }
       }
 
-      // Wait complete, transition to Trunk Marking
+      // Transition to Trunk Marking (Phase 2)
       setCalibrationCode(selectedCode);
       setCalibrationPoints([]);
       setCalibrationMousePos(null);
-      setCalibrationMode(true);
-      setPhase("marking");
       setLoading(false);
-
+      transitionPhase("marking", selectedCode);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
       setLoading(false);
     }
   };
 
-  // Render Phase 3 (Processing) Stage Loader
+  // ── Stepper Component ────────────────────────────────────────────────────
+
+  const Stepper = ({
+    currentPhase,
+  }: {
+    currentPhase: "upload" | "marking" | "processing" | "result";
+  }) => {
+    const steps = [
+      { key: "upload", label: "Upload Walkthrough" },
+      { key: "marking", label: "Mark Trunk Axis" },
+      { key: "processing", label: "GPU Processing" },
+      { key: "result", label: "3D Analytics" },
+    ];
+    return (
+      <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
+        {steps.map((s, idx) => {
+          const isActive = s.key === currentPhase;
+          const isCompleted =
+            (currentPhase === "marking" && idx < 1) ||
+            (currentPhase === "processing" && idx < 2) ||
+            (currentPhase === "result" && idx < 3);
+          return (
+            <React.Fragment key={s.key}>
+              <div className="flex flex-col items-center gap-1.5 flex-1">
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                    isActive
+                      ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110"
+                      : isCompleted
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-white text-slate-400 border-slate-200"
+                  }`}
+                >
+                  {isCompleted ? "✓" : idx + 1}
+                </span>
+                <span
+                  className={`text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
+                    isActive
+                      ? "text-[#191919]"
+                      : isCompleted
+                      ? "text-emerald-700"
+                      : "text-slate-400"
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {idx < steps.length - 1 && (
+                <div
+                  className={`h-[1px] w-4 sm:w-8 transition-colors ${
+                    isCompleted ? "bg-emerald-200" : "bg-slate-200"
+                  }`}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // ── Processing phase render ──────────────────────────────────────────────
+
   const renderProcessing = () => {
     const stages = [
       { id: "upload", label: "Upload walkthrough and extract frames" },
@@ -455,44 +652,45 @@ export default function Reconstruct() {
 
     const currentMsg = pipelineStatus?.message || "";
     let activeStageIndex = 0;
-    if (currentMsg.includes("Initializing geometry")) {
-      activeStageIndex = 1;
-    } else if (currentMsg.includes("Training Gaussians")) {
-      activeStageIndex = 2;
-    } else if (currentMsg.includes("Extracting point cloud")) {
-      activeStageIndex = 3;
-    } else if (currentMsg.includes("Computing DBH")) {
-      activeStageIndex = 4;
-    } else if (currentMsg.includes("Uploading results") || currentMsg.includes("Saving scan results")) {
+    if (currentMsg.includes("Initializing geometry")) activeStageIndex = 1;
+    else if (currentMsg.includes("Training Gaussians")) activeStageIndex = 2;
+    else if (currentMsg.includes("Extracting point cloud")) activeStageIndex = 3;
+    else if (currentMsg.includes("Computing DBH")) activeStageIndex = 4;
+    else if (
+      currentMsg.includes("Uploading results") ||
+      currentMsg.includes("Saving scan results")
+    )
       activeStageIndex = 5;
-    }
 
     return (
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
-        {/* Top Header */}
         <div className="flex justify-between items-center pb-4 border-b border-slate-100">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">Active Pipeline</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+              Active Pipeline
+            </span>
             <h3 className="font-serif text-xl text-[#191919] font-normal mt-2 tracking-tight">
               {calibrationCode}
             </h3>
           </div>
           <div className="text-right">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">Elapsed Time</span>
-            <span 
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">
+              Elapsed Time
+            </span>
+            <span
               className="text-4xl text-[#191919] tracking-wider leading-none"
-              style={{ fontFamily: 'var(--font-head)' }}
+              style={{ fontFamily: "var(--font-head)" }}
             >
               {formatElapsed(elapsedTime)}
             </span>
           </div>
         </div>
 
-        {/* Thumbnail focus and stage list split */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
-          {/* Representative thumbnail */}
           <div className="sm:col-span-5 flex flex-col gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Processing Asset</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              Processing Asset
+            </span>
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-inner flex items-center justify-center">
               <img
                 src={`${BACKEND_URL}/frames/0000.jpg`}
@@ -507,24 +705,33 @@ export default function Reconstruct() {
             </div>
           </div>
 
-          {/* Steplist */}
           <div className="sm:col-span-7 flex flex-col gap-3">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Pipeline Stages</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              Pipeline Stages
+            </span>
             <div className="flex flex-col gap-3.5">
               {stages.map((st, idx) => {
                 const isDone = idx < activeStageIndex;
                 const isCurrent = idx === activeStageIndex;
                 return (
                   <div key={st.id} className="flex items-center gap-3">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
-                      isDone 
-                        ? "bg-emerald-500 border-emerald-500 text-white text-[10px]"
-                        : isCurrent
+                    <span
+                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
+                        isDone
+                          ? "bg-emerald-500 border-emerald-500 text-white text-[10px]"
+                          : isCurrent
                           ? "bg-white border-[#191919] ring-2 ring-[#191919]/10 animate-pulse"
                           : "bg-white border-slate-200"
-                    }`}>
+                      }`}
+                    >
                       {isDone ? (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          viewBox="0 0 24 24"
+                        >
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       ) : isCurrent ? (
@@ -533,13 +740,15 @@ export default function Reconstruct() {
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                       )}
                     </span>
-                    <span className={`text-xs transition-colors ${
-                      isDone 
-                        ? "text-slate-450 line-through decoration-slate-300"
-                        : isCurrent
+                    <span
+                      className={`text-xs transition-colors ${
+                        isDone
+                          ? "text-slate-400 line-through decoration-slate-300"
+                          : isCurrent
                           ? "text-[#191919] font-bold"
                           : "text-slate-400"
-                    }`}>
+                      }`}
+                    >
                       {st.label}
                     </span>
                   </div>
@@ -549,72 +758,38 @@ export default function Reconstruct() {
           </div>
         </div>
 
-        {/* Footer info */}
         <div className="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex items-center gap-3.5 mt-2">
           <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-4 h-4 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
           <p className="text-[10px] text-slate-500 leading-normal">
-            Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization. Please keep this browser window open until analysis completes.
+            Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization.
+            Please keep this browser window open until analysis completes.
           </p>
         </div>
       </div>
     );
   };
 
-  const Stepper = ({ currentPhase }: { currentPhase: "upload" | "marking" | "processing" | "result" }) => {
-    const steps = [
-      { key: "upload", label: "Upload Walkthrough" },
-      { key: "marking", label: "Mark Trunk Axis" },
-      { key: "processing", label: "GPU Processing" },
-      { key: "result", label: "3D Analytics" },
-    ];
-    return (
-      <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
-        {steps.map((s, idx) => {
-          const isActive = s.key === currentPhase;
-          const isCompleted = 
-            (currentPhase === "marking" && idx < 1) ||
-            (currentPhase === "processing" && idx < 2) ||
-            (currentPhase === "result" && idx < 3);
-          return (
-            <React.Fragment key={s.key}>
-              <div className="flex flex-col items-center gap-1.5 flex-1">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                  isActive 
-                    ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110" 
-                    : isCompleted 
-                      ? "bg-emerald-50 text-emerald-750 border-emerald-200" 
-                      : "bg-white text-slate-400 border-slate-200"
-                }`}>
-                  {isCompleted ? "✓" : idx + 1}
-                </span>
-                <span className={`text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
-                  isActive ? "text-[#191919]" : isCompleted ? "text-emerald-700" : "text-slate-400"
-                }`}>
-                  {s.label}
-                </span>
-              </div>
-              {idx < steps.length - 1 && (
-                <div className={`h-[1px] w-4 sm:w-8 transition-colors ${
-                  isCompleted ? "bg-emerald-200" : "bg-slate-200"
-                }`} />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  };
+  // ── Phase 4 (Result) full-screen view ────────────────────────────────────
 
-  // Render Phase 4 (Result screen)
   if (phase === "result") {
     return (
       <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919]">
-        
-        {/* Full-screen 3D Viewer Container */}
+
+        {/* Full-screen 3D Viewer */}
         <div className="absolute inset-0 z-0 bg-white pt-[68px]">
           {currentScan ? (
             <iframe
@@ -625,7 +800,23 @@ export default function Reconstruct() {
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-slate-50/50">
-              <UiverseLoader />
+              {loading ? (
+                <>
+                  <UiverseLoader />
+                  <p className="text-xs text-slate-400 font-medium animate-pulse">
+                    Loading scan data…
+                  </p>
+                </>
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-slate-400 font-medium tracking-wide mb-1">
+                    No scan loaded
+                  </p>
+                  <p className="text-xs text-slate-300">
+                    Open the details drawer to search a tree code
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -645,11 +836,15 @@ export default function Reconstruct() {
           </div>
         </nav>
 
-        {/* Floating Sidebar Toggle Button */}
+        {/* Floating Sidebar Toggle */}
         {!sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
-            style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.1s' }}
+            style={{
+              opacity: !currentScan || sceneLoaded ? 1 : 0,
+              pointerEvents: !currentScan || sceneLoaded ? "auto" : "none",
+              transition: "opacity 0.5s ease 0.1s",
+            }}
             className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
             aria-label="Toggle Details Drawer"
           >
@@ -663,7 +858,12 @@ export default function Reconstruct() {
         {currentScan && (
           <div
             className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto flex flex-col gap-2"
-            style={{ opacity: sceneLoaded ? 1 : 0, transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`, transition: 'opacity 0.5s ease, transform 0.5s ease', pointerEvents: sceneLoaded ? 'auto' : 'none' }}
+            style={{
+              opacity: sceneLoaded ? 1 : 0,
+              transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`,
+              transition: "opacity 0.5s ease, transform 0.5s ease",
+              pointerEvents: sceneLoaded ? "auto" : "none",
+            }}
           >
             {currentScan.confidence_note?.includes("WARNING") && (
               <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
@@ -675,8 +875,6 @@ export default function Reconstruct() {
             )}
 
             <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
-              
-              {/* DBH */}
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-1">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
@@ -693,7 +891,6 @@ export default function Reconstruct() {
                 </div>
               </div>
 
-              {/* Height */}
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
                 <div className="flex items-baseline">
@@ -702,7 +899,6 @@ export default function Reconstruct() {
                 </div>
               </div>
 
-              {/* Biomass */}
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Biomass</span>
                 <div className="flex items-baseline">
@@ -711,7 +907,6 @@ export default function Reconstruct() {
                 </div>
               </div>
 
-              {/* Carbon */}
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Carbon</span>
@@ -723,7 +918,6 @@ export default function Reconstruct() {
                 </div>
               </div>
 
-              {/* CO2e */}
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CO₂e</span>
                 <div className="flex items-baseline">
@@ -731,27 +925,34 @@ export default function Reconstruct() {
                   <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
                 </div>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* Sidebar Intelligence Drawer */}
+        {/* Sidebar Intelligence Drawer — identical to original estimator */}
         <div
           className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
-          style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.15s, transform 0.3s ease' }}
+          style={{
+            opacity: !currentScan || sceneLoaded ? 1 : 0,
+            pointerEvents: !currentScan || sceneLoaded ? "auto" : "none",
+            transition: "opacity 0.5s ease 0.15s, transform 0.3s ease",
+          }}
         >
           {/* Header */}
           <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-bold tracking-wider text-[#191919] uppercase">{activeTreeCode || "Scan Complete"}</span>
+                <span className="text-xs font-bold tracking-wider text-[#191919] uppercase">
+                  {activeTreeCode || "Search Tree"}
+                </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
-                {history.length > 0 ? `${history.length} scan record${history.length !== 1 ? "s" : ""} found` : "No active scan"}
+                {history.length > 0
+                  ? `${history.length} scan record${history.length !== 1 ? "s" : ""} found`
+                  : "No active scan"}
               </p>
             </div>
             <button
@@ -762,16 +963,46 @@ export default function Reconstruct() {
             </button>
           </div>
 
-          {/* Body */}
+          {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-            {/* Species Matches */}
+
+            {/* Search Form */}
+            <div>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                Search Tree Code
+              </h3>
+              <form onSubmit={handleSearch} className="flex items-center w-full">
+                <div className="relative w-full flex items-center shadow-sm rounded-xl bg-slate-50 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#191919]/10 focus-within:border-[#191919] transition-all">
+                  <input
+                    type="text"
+                    value={treeCode}
+                    onChange={(e) => setTreeCode(e.target.value)}
+                    placeholder="Enter code (e.g. POHON-6144)…"
+                    className="w-full pl-9 pr-16 py-2.5 bg-transparent focus:outline-none text-xs font-semibold text-[#191919] placeholder:text-slate-400"
+                  />
+                  <svg className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 px-3 py-1 bg-[#191919] text-white text-[10px] font-semibold rounded-lg hover:bg-[#191919]/90 transition-colors duration-200"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Species Classification */}
             {currentScan && (
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                     Species Classification
                   </h3>
-                  <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Pl@ntNet AI</span>
+                  <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                    Pl@ntNet AI
+                  </span>
                 </div>
 
                 {currentScan.species_predictions && currentScan.species_predictions.length > 0 ? (
@@ -780,7 +1011,9 @@ export default function Reconstruct() {
                       <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-slate-50 border border-emerald-100 relative overflow-hidden">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block mb-0.5">Top Specimen Match</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block mb-0.5">
+                              Top Specimen Match
+                            </span>
                             <h4 className="text-sm font-semibold text-[#191919] italic font-serif">
                               {currentScan.species_predictions[0].scientific_name}
                             </h4>
@@ -805,16 +1038,43 @@ export default function Reconstruct() {
                         </div>
                       </div>
                     )}
+
+                    {currentScan.species_predictions.length > 1 && (
+                      <div className="space-y-2 pt-1">
+                        <span className="text-[10px] font-medium text-slate-400 block px-1">
+                          Other Probable Candidates
+                        </span>
+                        <div className="divide-y divide-slate-100">
+                          {currentScan.species_predictions.slice(1).map((pred, idx) => (
+                            <div key={idx} className="py-2 px-1 flex items-center justify-between hover:bg-slate-50/50 rounded-lg transition-colors">
+                              <div>
+                                <span className="text-xs font-medium text-[#191919] italic block">
+                                  {pred.scientific_name}
+                                </span>
+                                {pred.common_name && (
+                                  <span className="text-[10px] text-slate-400 capitalize block">
+                                    {pred.common_name}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs font-medium text-slate-400">
+                                {pred.confidence.toFixed(1)}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-100 text-center">
-                    <span className="text-xs text-slate-450">Species classification unavailable</span>
+                    <span className="text-xs text-slate-400">Species classification unavailable for this scan</span>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Calculations Breakdown */}
+            {/* How This Was Calculated */}
             {currentScan && (
               <div className="border border-slate-200/80 rounded-2xl bg-slate-50/40 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                 <button
@@ -822,11 +1082,12 @@ export default function Reconstruct() {
                   className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100/80 text-left transition-all duration-200"
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 7h.01M15 11h.01M15 7h.01M12 14h.01M9 11h.01M18 20V4a1 1 0 00-1-1H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1z" />
+                    </svg>
                     How this was calculated
                   </span>
-                  <span className="text-slate-450 text-[10px] font-bold">
-                    {calcOpen ? "▲" : "▼"}
-                  </span>
+                  <span className="text-slate-400 text-[10px] font-bold">{calcOpen ? "▲" : "▼"}</span>
                 </button>
 
                 {calcOpen && (
@@ -842,25 +1103,51 @@ export default function Reconstruct() {
                     <div className="pt-3 space-y-1.5">
                       <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
                       <div className="space-y-1 text-slate-600 font-medium">
+                        <div>Species Matched: <span className="font-semibold text-[#191919] italic">
+                          {currentScan.species_predictions?.[0]
+                            ? `${currentScan.species_predictions[0].scientific_name} (${currentScan.species_predictions[0].confidence.toFixed(1)}%)`
+                            : "None (Generic Fallback)"}
+                        </span></div>
                         <div>Wood Density (ρ): <span className="font-semibold text-[#191919]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
                         <div>Source: <span className="font-semibold text-[#191919] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
                       </div>
                     </div>
 
+                    <div className="pt-3 space-y-1.5">
+                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">3. Climate & Allometric Formula</p>
+                      <div className="space-y-1 text-slate-600 font-medium">
+                        <div>GPS Coordinates: <span className="font-semibold text-[#191919]">
+                          {currentScan.gps_lat != null && currentScan.gps_lon != null
+                            ? `${currentScan.gps_lat.toFixed(4)}, ${currentScan.gps_lon.toFixed(4)}`
+                            : "Not Available"}
+                        </span></div>
+                        <div>Climate Zone (Köppen): <span className="font-semibold text-[#191919]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
+                        <div>Formula Used: <span className="font-semibold text-emerald-800">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
+                      </div>
+                    </div>
+
                     <div className="pt-3 space-y-2">
-                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">3. Calculation Steps</p>
+                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">4. Calculation Steps</p>
                       <div className="space-y-1.5 text-slate-600 font-medium font-sans">
                         <div className="flex justify-between">
                           <span>Above-Ground Biomass (AGB):</span>
                           <span className="font-semibold text-[#191919]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Stored Carbon Stock:</span>
-                          <span className="font-semibold text-emerald-800">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg</span>
+                          <span>Below-Ground Biomass (BGB):</span>
+                          <span className="font-semibold text-[#191919]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(AGB × 0.24)</span></span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-150 pt-1.5 font-bold text-emerald-950">
+                        <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5 font-bold">
+                          <span className="text-[#191919]">Total Dry Biomass:</span>
+                          <span className="text-[#191919]">{currentScan.biomassa_kg?.toFixed(1) ?? "-"} kg</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Stored Carbon Stock:</span>
+                          <span className="font-semibold text-emerald-800">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-emerald-600/70 font-normal">(Biomass × 0.47)</span></span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-1.5 font-bold text-emerald-950">
                           <span>CO₂ Equivalent (CO₂e):</span>
-                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg</span>
+                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(Carbon × 3.67)</span></span>
                         </div>
                       </div>
                     </div>
@@ -869,7 +1156,7 @@ export default function Reconstruct() {
               </div>
             )}
 
-            {/* Recalibrate action */}
+            {/* Recalibrate Trunk */}
             {currentScan && (
               <button
                 onClick={() => {
@@ -880,59 +1167,85 @@ export default function Reconstruct() {
                 }}
                 className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2 mt-2"
               >
+                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
+                </svg>
                 Recalibrate Trunk (2D Photo)
               </button>
             )}
 
-            {/* Timeline */}
+            {/* Scan History Timeline */}
             {history.length > 0 && (
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
                   Scan History Timeline
                 </h3>
-                <div className="relative pl-4 border-l border-slate-200 space-y-4">
-                  {history.map((record) => {
-                    const isActive = currentScan?.id === record.id;
-                    return (
-                      <div key={record.id} className="relative group">
-                        <span className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border-2 bg-white transition-all ${
-                          isActive ? "border-[#191919] bg-[#191919]" : "border-slate-300"
-                        }`} />
-                        <button
-                          onClick={() => setCurrentScan(record)}
-                          className={`w-full text-left p-3 rounded-xl transition-all ${
-                            isActive ? "bg-[#191919] text-white" : "hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-tight">{record.tree_code}</span>
-                            <span className="text-[10px] font-medium">#{record.id}</span>
-                          </div>
-                          <div className="flex items-center justify-between mt-1 text-[10px]">
-                            <span>{formatDate(record.scan_date)}</span>
-                            <span className="font-serif">{record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "Raw"}</span>
-                          </div>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
+
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <UiverseLoader />
+                  </div>
+                ) : (
+                  <div className="relative pl-4 border-l border-slate-200 space-y-4">
+                    {history.map((record) => {
+                      const isActive = currentScan?.id === record.id;
+                      return (
+                        <div key={record.id} className="relative group">
+                          <span
+                            className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border-2 bg-white transition-all ${
+                              isActive
+                                ? "border-[#191919] ring-4 ring-[#191919]/10 bg-[#191919]"
+                                : "border-slate-300 group-hover:border-slate-400"
+                            }`}
+                          />
+                          <button
+                            onClick={() => setCurrentScan(record)}
+                            className={`w-full text-left p-3 rounded-xl transition-all ${
+                              isActive
+                                ? "bg-[#191919] text-white shadow-md"
+                                : "hover:bg-slate-50 text-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-semibold uppercase tracking-tight">
+                                {record.tree_code}
+                              </span>
+                              <span className={`text-[10px] font-medium ${isActive ? "text-white/60" : "text-slate-400"}`}>
+                                #{record.id}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className={`text-[10px] ${isActive ? "text-white/70" : "text-slate-400"}`}>
+                                {formatDate(record.scan_date)}
+                              </span>
+                              <span className={`text-[10px] font-serif ${isActive ? "text-emerald-300" : "text-slate-500"}`}>
+                                {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "Raw"}
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Footer Upload trigger */}
+          {/* Footer */}
           <div className="p-4 border-t border-slate-100 bg-slate-50/50">
             <button
               onClick={() => {
-                setPhase("upload");
+                transitionPhase("upload");
                 setSubmittedCode(null);
-                setCalibrationMode(false);
                 setError(null);
                 setProgressMsg("");
                 setVideoFile(null);
                 setPhotoFiles(null);
                 setTreeCode("");
+                setCurrentScan(null);
+                setHistory([]);
+                setActiveTreeCode("");
               }}
               className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#191919] text-white text-xs font-medium rounded-xl hover:bg-[#191919]/90 transition-all shadow-sm"
             >
@@ -941,14 +1254,22 @@ export default function Reconstruct() {
           </div>
         </div>
 
+        {/* Error toast */}
+        {error && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-[#ffffff] text-xs px-5 py-3 rounded-xl shadow-lg">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="opacity-50 hover:opacity-100 transition">✕</button>
+          </div>
+        )}
+
         {/* 2D Recalibration Modal */}
         {recalibModalOpen && currentScan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[95vh] overflow-y-auto">
+            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="font-serif text-xl text-[#191919] font-normal">Recalibrate Trunk Axis</h3>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">Click two points to define trunk orientation.</p>
+                  <p className="text-xs text-slate-400 mt-1 font-medium">Click two points on the 2D image to set the trunk direction.</p>
                 </div>
                 <button
                   onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
@@ -958,18 +1279,26 @@ export default function Reconstruct() {
                 </button>
               </div>
 
-              {recalibError && <div className="p-3 bg-red-50 border border-red-100 text-red-650 rounded-xl text-xs">{recalibError}</div>}
+              {recalibError && (
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-medium">
+                  {recalibError}
+                </div>
+              )}
 
               <div className="flex flex-col gap-2">
-                <div className="text-xs font-bold text-slate-555 uppercase tracking-wider">
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                   {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
                   {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
                   {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
                 </div>
-                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center" style={{ maxHeight: '45vh' }}>
+
+                <div
+                  className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
+                  style={{ maxHeight: "50vh" }}
+                >
                   <img
                     src={currentScan.thumbnail_url}
-                    alt="Scan thumbnail"
+                    alt="Representative Scan Frame"
                     onLoad={handleImageLoad}
                     onClick={(e) => {
                       if (clickedPoints.length >= 2) return;
@@ -978,7 +1307,7 @@ export default function Reconstruct() {
                         x: e.clientX - rect.left,
                         y: e.clientY - rect.top,
                         dispWidth: rect.width,
-                        dispHeight: rect.height
+                        dispHeight: rect.height,
                       }]);
                     }}
                     onMouseMove={(e) => {
@@ -986,11 +1315,17 @@ export default function Reconstruct() {
                       const rect = e.currentTarget.getBoundingClientRect();
                       setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
                     }}
-                    className="max-h-[45vh] object-contain cursor-crosshair max-w-full"
+                    className="max-h-[50vh] object-contain cursor-crosshair max-w-full"
                   />
+
                   <svg className="absolute inset-0 pointer-events-none w-full h-full">
                     {clickedPoints.map((pt, idx) => (
                       <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
+                    ))}
+                    {clickedPoints.map((pt, idx) => (
+                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
+                        {idx === 0 ? "1: Base" : "2: Top"}
+                      </text>
                     ))}
                     {clickedPoints.length === 2 && (
                       <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={clickedPoints[1].x} y2={clickedPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
@@ -1002,28 +1337,39 @@ export default function Reconstruct() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
                 <button
-                  onClick={() => { setClickedPoints([]); setMousePos(null); }}
+                  type="button"
+                  onClick={() => { setClickedPoints([]); setMousePos(null); setRecalibError(null); }}
                   disabled={clickedPoints.length === 0 || recalibLoading}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Reset Points
                 </button>
+
                 <div className="flex gap-3">
                   <button
+                    type="button"
                     onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
                     disabled={recalibLoading}
-                    className="px-5 py-2.5 bg-white border border-slate-200 text-[#191919] text-xs font-semibold rounded-xl"
+                    className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-[#191919] text-xs font-semibold rounded-xl transition"
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={handleRecalibrate}
                     disabled={clickedPoints.length < 2 || recalibLoading}
-                    className="px-6 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl shadow-sm flex items-center gap-2"
+                    className="px-6 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {recalibLoading ? "Recalculating..." : "Confirm Recalibration"}
+                    {recalibLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Recalculating...
+                      </>
+                    ) : (
+                      "Confirm Recalibration"
+                    )}
                   </button>
                 </div>
               </div>
@@ -1034,7 +1380,8 @@ export default function Reconstruct() {
     );
   }
 
-  // Render Phase 1, 2, 3 Screen
+  // ── Phase 1, 2, 3 — Scrollable form layout ──────────────────────────────
+
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans text-[#191919]">
       {/* Navbar */}
@@ -1052,17 +1399,16 @@ export default function Reconstruct() {
         </div>
       </nav>
 
-      {/* Main Unified Container */}
       <main className="flex-1 flex flex-col items-center justify-center pt-28 pb-20 px-4">
-        
-        {/* Persistent Stepper Progress */}
+
+        {/* Stepper */}
         <Stepper currentPhase={phase} />
 
         <div className="w-full max-w-lg">
-          
+
+          {/* ── Phase 1: Upload ── */}
           {phase === "upload" && (
             <>
-              {/* Heading */}
               <div className="mb-8">
                 <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
                   New reconstruction
@@ -1072,7 +1418,6 @@ export default function Reconstruct() {
                 </p>
               </div>
 
-              {/* Upload form container */}
               <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                 <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
                   {(["video", "photos"] as const).map((tab) => (
@@ -1092,7 +1437,6 @@ export default function Reconstruct() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                  {/* Tree identifier */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Tree identifier <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
@@ -1102,12 +1446,11 @@ export default function Reconstruct() {
                       value={treeCode}
                       onChange={(e) => setTreeCode(e.target.value)}
                       placeholder="e.g. POHON-0042"
-                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-450 text-sm font-medium transition"
+                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
                       disabled={loading}
                     />
                   </div>
 
-                  {/* GPS */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -1139,7 +1482,6 @@ export default function Reconstruct() {
                     </div>
                   </div>
 
-                  {/* Video settings */}
                   {activeTab === "video" && (
                     <>
                       <div className="flex flex-col gap-1.5">
@@ -1180,7 +1522,6 @@ export default function Reconstruct() {
                     </>
                   )}
 
-                  {/* Photos list */}
                   {activeTab === "photos" && (
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Photo files</label>
@@ -1201,7 +1542,6 @@ export default function Reconstruct() {
                     </div>
                   )}
 
-                  {/* Loader progress */}
                   {loading && (
                     <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
                       <div className="flex items-center gap-3">
@@ -1211,14 +1551,16 @@ export default function Reconstruct() {
                       <button
                         type="button"
                         onClick={handleCancel}
-                        className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-655 text-xs font-semibold rounded-lg border border-red-100 transition"
+                        className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-100 transition"
                       >
                         Cancel Reconstruction
                       </button>
                     </div>
                   )}
 
-                  {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>}
+                  {error && (
+                    <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
+                  )}
 
                   <button
                     type="submit"
@@ -1232,17 +1574,14 @@ export default function Reconstruct() {
             </>
           )}
 
+          {/* ── Phase 2: Trunk Marking ── */}
           {phase === "marking" && (
             <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
               <div>
-                <h3 className="font-serif text-xl text-[#191919] font-normal">
-                  Mark Trunk Axis (Recommended)
-                </h3>
-                <p className="text-xs text-slate-450 mt-1.5 font-medium leading-relaxed">
-                  Click two points on the extracted first frame image:
-                  <br />
-                  1. The <b>BASE/ROOT</b> of the trunk (Green marker).
-                  <br />
+                <h3 className="font-serif text-xl text-[#191919] font-normal">Mark Trunk Axis (Recommended)</h3>
+                <p className="text-xs text-slate-400 mt-1.5 font-medium leading-relaxed">
+                  Click two points on the extracted first frame image:<br />
+                  1. The <b>BASE/ROOT</b> of the trunk (Green marker).<br />
                   2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
                 </p>
               </div>
@@ -1254,14 +1593,14 @@ export default function Reconstruct() {
                   {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
                 </div>
 
-                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: '40vh' }}>
+                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
                   <img
                     src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
                     alt="Extracted Frame"
                     onLoad={(e) => {
                       setCalibrationImgSize({
                         width: e.currentTarget.naturalWidth,
-                        height: e.currentTarget.naturalHeight
+                        height: e.currentTarget.naturalHeight,
                       });
                     }}
                     onClick={(e) => {
@@ -1271,7 +1610,7 @@ export default function Reconstruct() {
                         x: e.clientX - rect.left,
                         y: e.clientY - rect.top,
                         dispWidth: rect.width,
-                        dispHeight: rect.height
+                        dispHeight: rect.height,
                       }]);
                     }}
                     onMouseMove={(e) => {
@@ -1286,7 +1625,7 @@ export default function Reconstruct() {
                       <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
                     ))}
                     {calibrationPoints.map((pt, idx) => (
-                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: '1px 1px 2px black' }}>
+                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
                         {idx === 0 ? "1: Base" : "2: Top"}
                       </text>
                     ))}
@@ -1313,24 +1652,32 @@ export default function Reconstruct() {
                   <button
                     type="button"
                     onClick={handleSkipAndAutoReconstruct}
-                    className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-650 text-xs font-bold rounded-xl transition"
+                    disabled={loading}
+                    className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition disabled:opacity-40"
                   >
-                    Skip & Auto-detect
+                    {loading ? "Starting…" : "Skip & Auto-detect"}
                   </button>
                 </div>
-
                 <button
                   type="button"
                   onClick={handleManualReconstruct}
-                  disabled={calibrationPoints.length < 2}
+                  disabled={calibrationPoints.length < 2 || loading}
                   className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
                 >
-                  Use Manual Selection & Reconstruct
+                  {loading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Starting…
+                    </>
+                  ) : (
+                    "Use Manual Selection & Reconstruct"
+                  )}
                 </button>
               </div>
             </div>
           )}
 
+          {/* ── Phase 3: Processing ── */}
           {phase === "processing" && renderProcessing()}
 
         </div>
