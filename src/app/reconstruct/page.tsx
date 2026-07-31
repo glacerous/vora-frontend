@@ -33,6 +33,77 @@ export default function Reconstruct() {
   const [longitude, setLongitude] = useState("");
   const isCancelledRef = React.useRef(false);
 
+  // Manual axis calibration states
+  const [calibrationMode, setCalibrationMode] = useState(false);
+  const [calibrationCode, setCalibrationCode] = useState("");
+  const [calibrationPoints, setCalibrationPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
+  const [calibrationImgSize, setCalibrationImgSize] = useState<{width: number, height: number} | null>(null);
+  const [calibrationMousePos, setCalibrationMousePos] = useState<{x: number, y: number} | null>(null);
+
+  const startReconstructPayload = async (
+    code: string,
+    p1: number[] | null,
+    p2: number[] | null,
+    width: number | null,
+    height: number | null
+  ) => {
+    try {
+      const r = await fetch(`${BACKEND_URL}/reconstruct`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          tree_code: code,
+          remove_background: removeBackground,
+          gps_lat: latitude ? parseFloat(latitude) : null,
+          gps_lon: longitude ? parseFloat(longitude) : null,
+          p1,
+          p2,
+          width,
+          height
+        }),
+      });
+      if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Reconstruction queuing failed"); }
+
+      const data = await r.json();
+      const finalCode = data.tree_code || code;
+
+      // Show the tree code prominently before redirecting
+      setSubmittedCode(finalCode);
+      setProgressMsg("Pipeline started — your tree code is shown below. Save it before continuing.");
+      setLoading(false);
+      setCalibrationMode(false);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      setLoading(false);
+      setCalibrationMode(false);
+    }
+  };
+
+  const handleSkipAndAutoReconstruct = async () => {
+    setLoading(true);
+    setProgressMsg("Starting GPU reconstruction (Auto-detect)…");
+    await startReconstructPayload(calibrationCode, null, null, null, null);
+  };
+
+  const handleManualReconstruct = async () => {
+    if (calibrationPoints.length < 2 || !calibrationImgSize) return;
+    setLoading(true);
+    setProgressMsg("Starting GPU reconstruction (Manual axis)…");
+    
+    const W_org = calibrationImgSize.width;
+    const H_org = calibrationImgSize.height;
+    const p1_org = [
+      (calibrationPoints[0].x / calibrationPoints[0].dispWidth) * W_org,
+      (calibrationPoints[0].y / calibrationPoints[0].dispHeight) * H_org
+    ];
+    const p2_org = [
+      (calibrationPoints[1].x / calibrationPoints[1].dispWidth) * W_org,
+      (calibrationPoints[1].y / calibrationPoints[1].dispHeight) * H_org
+    ];
+    
+    await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org);
+  };
+
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
   };
@@ -227,9 +298,157 @@ export default function Reconstruct() {
           {/* Upload form — hidden after successful submit */}
           {!submittedCode && (
             <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+              {calibrationMode ? (
+                <div className="flex flex-col gap-6 animate-fadeIn">
+                  {/* Header */}
+                  <div>
+                    <h3 className="font-serif text-xl text-[#191919] font-normal">
+                      Mark Trunk Axis (Recommended)
+                    </h3>
+                    <p className="text-xs text-slate-450 mt-1.5 font-medium leading-relaxed">
+                      Click two points on the extracted first frame image:
+                      <br />
+                      1. The <b>BASE/ROOT</b> of the trunk (Green marker).
+                      <br />
+                      2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
+                    </p>
+                  </div>
 
-              {/* Tabs */}
-              <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
+                  {/* SVG & Image Overlay Container */}
+                  <div className="flex flex-col gap-2">
+                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                      {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                      {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                      {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
+                    </div>
+
+                    <div 
+                      className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
+                      style={{ maxHeight: '40vh' }}
+                    >
+                      <img
+                        src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
+                        alt="Representative extracted frame"
+                        onLoad={(e) => {
+                          const img = e.currentTarget;
+                          setCalibrationImgSize({
+                            width: img.naturalWidth,
+                            height: img.naturalHeight
+                          });
+                        }}
+                        onClick={(e) => {
+                          if (calibrationPoints.length >= 2) return;
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const x = e.clientX - rect.left;
+                          const y = e.clientY - rect.top;
+                          setCalibrationPoints([...calibrationPoints, {
+                            x,
+                            y,
+                            dispWidth: rect.width,
+                            dispHeight: rect.height
+                          }]);
+                        }}
+                        onMouseMove={(e) => {
+                          if (calibrationPoints.length !== 1) return;
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setCalibrationMousePos({
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top
+                          });
+                        }}
+                        className="max-h-[40vh] object-contain cursor-crosshair max-w-full"
+                      />
+
+                      {/* SVG Overlay */}
+                      <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                        {calibrationPoints.map((pt, idx) => (
+                          <circle
+                            key={idx}
+                            cx={pt.x}
+                            cy={pt.y}
+                            r="6"
+                            fill={idx === 0 ? "#10b981" : "#0284c7"}
+                            stroke="white"
+                            strokeWidth="2"
+                          />
+                        ))}
+                        {calibrationPoints.map((pt, idx) => (
+                          <text
+                            key={`lbl-${idx}`}
+                            x={pt.x + 10}
+                            y={pt.y + 4}
+                            fill="white"
+                            fontSize="10"
+                            fontWeight="bold"
+                            style={{ textShadow: '1px 1px 2px black' }}
+                          >
+                            {idx === 0 ? "1: Base" : "2: Top"}
+                          </text>
+                        ))}
+                        {calibrationPoints.length === 2 && (
+                          <line
+                            x1={calibrationPoints[0].x}
+                            y1={calibrationPoints[0].y}
+                            x2={calibrationPoints[1].x}
+                            y2={calibrationPoints[1].y}
+                            stroke="#10b981"
+                            strokeWidth="3"
+                            strokeDasharray="4 4"
+                          />
+                        )}
+                        {calibrationPoints.length === 1 && calibrationMousePos && (
+                          <line
+                            x1={calibrationPoints[0].x}
+                            y1={calibrationPoints[0].y}
+                            x2={calibrationMousePos.x}
+                            y2={calibrationMousePos.y}
+                            stroke="#a855f7"
+                            strokeWidth="2"
+                            strokeDasharray="4 4"
+                            opacity="0.7"
+                          />
+                        )}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 mt-2">
+                    <div className="flex justify-between items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCalibrationPoints([]);
+                          setCalibrationMousePos(null);
+                        }}
+                        disabled={calibrationPoints.length === 0}
+                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition disabled:opacity-40"
+                      >
+                        Reset Points
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSkipAndAutoReconstruct}
+                        className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-650 text-xs font-bold rounded-xl transition"
+                      >
+                        Skip & Auto-detect
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleManualReconstruct}
+                      disabled={calibrationPoints.length < 2}
+                      className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
+                    >
+                      Use Manual Selection & Reconstruct
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Tabs */}
+                  <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
                 {(["video", "photos"] as const).map((tab) => (
                   <button
                     key={tab}
@@ -391,6 +610,8 @@ export default function Reconstruct() {
                 </button>
 
               </form>
+              </>
+              )}
             </div>
           )}
 

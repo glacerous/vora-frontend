@@ -38,6 +38,7 @@ interface PipelineStatus {
   carbon_estimation: any | null;
   frames: string[];
   has_result: boolean;
+  tree_code?: string | null;
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
