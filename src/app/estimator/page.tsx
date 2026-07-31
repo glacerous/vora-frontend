@@ -73,6 +73,35 @@ export default function Dashboard() {
 
   const lastSplatUrlRef = useRef<string | null>(null);
 
+  // States for real-time progress elapsed timer
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (pipelineStatus?.stage === "reconstructing") {
+      if (!timerRef.current) {
+        setElapsedTime(0);
+        timerRef.current = setInterval(() => {
+          setElapsedTime(prev => prev + 1);
+        }, 1000);
+      }
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [pipelineStatus?.stage]);
+
+  const formatElapsed = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
   // States for 2D Recalibration modal
   const [recalibModalOpen, setRecalibModalOpen] = useState(false);
   const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
@@ -252,8 +281,27 @@ export default function Dashboard() {
             title="3D Tree Gaussian Splat Viewer"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            {loading ? (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-slate-50/50">
+            {pipelineStatus?.stage === "reconstructing" && pipelineStatus.tree_code === activeTreeCode ? (
+              <div className="max-w-md w-[90%] bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-8 shadow-xl text-center space-y-6 flex flex-col items-center justify-center animate-fadeIn">
+                <div className="relative flex items-center justify-center shrink-0">
+                  <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-505 rounded-full animate-spin shrink-0" style={{ borderTopColor: '#10b981' }} />
+                  <span className="absolute text-sm shrink-0">🌳</span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Reconstruction In Progress</p>
+                  <h2 className="font-serif text-2xl text-[#191919] font-normal leading-tight">{activeTreeCode}</h2>
+                  <p className="text-xs text-slate-450 font-medium">Stage: <span className="text-[#191919] font-bold">{pipelineStatus.message}</span></p>
+                </div>
+                <div className="w-full bg-slate-100/50 rounded-2xl px-5 py-4 border border-slate-200/50 flex justify-between items-center text-xs">
+                  <span className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Elapsed Time</span>
+                  <span className="font-mono font-bold text-[#191919] bg-white border border-slate-200/80 px-3 py-1 rounded-xl text-sm shadow-sm">{formatElapsed(elapsedTime)}</span>
+                </div>
+                <p className="text-[10px] text-slate-400 leading-normal max-w-[280px]">
+                  Connecting to GPU A10G Cloud. Gaussian Splat training and allometric carbon fitting runs in real-time.
+                </p>
+              </div>
+            ) : loading ? (
               <UiverseLoader />
             ) : (
               <div className="text-center">
@@ -684,12 +732,20 @@ export default function Dashboard() {
 
       {/* ── Pipeline status banner ─────────────────────────────── */}
       {sceneLoaded && pipelineStatus && pipelineStatus.stage !== "idle" && (
-        <div className="absolute bottom-6 right-6 z-30 max-w-xs bg-white border border-amber-100 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Reconstruction Active</span>
+        <div className="absolute bottom-6 right-6 z-30 max-w-xs bg-white/95 backdrop-blur-xl border border-amber-200/60 rounded-2xl px-4 py-3.5 shadow-lg animate-fadeIn flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Reconstructing {pipelineStatus.tree_code}</span>
+            </div>
+            <span className="font-mono text-[10px] font-bold bg-amber-50 border border-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+              {formatElapsed(elapsedTime)}
+            </span>
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed">{pipelineStatus.message}</p>
+          <div>
+            <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Current Stage</p>
+            <p className="text-xs text-slate-700 font-bold mt-0.5">{pipelineStatus.message}</p>
+          </div>
         </div>
       )}
 
