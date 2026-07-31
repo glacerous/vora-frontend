@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -14,8 +14,18 @@ const LogoMark = () => (
   </svg>
 );
 
+const UiverseLoader = () => (
+  <div className="newtons-cradle">
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+    <div className="newtons-cradle__dot"></div>
+  </div>
+);
+
 export default function Reconstruct() {
   const router = useRouter();
+  const [phase, setPhase] = useState<"upload" | "marking" | "processing" | "result">("upload");
   const [activeTab, setActiveTab] = useState<"video" | "photos">("video");
   const [treeCode, setTreeCode] = useState("");
   const [frames, setFrames] = useState(60);
@@ -25,7 +35,6 @@ export default function Reconstruct() {
   const [loading, setLoading] = useState(false);
   const [progressMsg, setProgressMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
-  // State for the submitted tree code — shown prominently after pipeline starts
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [removeBackground] = useState(false);
@@ -39,6 +48,255 @@ export default function Reconstruct() {
   const [calibrationPoints, setCalibrationPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
   const [calibrationImgSize, setCalibrationImgSize] = useState<{width: number, height: number} | null>(null);
   const [calibrationMousePos, setCalibrationMousePos] = useState<{x: number, y: number} | null>(null);
+
+  // Phase 3 (Processing) & Phase 4 (Result) states
+  const [activeTreeCode, setActiveTreeCode] = useState("");
+  const [pipelineStatus, setPipelineStatus] = useState<any>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [currentScan, setCurrentScan] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sceneLoaded, setSceneLoaded] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [recalibModalOpen, setRecalibModalOpen] = useState(false);
+  const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
+  const [imgDimensions, setImgDimensions] = useState<{width: number, height: number} | null>(null);
+  const [recalibLoading, setRecalibLoading] = useState(false);
+  const [recalibError, setRecalibError] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{x: number, y: number} | null>(null);
+  const lastSplatUrlRef = useRef<string | null>(null);
+
+  const fetchTreeHistory = async (code: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/history/${code}`);
+      if (!res.ok) throw new Error(`Failed to fetch history (HTTP ${res.status})`);
+      const data = await res.json();
+      if (data.success && data.history && data.history.length > 0) {
+        setHistory(data.history);
+        setCurrentScan(data.history[0]);
+        setSidebarOpen(true);
+      } else {
+        setHistory([]);
+        setCurrentScan(null);
+        setError(`No scans found for "${code}"`);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to load data.");
+      setHistory([]);
+      setCurrentScan(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 3 polling effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (phase === "processing") {
+      const poll = async () => {
+        try {
+          const res = await fetch(`${BACKEND_URL}/status`);
+          if (res.ok) {
+            const data = await res.json();
+            setPipelineStatus(data);
+            if (data.stage === "done" && data.tree_code === calibrationCode) {
+              setPhase("result");
+              setActiveTreeCode(calibrationCode);
+              await fetchTreeHistory(calibrationCode);
+            } else if (data.stage === "error") {
+              setError(data.error || "Reconstruction failed");
+              setPhase("upload");
+              setLoading(false);
+            }
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+        }
+      };
+      poll();
+      interval = setInterval(poll, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [phase, calibrationCode]);
+
+  // Timer effect for Phase 3
+  useEffect(() => {
+    if (phase === "processing") {
+      if (!timerRef.current) {
+        setElapsedTime(0);
+        timerRef.current = setInterval(() => {
+          setElapsedTime(prev => prev + 1);
+        }, 1000);
+      }
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase]);
+
+  // Listen for messages from iframe
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data === 'vora_scene_loaded') {
+        setSceneLoaded(true);
+      } else if (e.data?.type === 'vora_metrics_updated') {
+        if (e.data.tree_code) {
+          fetchTreeHistory(e.data.tree_code);
+        }
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // Seed tree code from URL params on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (code) {
+        setPhase("result");
+        setActiveTreeCode(code);
+        fetchTreeHistory(code);
+      }
+    }
+  }, []);
+
+  // Reset scene loaded state on scan splat url change
+  useEffect(() => {
+    if (currentScan) {
+      if (currentScan.splat_file_url !== lastSplatUrlRef.current) {
+        setSceneLoaded(false);
+        lastSplatUrlRef.current = currentScan.splat_file_url;
+      }
+    } else {
+      setSceneLoaded(false);
+      lastSplatUrlRef.current = null;
+    }
+  }, [currentScan?.id, currentScan?.splat_file_url]);
+
+  const handleRecalibrate = async () => {
+    if (clickedPoints.length < 2 || !imgDimensions || !currentScan) return;
+    setRecalibLoading(true);
+    setRecalibError(null);
+    try {
+      const W_org = imgDimensions.width;
+      const H_org = imgDimensions.height;
+      const p1_org = [
+        (clickedPoints[0].x / clickedPoints[0].dispWidth) * W_org,
+        (clickedPoints[0].y / clickedPoints[0].dispHeight) * H_org
+      ];
+      const p2_org = [
+        (clickedPoints[1].x / clickedPoints[1].dispWidth) * W_org,
+        (clickedPoints[1].y / clickedPoints[1].dispHeight) * H_org
+      ];
+
+      const res = await fetch(`${BACKEND_URL}/scan/${currentScan.id}/recalculate`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p1: p1_org,
+          p2: p2_org,
+          width: W_org,
+          height: H_org
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to recalculate scan");
+      }
+
+      await fetchTreeHistory(currentScan.tree_code);
+      setRecalibModalOpen(false);
+      setClickedPoints([]);
+
+      const iframe = document.querySelector('iframe');
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'vora_metrics_updated', tree_code: currentScan.tree_code }, '*');
+      }
+    } catch (err: any) {
+      setRecalibError(err.message || "An unexpected error occurred.");
+    } finally {
+      setRecalibLoading(false);
+    }
+  };
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setImgDimensions({
+      width: e.currentTarget.naturalWidth,
+      height: e.currentTarget.naturalHeight
+    });
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (treeCode.trim()) {
+      setActiveTreeCode(treeCode.trim());
+      fetchTreeHistory(treeCode.trim());
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return dateStr; }
+  };
+
+  const formatElapsed = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
+  };
+  const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) { setPhotoFiles(e.target.files); setError(null); }
+  };
+
+  const handleCopy = async () => {
+    if (!submittedCode) return;
+    try {
+      await navigator.clipboard.writeText(submittedCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = submittedCode;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      isCancelledRef.current = true;
+      setProgressMsg("Cancelling active job...");
+      await fetch(`${BACKEND_URL}/cancel`, { method: "POST" });
+    } catch (err) {}
+    setLoading(false);
+    setProgressMsg("");
+    setError("Reconstruction cancelled.");
+  };
 
   const startReconstructPayload = async (
     code: string,
@@ -67,11 +325,11 @@ export default function Reconstruct() {
       const data = await r.json();
       const finalCode = data.tree_code || code;
 
-      // Show the tree code prominently before redirecting
-      setSubmittedCode(finalCode);
-      setProgressMsg("Pipeline started — your tree code is shown below. Save it before continuing.");
-      setLoading(false);
+      // Transition to Phase 3: Processing
+      setPhase("processing");
+      setCalibrationCode(finalCode);
       setCalibrationMode(false);
+      setLoading(false);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
       setLoading(false);
@@ -104,43 +362,6 @@ export default function Reconstruct() {
     await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org);
   };
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) { setVideoFile(e.target.files[0]); setError(null); }
-  };
-  const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) { setPhotoFiles(e.target.files); setError(null); }
-  };
-
-  const handleCopy = async () => {
-    if (!submittedCode) return;
-    try {
-      await navigator.clipboard.writeText(submittedCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback for environments where clipboard API isn't available
-      const el = document.createElement("textarea");
-      el.value = submittedCode;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const handleCancel = async () => {
-    try {
-      isCancelledRef.current = true;
-      setProgressMsg("Cancelling active job...");
-      await fetch(`${BACKEND_URL}/cancel`, { method: "POST" });
-    } catch (err) {}
-    setLoading(false);
-    setProgressMsg("");
-    setError("Reconstruction cancelled.");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     isCancelledRef.current = false;
@@ -162,10 +383,9 @@ export default function Reconstruct() {
         const r = await fetch(`${BACKEND_URL}/upload_video`, { method: "POST", body: fd });
         if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Video upload failed"); }
 
-        // Start polling status until stage is "extracted"
         let isExtracted = false;
         let attempts = 0;
-        const maxAttempts = 100; // 100 attempts * 1.5s = 150 seconds max
+        const maxAttempts = 100;
         const pollInterval = 1500;
 
         setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
@@ -208,25 +428,12 @@ export default function Reconstruct() {
         if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Photos upload failed"); }
       }
 
-      setProgressMsg("Starting GPU reconstruction…");
-      const r = await fetch(`${BACKEND_URL}/reconstruct`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          tree_code: selectedCode,
-          remove_background: removeBackground,
-          gps_lat: latitude ? parseFloat(latitude) : null,
-          gps_lon: longitude ? parseFloat(longitude) : null
-        }),
-      });
-      if (!r.ok) { const d = await r.json(); throw new Error(d?.detail || "Reconstruction queuing failed"); }
-
-      const data = await r.json();
-      const finalCode = data.tree_code || selectedCode;
-
-      // Show the tree code prominently before redirecting
-      setSubmittedCode(finalCode);
-      setProgressMsg("Pipeline started — your tree code is shown below. Save it before continuing.");
+      // Wait complete, transition to Trunk Marking
+      setCalibrationCode(selectedCode);
+      setCalibrationPoints([]);
+      setCalibrationMousePos(null);
+      setCalibrationMode(true);
+      setPhase("marking");
       setLoading(false);
 
     } catch (err: any) {
@@ -235,10 +442,602 @@ export default function Reconstruct() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-[#191919]">
+  // Render Phase 3 (Processing) Stage Loader
+  const renderProcessing = () => {
+    const stages = [
+      { id: "upload", label: "Upload walkthrough and extract frames" },
+      { id: "init_geo", label: "Initialize 3D camera geometry (MASt3R)" },
+      { id: "train_gs", label: "Fast 3D-Gaussian Splat optimization" },
+      { id: "extract_pc", label: "Extract high-density point cloud" },
+      { id: "fit_dbh", label: "Fit trunk cylinder and compute carbon stock" },
+      { id: "upload_res", label: "Upload 3D assets to cloud storage" },
+    ];
 
-      {/* ── Navbar ──────────────────────────────────────────────── */}
+    const currentMsg = pipelineStatus?.message || "";
+    let activeStageIndex = 0;
+    if (currentMsg.includes("Initializing geometry")) {
+      activeStageIndex = 1;
+    } else if (currentMsg.includes("Training Gaussians")) {
+      activeStageIndex = 2;
+    } else if (currentMsg.includes("Extracting point cloud")) {
+      activeStageIndex = 3;
+    } else if (currentMsg.includes("Computing DBH")) {
+      activeStageIndex = 4;
+    } else if (currentMsg.includes("Uploading results") || currentMsg.includes("Saving scan results")) {
+      activeStageIndex = 5;
+    }
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
+        {/* Top Header */}
+        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+          <div>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">Active Pipeline</span>
+            <h3 className="font-serif text-xl text-[#191919] font-normal mt-2 tracking-tight">
+              {calibrationCode}
+            </h3>
+          </div>
+          <div className="text-right">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">Elapsed Time</span>
+            <span 
+              className="text-4xl text-[#191919] tracking-wider leading-none"
+              style={{ fontFamily: 'var(--font-head)' }}
+            >
+              {formatElapsed(elapsedTime)}
+            </span>
+          </div>
+        </div>
+
+        {/* Thumbnail focus and stage list split */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
+          {/* Representative thumbnail */}
+          <div className="sm:col-span-5 flex flex-col gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Processing Asset</span>
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-inner flex items-center justify-center">
+              <img
+                src={`${BACKEND_URL}/frames/0000.jpg`}
+                alt="Processing asset frame"
+                className="w-full h-full object-cover opacity-75"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-lg px-2 py-1 text-[10px] text-white font-medium border border-white/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Live processing</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Steplist */}
+          <div className="sm:col-span-7 flex flex-col gap-3">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Pipeline Stages</span>
+            <div className="flex flex-col gap-3.5">
+              {stages.map((st, idx) => {
+                const isDone = idx < activeStageIndex;
+                const isCurrent = idx === activeStageIndex;
+                return (
+                  <div key={st.id} className="flex items-center gap-3">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
+                      isDone 
+                        ? "bg-emerald-500 border-emerald-500 text-white text-[10px]"
+                        : isCurrent
+                          ? "bg-white border-[#191919] ring-2 ring-[#191919]/10 animate-pulse"
+                          : "bg-white border-slate-200"
+                    }`}>
+                      {isDone ? (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : isCurrent ? (
+                        <div className="w-2 h-2 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      )}
+                    </span>
+                    <span className={`text-xs transition-colors ${
+                      isDone 
+                        ? "text-slate-450 line-through decoration-slate-300"
+                        : isCurrent
+                          ? "text-[#191919] font-bold"
+                          : "text-slate-400"
+                    }`}>
+                      {st.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <div className="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex items-center gap-3.5 mt-2">
+          <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <p className="text-[10px] text-slate-500 leading-normal">
+            Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization. Please keep this browser window open until analysis completes.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const Stepper = ({ currentPhase }: { currentPhase: "upload" | "marking" | "processing" | "result" }) => {
+    const steps = [
+      { key: "upload", label: "Upload Walkthrough" },
+      { key: "marking", label: "Mark Trunk Axis" },
+      { key: "processing", label: "GPU Processing" },
+      { key: "result", label: "3D Analytics" },
+    ];
+    return (
+      <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
+        {steps.map((s, idx) => {
+          const isActive = s.key === currentPhase;
+          const isCompleted = 
+            (currentPhase === "marking" && idx < 1) ||
+            (currentPhase === "processing" && idx < 2) ||
+            (currentPhase === "result" && idx < 3);
+          return (
+            <React.Fragment key={s.key}>
+              <div className="flex flex-col items-center gap-1.5 flex-1">
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                  isActive 
+                    ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110" 
+                    : isCompleted 
+                      ? "bg-emerald-50 text-emerald-750 border-emerald-200" 
+                      : "bg-white text-slate-400 border-slate-200"
+                }`}>
+                  {isCompleted ? "✓" : idx + 1}
+                </span>
+                <span className={`text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
+                  isActive ? "text-[#191919]" : isCompleted ? "text-emerald-700" : "text-slate-400"
+                }`}>
+                  {s.label}
+                </span>
+              </div>
+              {idx < steps.length - 1 && (
+                <div className={`h-[1px] w-4 sm:w-8 transition-colors ${
+                  isCompleted ? "bg-emerald-200" : "bg-slate-200"
+                }`} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render Phase 4 (Result screen)
+  if (phase === "result") {
+    return (
+      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919]">
+        
+        {/* Full-screen 3D Viewer Container */}
+        <div className="absolute inset-0 z-0 bg-white pt-[68px]">
+          {currentScan ? (
+            <iframe
+              src={`${BACKEND_URL}/viewer.html?v=11&url=${encodeURIComponent(currentScan.splat_file_url)}`}
+              allow="xr-spatial-tracking; autoplay; fullscreen"
+              className="w-full h-full border-none"
+              title="3D Tree Gaussian Splat Viewer"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-slate-50/50">
+              <UiverseLoader />
+            </div>
+          )}
+        </div>
+
+        {/* Navbar */}
+        <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
+          <Link href="/" className="flex items-center cursor-pointer">
+            <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+            <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+              Home
+            </Link>
+            <Link href="/gallery" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+              Gallery
+            </Link>
+          </div>
+        </nav>
+
+        {/* Floating Sidebar Toggle Button */}
+        {!sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.1s' }}
+            className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
+            aria-label="Toggle Details Drawer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Carbon metrics Command Dock */}
+        {currentScan && (
+          <div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto flex flex-col gap-2"
+            style={{ opacity: sceneLoaded ? 1 : 0, transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`, transition: 'opacity 0.5s ease, transform 0.5s ease', pointerEvents: sceneLoaded ? 'auto' : 'none' }}
+          >
+            {currentScan.confidence_note?.includes("WARNING") && (
+              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
+                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{currentScan.confidence_note}</span>
+              </div>
+            )}
+
+            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
+              
+              {/* DBH */}
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                  {currentScan.confidence_note?.includes("WARNING") && (
+                    <svg className="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <title>Warning: insufficient height</title>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-slate-400 font-medium ml-1">cm</span>
+                </div>
+              </div>
+
+              {/* Height */}
+              <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-slate-400 font-medium ml-1">m</span>
+                </div>
+              </div>
+
+              {/* Biomass */}
+              <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Biomass</span>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                </div>
+              </div>
+
+              {/* Carbon */}
+              <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Carbon</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                </div>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-2xl text-emerald-950 font-normal leading-none">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-emerald-600/70 font-medium ml-1">kg</span>
+                </div>
+              </div>
+
+              {/* CO2e */}
+              <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CO₂e</span>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Sidebar Intelligence Drawer */}
+        <div
+          className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
+            sidebarOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+          style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.15s, transform 0.3s ease' }}
+        >
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="text-xs font-bold tracking-wider text-[#191919] uppercase">{activeTreeCode || "Scan Complete"}</span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+                {history.length > 0 ? `${history.length} scan record${history.length !== 1 ? "s" : ""} found` : "No active scan"}
+              </p>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-xs transition"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            {/* Species Matches */}
+            {currentScan && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Species Classification
+                  </h3>
+                  <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Pl@ntNet AI</span>
+                </div>
+
+                {currentScan.species_predictions && currentScan.species_predictions.length > 0 ? (
+                  <div className="space-y-3">
+                    {currentScan.species_predictions[0] && (
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-slate-50 border border-emerald-100 relative overflow-hidden">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block mb-0.5">Top Specimen Match</span>
+                            <h4 className="text-sm font-semibold text-[#191919] italic font-serif">
+                              {currentScan.species_predictions[0].scientific_name}
+                            </h4>
+                            {currentScan.species_predictions[0].common_name && (
+                              <p className="text-xs text-slate-500 font-medium capitalize mt-0.5">
+                                {currentScan.species_predictions[0].common_name}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-sm font-bold text-emerald-700 font-serif">
+                              {currentScan.species_predictions[0].confidence.toFixed(1)}%
+                            </span>
+                            <span className="text-[9px] text-emerald-600/70 font-medium">Confidence</span>
+                          </div>
+                        </div>
+                        <div className="w-full h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-3">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                            style={{ width: `${currentScan.species_predictions[0].confidence}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-100 text-center">
+                    <span className="text-xs text-slate-450">Species classification unavailable</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Calculations Breakdown */}
+            {currentScan && (
+              <div className="border border-slate-200/80 rounded-2xl bg-slate-50/40 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                <button
+                  onClick={() => setCalcOpen(!calcOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100/80 text-left transition-all duration-200"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+                    How this was calculated
+                  </span>
+                  <span className="text-slate-450 text-[10px] font-bold">
+                    {calcOpen ? "▲" : "▼"}
+                  </span>
+                </button>
+
+                {calcOpen && (
+                  <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-slate-200/50 bg-white font-sans divide-y divide-slate-100">
+                    <div className="space-y-1.5">
+                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
+                      <div className="grid grid-cols-2 gap-2 text-slate-600 font-medium">
+                        <div>Diameter (DBH): <span className="font-semibold text-[#191919]">{currentScan.dbh_cm?.toFixed(1) ?? "-"} cm</span></div>
+                        <div>Tree Height: <span className="font-semibold text-[#191919]">{currentScan.tinggi_m?.toFixed(1) ?? "-"} m</span></div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 space-y-1.5">
+                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
+                      <div className="space-y-1 text-slate-600 font-medium">
+                        <div>Wood Density (ρ): <span className="font-semibold text-[#191919]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
+                        <div>Source: <span className="font-semibold text-[#191919] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 space-y-2">
+                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">3. Calculation Steps</p>
+                      <div className="space-y-1.5 text-slate-600 font-medium font-sans">
+                        <div className="flex justify-between">
+                          <span>Above-Ground Biomass (AGB):</span>
+                          <span className="font-semibold text-[#191919]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Stored Carbon Stock:</span>
+                          <span className="font-semibold text-emerald-800">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-150 pt-1.5 font-bold text-emerald-950">
+                          <span>CO₂ Equivalent (CO₂e):</span>
+                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Recalibrate action */}
+            {currentScan && (
+              <button
+                onClick={() => {
+                  setClickedPoints([]);
+                  setRecalibError(null);
+                  setMousePos(null);
+                  setRecalibModalOpen(true);
+                }}
+                className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2 mt-2"
+              >
+                Recalibrate Trunk (2D Photo)
+              </button>
+            )}
+
+            {/* Timeline */}
+            {history.length > 0 && (
+              <div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+                  Scan History Timeline
+                </h3>
+                <div className="relative pl-4 border-l border-slate-200 space-y-4">
+                  {history.map((record) => {
+                    const isActive = currentScan?.id === record.id;
+                    return (
+                      <div key={record.id} className="relative group">
+                        <span className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border-2 bg-white transition-all ${
+                          isActive ? "border-[#191919] bg-[#191919]" : "border-slate-300"
+                        }`} />
+                        <button
+                          onClick={() => setCurrentScan(record)}
+                          className={`w-full text-left p-3 rounded-xl transition-all ${
+                            isActive ? "bg-[#191919] text-white" : "hover:bg-slate-50 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-tight">{record.tree_code}</span>
+                            <span className="text-[10px] font-medium">#{record.id}</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-1 text-[10px]">
+                            <span>{formatDate(record.scan_date)}</span>
+                            <span className="font-serif">{record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "Raw"}</span>
+                          </div>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Upload trigger */}
+          <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+            <button
+              onClick={() => {
+                setPhase("upload");
+                setSubmittedCode(null);
+                setCalibrationMode(false);
+                setError(null);
+                setProgressMsg("");
+                setVideoFile(null);
+                setPhotoFiles(null);
+                setTreeCode("");
+              }}
+              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#191919] text-white text-xs font-medium rounded-xl hover:bg-[#191919]/90 transition-all shadow-sm"
+            >
+              <span>+ Upload New Scan</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 2D Recalibration Modal */}
+        {recalibModalOpen && currentScan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[95vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="font-serif text-xl text-[#191919] font-normal">Recalibrate Trunk Axis</h3>
+                  <p className="text-xs text-slate-400 mt-1 font-medium">Click two points to define trunk orientation.</p>
+                </div>
+                <button
+                  onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
+                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-xs transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {recalibError && <div className="p-3 bg-red-50 border border-red-100 text-red-650 rounded-xl text-xs">{recalibError}</div>}
+
+              <div className="flex flex-col gap-2">
+                <div className="text-xs font-bold text-slate-555 uppercase tracking-wider">
+                  {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                  {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                  {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
+                </div>
+                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center" style={{ maxHeight: '45vh' }}>
+                  <img
+                    src={currentScan.thumbnail_url}
+                    alt="Scan thumbnail"
+                    onLoad={handleImageLoad}
+                    onClick={(e) => {
+                      if (clickedPoints.length >= 2) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setClickedPoints([...clickedPoints, {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top,
+                        dispWidth: rect.width,
+                        dispHeight: rect.height
+                      }]);
+                    }}
+                    onMouseMove={(e) => {
+                      if (clickedPoints.length !== 1) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                    }}
+                    className="max-h-[45vh] object-contain cursor-crosshair max-w-full"
+                  />
+                  <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                    {clickedPoints.map((pt, idx) => (
+                      <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
+                    ))}
+                    {clickedPoints.length === 2 && (
+                      <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={clickedPoints[1].x} y2={clickedPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
+                    )}
+                    {clickedPoints.length === 1 && mousePos && (
+                      <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={mousePos.x} y2={mousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
+                    )}
+                  </svg>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                <button
+                  onClick={() => { setClickedPoints([]); setMousePos(null); }}
+                  disabled={clickedPoints.length === 0 || recalibLoading}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition"
+                >
+                  Reset Points
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
+                    disabled={recalibLoading}
+                    className="px-5 py-2.5 bg-white border border-slate-200 text-[#191919] text-xs font-semibold rounded-xl"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRecalibrate}
+                    disabled={clickedPoints.length < 2 || recalibLoading}
+                    className="px-6 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl shadow-sm flex items-center gap-2"
+                  >
+                    {recalibLoading ? "Recalculating..." : "Confirm Recalibration"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Render Phase 1, 2, 3 Screen
+  return (
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans text-[#191919]">
+      {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
         <Link href="/" className="flex items-center cursor-pointer">
           <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
@@ -253,367 +1052,286 @@ export default function Reconstruct() {
         </div>
       </nav>
 
-      {/* ── Main ────────────────────────────────────────────────── */}
-      <main className="flex-1 flex items-start justify-center pt-28 pb-20 px-4">
+      {/* Main Unified Container */}
+      <main className="flex-1 flex flex-col items-center justify-center pt-28 pb-20 px-4">
+        
+        {/* Persistent Stepper Progress */}
+        <Stepper currentPhase={phase} />
+
         <div className="w-full max-w-lg">
-
-          {/* Heading */}
-          <div className="mb-8">
-            <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
-              New reconstruction
-            </h1>
-            <p className="text-sm text-[#191919]/50 leading-relaxed">
-              Upload a video walkthrough or photo set to start the 3D pipeline.
-            </p>
-          </div>
-
-          {/* ── Reconstruct success card (shown after submit) ── */}
-          {submittedCode && (
-            <div className="mb-6 bg-[#191919] text-white rounded-2xl p-6 flex flex-col gap-4 shadow-md">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">
-                  ✓ Pipeline Started Successfully
-                </p>
-                <p className="text-sm text-white/80 leading-relaxed mt-2">
-                  Your 3D tree reconstruction and carbon estimation pipeline has been queued. Processing typically takes 5–15 minutes.
+          
+          {phase === "upload" && (
+            <>
+              {/* Heading */}
+              <div className="mb-8">
+                <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
+                  New reconstruction
+                </h1>
+                <p className="text-xs text-[#191919]/50 leading-relaxed font-medium">
+                  Upload a video walkthrough or photo set to start the 3D pipeline.
                 </p>
               </div>
-              <div className="flex gap-3 mt-2">
-                <Link
-                  href={`/estimator?code=${encodeURIComponent(submittedCode)}`}
-                  className="flex-1 text-center py-3 bg-white text-[#191919] text-sm font-semibold rounded-xl hover:bg-white/90 transition shadow-sm"
-                >
-                  View your scan →
-                </Link>
-                <button
-                  onClick={() => { setSubmittedCode(null); setProgressMsg(""); setVideoFile(null); setPhotoFiles(null); setTreeCode(""); }}
-                  className="px-5 py-3 text-sm text-white/70 hover:text-white rounded-xl border border-white/10 hover:bg-white/10 transition"
-                >
-                  New scan
-                </button>
-              </div>
-            </div>
-          )}
 
-          {/* Upload form — hidden after successful submit */}
-          {!submittedCode && (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-              {calibrationMode ? (
-                <div className="flex flex-col gap-6 animate-fadeIn">
-                  {/* Header */}
-                  <div>
-                    <h3 className="font-serif text-xl text-[#191919] font-normal">
-                      Mark Trunk Axis (Recommended)
-                    </h3>
-                    <p className="text-xs text-slate-450 mt-1.5 font-medium leading-relaxed">
-                      Click two points on the extracted first frame image:
-                      <br />
-                      1. The <b>BASE/ROOT</b> of the trunk (Green marker).
-                      <br />
-                      2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
-                    </p>
-                  </div>
-
-                  {/* SVG & Image Overlay Container */}
-                  <div className="flex flex-col gap-2">
-                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
-                      {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
-                      {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
-                      {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
-                    </div>
-
-                    <div 
-                      className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
-                      style={{ maxHeight: '40vh' }}
-                    >
-                      <img
-                        src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
-                        alt="Representative extracted frame"
-                        onLoad={(e) => {
-                          const img = e.currentTarget;
-                          setCalibrationImgSize({
-                            width: img.naturalWidth,
-                            height: img.naturalHeight
-                          });
-                        }}
-                        onClick={(e) => {
-                          if (calibrationPoints.length >= 2) return;
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const x = e.clientX - rect.left;
-                          const y = e.clientY - rect.top;
-                          setCalibrationPoints([...calibrationPoints, {
-                            x,
-                            y,
-                            dispWidth: rect.width,
-                            dispHeight: rect.height
-                          }]);
-                        }}
-                        onMouseMove={(e) => {
-                          if (calibrationPoints.length !== 1) return;
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setCalibrationMousePos({
-                            x: e.clientX - rect.left,
-                            y: e.clientY - rect.top
-                          });
-                        }}
-                        className="max-h-[40vh] object-contain cursor-crosshair max-w-full"
-                      />
-
-                      {/* SVG Overlay */}
-                      <svg className="absolute inset-0 pointer-events-none w-full h-full">
-                        {calibrationPoints.map((pt, idx) => (
-                          <circle
-                            key={idx}
-                            cx={pt.x}
-                            cy={pt.y}
-                            r="6"
-                            fill={idx === 0 ? "#10b981" : "#0284c7"}
-                            stroke="white"
-                            strokeWidth="2"
-                          />
-                        ))}
-                        {calibrationPoints.map((pt, idx) => (
-                          <text
-                            key={`lbl-${idx}`}
-                            x={pt.x + 10}
-                            y={pt.y + 4}
-                            fill="white"
-                            fontSize="10"
-                            fontWeight="bold"
-                            style={{ textShadow: '1px 1px 2px black' }}
-                          >
-                            {idx === 0 ? "1: Base" : "2: Top"}
-                          </text>
-                        ))}
-                        {calibrationPoints.length === 2 && (
-                          <line
-                            x1={calibrationPoints[0].x}
-                            y1={calibrationPoints[0].y}
-                            x2={calibrationPoints[1].x}
-                            y2={calibrationPoints[1].y}
-                            stroke="#10b981"
-                            strokeWidth="3"
-                            strokeDasharray="4 4"
-                          />
-                        )}
-                        {calibrationPoints.length === 1 && calibrationMousePos && (
-                          <line
-                            x1={calibrationPoints[0].x}
-                            y1={calibrationPoints[0].y}
-                            x2={calibrationMousePos.x}
-                            y2={calibrationMousePos.y}
-                            stroke="#a855f7"
-                            strokeWidth="2"
-                            strokeDasharray="4 4"
-                            opacity="0.7"
-                          />
-                        )}
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 mt-2">
-                    <div className="flex justify-between items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCalibrationPoints([]);
-                          setCalibrationMousePos(null);
-                        }}
-                        disabled={calibrationPoints.length === 0}
-                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition disabled:opacity-40"
-                      >
-                        Reset Points
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleSkipAndAutoReconstruct}
-                        className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-650 text-xs font-bold rounded-xl transition"
-                      >
-                        Skip & Auto-detect
-                      </button>
-                    </div>
-
+              {/* Upload form container */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
+                  {(["video", "photos"] as const).map((tab) => (
                     <button
+                      key={tab}
                       type="button"
-                      onClick={handleManualReconstruct}
-                      disabled={calibrationPoints.length < 2}
-                      className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
+                      onClick={() => { setActiveTab(tab); setError(null); }}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+                        activeTab === tab
+                          ? "bg-white text-[#191919] shadow-sm border border-slate-200"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
                     >
-                      Use Manual Selection & Reconstruct
+                      {tab === "video" ? "Video" : "Photos"}
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Tabs */}
-                  <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
-                {(["video", "photos"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => { setActiveTab(tab); setError(null); }}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
-                      activeTab === tab
-                        ? "bg-white text-[#191919] shadow-sm border border-slate-200"
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
-                  >
-                    {tab === "video" ? "Video" : "Photos"}
-                  </button>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-
-                {/* Tree code */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                    Tree identifier <span className="normal-case tracking-normal font-normal text-slate-300">(optional — auto-generated if blank)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={treeCode}
-                    onChange={(e) => setTreeCode(e.target.value)}
-                    placeholder="e.g. POHON-0042"
-                    className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
-                    disabled={loading}
-                  />
+                  ))}
                 </div>
 
-                {/* GPS Coordinates */}
-                <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  {/* Tree identifier */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                      Latitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Tree identifier <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
                     </label>
                     <input
-                      type="number"
-                      step="any"
-                      value={latitude}
-                      onChange={(e) => setLatitude(e.target.value)}
-                      placeholder="e.g. -6.2000"
-                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                      type="text"
+                      value={treeCode}
+                      onChange={(e) => setTreeCode(e.target.value)}
+                      placeholder="e.g. POHON-0042"
+                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-450 text-sm font-medium transition"
                       disabled={loading}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                      Longitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={longitude}
-                      onChange={(e) => setLongitude(e.target.value)}
-                      placeholder="e.g. 106.8000"
-                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
 
-                {/* Video tab */}
-                {activeTab === "video" && (
-                  <>
+                  {/* GPS */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">Video file</label>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Latitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                        placeholder="e.g. -6.2000"
+                        className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Longitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                        placeholder="e.g. 106.8000"
+                        className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Video settings */}
+                  {activeTab === "video" && (
+                    <>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Video file</label>
+                        <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
+                          <input
+                            type="file"
+                            accept=".mp4,.mov,.avi,.webm,.mkv"
+                            onChange={handleVideoChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            disabled={loading}
+                          />
+                          <p className="text-sm font-medium text-slate-600">
+                            {videoFile ? videoFile.name : "Click or drag to upload"}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <span>Frames</span><span className="text-[#191919]">{frames}</span>
+                          </div>
+                          <input type="range" min="10" max="100" step="5" value={frames}
+                            onChange={(e) => setFrames(+e.target.value)}
+                            className="w-full accent-slate-900" disabled={loading} />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <span>Blur filter</span><span className="text-[#191919]">{blurThresh}</span>
+                          </div>
+                          <input type="range" min="10" max="200" step="10" value={blurThresh}
+                            onChange={(e) => setBlurThresh(+e.target.value)}
+                            className="w-full accent-slate-900" disabled={loading} />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Photos list */}
+                  {activeTab === "photos" && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Photo files</label>
                       <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
                         <input
                           type="file"
-                          accept=".mp4,.mov,.avi,.webm,.mkv"
-                          onChange={handleVideoChange}
+                          multiple
+                          accept="image/*"
+                          onChange={handlePhotosChange}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           disabled={loading}
                         />
                         <p className="text-sm font-medium text-slate-600">
-                          {videoFile ? videoFile.name : "Click or drag to upload"}
+                          {photoFiles ? `${photoFiles.length} photos selected` : "Click or drag to upload"}
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI, WEBM, MKV — up to 4 GB</p>
+                        <p className="text-xs text-slate-400 mt-1">Select multiple images covering all angles</p>
                       </div>
                     </div>
+                  )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between text-xs font-semibold uppercase tracking-widest text-slate-400">
-                          <span>Frames</span><span className="text-[#191919]">{frames}</span>
-                        </div>
-                        <input type="range" min="10" max="100" step="5" value={frames}
-                          onChange={(e) => setFrames(+e.target.value)}
-                          className="w-full accent-slate-900" disabled={loading} />
+                  {/* Loader progress */}
+                  {loading && (
+                    <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
+                        <p className="text-xs text-slate-600">{progressMsg}</p>
                       </div>
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between text-xs font-semibold uppercase tracking-widest text-slate-400">
-                          <span>Blur filter</span><span className="text-[#191919]">{blurThresh}</span>
-                        </div>
-                        <input type="range" min="10" max="200" step="10" value={blurThresh}
-                          onChange={(e) => setBlurThresh(+e.target.value)}
-                          className="w-full accent-slate-900" disabled={loading} />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-655 text-xs font-semibold rounded-lg border border-red-100 transition"
+                      >
+                        Cancel Reconstruction
+                      </button>
                     </div>
-                  </>
-                )}
+                  )}
 
-                {/* Photos tab */}
-                {activeTab === "photos" && (
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-widest text-slate-400">Photo files</label>
-                    <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handlePhotosChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={loading}
-                      />
-                      <p className="text-sm font-medium text-slate-600">
-                        {photoFiles ? `${photoFiles.length} photos selected` : "Click or drag to upload"}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">Select multiple images covering all angles</p>
-                    </div>
-                  </div>
-                )}
+                  {error && <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>}
 
-                {/* Progress with Cancel button */}
-                {loading && (
-                  <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
-                      <p className="text-xs text-slate-600">{progressMsg}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-100 transition"
-                    >
-                      Cancel Reconstruction
-                    </button>
-                  </div>
-                )}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-sm font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1"
+                  >
+                    {loading ? "Processing Upload..." : "Upload & Reconstruct"}
+                  </button>
+                </form>
+              </div>
+            </>
+          )}
 
-                {/* Error */}
-                {error && (
-                  <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                    {error}
-                  </p>
-                )}
+          {phase === "marking" && (
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
+              <div>
+                <h3 className="font-serif text-xl text-[#191919] font-normal">
+                  Mark Trunk Axis (Recommended)
+                </h3>
+                <p className="text-xs text-slate-450 mt-1.5 font-medium leading-relaxed">
+                  Click two points on the extracted first frame image:
+                  <br />
+                  1. The <b>BASE/ROOT</b> of the trunk (Green marker).
+                  <br />
+                  2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
+                </p>
+              </div>
 
-                {/* Submit */}
+              <div className="flex flex-col gap-2">
+                <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                  {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                  {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                  {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
+                </div>
+
+                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: '40vh' }}>
+                  <img
+                    src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
+                    alt="Extracted Frame"
+                    onLoad={(e) => {
+                      setCalibrationImgSize({
+                        width: e.currentTarget.naturalWidth,
+                        height: e.currentTarget.naturalHeight
+                      });
+                    }}
+                    onClick={(e) => {
+                      if (calibrationPoints.length >= 2) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setCalibrationPoints([...calibrationPoints, {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top,
+                        dispWidth: rect.width,
+                        dispHeight: rect.height
+                      }]);
+                    }}
+                    onMouseMove={(e) => {
+                      if (calibrationPoints.length !== 1) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setCalibrationMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                    }}
+                    className="max-h-[40vh] object-contain cursor-crosshair max-w-full"
+                  />
+                  <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                    {calibrationPoints.map((pt, idx) => (
+                      <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
+                    ))}
+                    {calibrationPoints.map((pt, idx) => (
+                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: '1px 1px 2px black' }}>
+                        {idx === 0 ? "1: Base" : "2: Top"}
+                      </text>
+                    ))}
+                    {calibrationPoints.length === 2 && (
+                      <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationPoints[1].x} y2={calibrationPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
+                    )}
+                    {calibrationPoints.length === 1 && calibrationMousePos && (
+                      <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationMousePos.x} y2={calibrationMousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
+                    )}
+                  </svg>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 mt-2">
+                <div className="flex justify-between items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setCalibrationPoints([]); setCalibrationMousePos(null); }}
+                    disabled={calibrationPoints.length === 0}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition"
+                  >
+                    Reset Points
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkipAndAutoReconstruct}
+                    className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-650 text-xs font-bold rounded-xl transition"
+                  >
+                    Skip & Auto-detect
+                  </button>
+                </div>
+
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-sm font-medium rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1"
+                  type="button"
+                  onClick={handleManualReconstruct}
+                  disabled={calibrationPoints.length < 2}
+                  className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
                 >
-                  {loading ? "Initializing…" : "Upload & Reconstruct"}
+                  Use Manual Selection & Reconstruct
                 </button>
-
-              </form>
-              </>
-              )}
+              </div>
             </div>
           )}
+
+          {phase === "processing" && renderProcessing()}
 
         </div>
       </main>
