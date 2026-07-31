@@ -81,7 +81,8 @@ export default function HistoryPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${BACKEND_URL}/scans?limit=${PAGE_LIMIT}&offset=${currentOffset}`);
+      const res = await fetch(`${BACKEND_URL}/scans?limit=${PAGE_LIMIT}&offset=${currentOffset}`, { cache: 'no-store' });
+
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
       
