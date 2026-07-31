@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface ScanRecord {
@@ -70,6 +70,16 @@ export default function Dashboard() {
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
 
+  const lastSplatUrlRef = useRef<string | null>(null);
+
+  // States for 2D Recalibration modal
+  const [recalibModalOpen, setRecalibModalOpen] = useState(false);
+  const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
+  const [imgDimensions, setImgDimensions] = useState<{width: number, height: number} | null>(null);
+  const [recalibLoading, setRecalibLoading] = useState(false);
+  const [recalibError, setRecalibError] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{x: number, y: number} | null>(null);
+
   const fetchTreeHistory = async (code: string) => {
     setLoading(true);
     setError(null);
@@ -93,6 +103,60 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRecalibrate = async () => {
+    if (clickedPoints.length < 2 || !imgDimensions || !currentScan) return;
+    setRecalibLoading(true);
+    setRecalibError(null);
+    try {
+      const W_org = imgDimensions.width;
+      const H_org = imgDimensions.height;
+      const p1_org = [
+        (clickedPoints[0].x / clickedPoints[0].dispWidth) * W_org,
+        (clickedPoints[0].y / clickedPoints[0].dispHeight) * H_org
+      ];
+      const p2_org = [
+        (clickedPoints[1].x / clickedPoints[1].dispWidth) * W_org,
+        (clickedPoints[1].y / clickedPoints[1].dispHeight) * H_org
+      ];
+
+      const res = await fetch(`${BACKEND_URL}/scan/${currentScan.id}/recalculate`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p1: p1_org,
+          p2: p2_org,
+          width: W_org,
+          height: H_org
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to recalculate scan");
+      }
+
+      await fetchTreeHistory(currentScan.tree_code);
+      setRecalibModalOpen(false);
+      setClickedPoints([]);
+
+      const iframe = document.querySelector('iframe');
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'vora_metrics_updated', tree_code: currentScan.tree_code }, '*');
+      }
+    } catch (err: any) {
+      setRecalibError(err.message || "An unexpected error occurred.");
+    } finally {
+      setRecalibLoading(false);
+    }
+  };
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setImgDimensions({
+      width: e.currentTarget.naturalWidth,
+      height: e.currentTarget.naturalHeight
+    });
   };
 
   const pollStatus = async () => {
@@ -147,10 +211,18 @@ export default function Dashboard() {
     return () => window.removeEventListener('message', handler);
   }, []);
 
-  // Reset scene loaded state when scan changes so the UI hides again while new scene loads
+  // Reset scene loaded state only when splat_file_url changes so the UI hides again while new scene loads
   useEffect(() => {
-    if (currentScan) setSceneLoaded(false);
-  }, [currentScan?.id]);
+    if (currentScan) {
+      if (currentScan.splat_file_url !== lastSplatUrlRef.current) {
+        setSceneLoaded(false);
+        lastSplatUrlRef.current = currentScan.splat_file_url;
+      }
+    } else {
+      setSceneLoaded(false);
+      lastSplatUrlRef.current = null;
+    }
+  }, [currentScan?.id, currentScan?.splat_file_url]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,7 +285,7 @@ export default function Dashboard() {
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
-          style={{ opacity: sceneLoaded ? 1 : 0, pointerEvents: sceneLoaded ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.1s' }}
+          style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.1s' }}
           className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95"
           aria-label="Toggle Details Drawer"
         >
@@ -288,7 +360,7 @@ export default function Dashboard() {
         className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{ opacity: sceneLoaded ? 1 : 0, pointerEvents: sceneLoaded ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.15s, transform 0.3s ease' }}
+        style={{ opacity: (!currentScan || sceneLoaded) ? 1 : 0, pointerEvents: (!currentScan || sceneLoaded) ? 'auto' : 'none', transition: 'opacity 0.5s ease 0.15s, transform 0.3s ease' }}
       >
         {/* Sidebar Header */}
         <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
@@ -511,6 +583,23 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Recalibrate Trunk (2D) Action Button */}
+          {currentScan && (
+            <button
+              onClick={() => {
+                setClickedPoints([]);
+                setRecalibError(null);
+                setRecalibModalOpen(true);
+              }}
+              className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2 mt-2"
+            >
+              <svg className="w-4 h-4 text-emerald-450" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
+              </svg>
+              Recalibrate Trunk (2D Photo)
+            </button>
+          )}
+
           {/* Section 3: Interactive Scan History Timeline */}
           {history.length > 0 && (
             <div>
@@ -596,6 +685,180 @@ export default function Dashboard() {
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-[#ffffff] text-xs px-5 py-3 rounded-xl shadow-lg">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="opacity-50 hover:opacity-100 transition">✕</button>
+        </div>
+      )}
+      {/* ── 2D Recalibration Modal ────────────────────────────── */}
+      {recalibModalOpen && currentScan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="font-serif text-xl text-[#191919] font-normal">
+                  Recalibrate Trunk Axis
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 font-medium">
+                  Click two points on the 2D image to set the trunk direction.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setRecalibModalOpen(false);
+                  setClickedPoints([]);
+                }}
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-xs transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Error message */}
+            {recalibError && (
+              <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-medium">
+                {recalibError}
+              </div>
+            )}
+
+            {/* Interactive Image Container */}
+            <div className="flex flex-col gap-2">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
+              </div>
+
+              <div 
+                className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
+                style={{ maxHeight: '50vh' }}
+              >
+                <img
+                  src={currentScan.thumbnail_url}
+                  alt="Representative Scan Frame"
+                  onLoad={handleImageLoad}
+                  onClick={(e) => {
+                    if (clickedPoints.length >= 2) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    setClickedPoints([...clickedPoints, {
+                      x,
+                      y,
+                      dispWidth: rect.width,
+                      dispHeight: rect.height
+                    }]);
+                  }}
+                  onMouseMove={(e) => {
+                    if (clickedPoints.length !== 1) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setMousePos({
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top
+                    });
+                  }}
+                  className="max-h-[50vh] object-contain cursor-crosshair max-w-full"
+                />
+
+                {/* SVG Overlay to draw points & lines */}
+                <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                  {clickedPoints.map((pt, idx) => (
+                    <circle
+                      key={idx}
+                      cx={pt.x}
+                      cy={pt.y}
+                      r="6"
+                      fill={idx === 0 ? "#10b981" : "#0284c7"}
+                      stroke="white"
+                      strokeWidth="2"
+                    />
+                  ))}
+                  {/* Click labels */}
+                  {clickedPoints.map((pt, idx) => (
+                    <text
+                      key={`lbl-${idx}`}
+                      x={pt.x + 10}
+                      y={pt.y + 4}
+                      fill="white"
+                      fontSize="10"
+                      fontWeight="bold"
+                      style={{ textShadow: '1px 1px 2px black' }}
+                    >
+                      {idx === 0 ? "1: Base" : "2: Top"}
+                    </text>
+                  ))}
+                  {/* Dotted axis line */}
+                  {clickedPoints.length === 2 && (
+                    <line
+                      x1={clickedPoints[0].x}
+                      y1={clickedPoints[0].y}
+                      x2={clickedPoints[1].x}
+                      y2={clickedPoints[1].y}
+                      stroke="#10b981"
+                      strokeWidth="3"
+                      strokeDasharray="4 4"
+                    />
+                  )}
+                  {/* Hover preview line */}
+                  {clickedPoints.length === 1 && mousePos && (
+                    <line
+                      x1={clickedPoints[0].x}
+                      y1={clickedPoints[0].y}
+                      x2={mousePos.x}
+                      y2={mousePos.y}
+                      stroke="#a855f7"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                      opacity="0.7"
+                    />
+                  )}
+                </svg>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setClickedPoints([]);
+                  setMousePos(null);
+                  setRecalibError(null);
+                }}
+                disabled={clickedPoints.length === 0 || recalibLoading}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Reset Points
+              </button>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecalibModalOpen(false);
+                    setClickedPoints([]);
+                  }}
+                  disabled={recalibLoading}
+                  className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-[#191919] text-xs font-semibold rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRecalibrate}
+                  disabled={clickedPoints.length < 2 || recalibLoading}
+                  className="px-6 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {recalibLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Recalculating...
+                    </>
+                  ) : (
+                    "Confirm Recalibration"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
