@@ -90,6 +90,28 @@ export default function Reconstruct() {
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
 
+  const getSpeciesPredictions = (scan: any) => {
+    if (!scan || !scan.species_predictions) return [];
+    let preds = scan.species_predictions;
+    if (typeof preds === "string") {
+      try {
+        preds = JSON.parse(preds);
+      } catch {
+        return [];
+      }
+    }
+    if (typeof preds === "string") {
+      try {
+        preds = JSON.parse(preds);
+      } catch {
+        return [];
+      }
+    }
+    return Array.isArray(preds) ? preds : [];
+  };
+
+  const predictions = getSpeciesPredictions(currentScan);
+
   // Recalibration modal states (in Result phase)
   const [recalibModalOpen, setRecalibModalOpen] = useState(false);
   const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
@@ -97,6 +119,7 @@ export default function Reconstruct() {
   const [recalibLoading, setRecalibLoading] = useState(false);
   const [recalibError, setRecalibError] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState<{x: number, y: number} | null>(null);
+  const [isEditing3D, setIsEditing3D] = useState(false);
   const lastSplatUrlRef = useRef<string | null>(null);
 
   // ── URL sync helper ──────────────────────────────────────────────────────
@@ -277,7 +300,14 @@ export default function Reconstruct() {
       if (e.data === "vora_scene_loaded") {
         setSceneLoaded(true);
       } else if (e.data?.type === "vora_metrics_updated") {
-        if (e.data.tree_code) fetchTreeHistory(e.data.tree_code);
+        setIsEditing3D(false);
+        if (e.data.tree_code) {
+          fetchTreeHistory(e.data.tree_code);
+          const iframe = document.querySelector("iframe");
+          if (iframe?.contentWindow) {
+            iframe.contentWindow.postMessage({ type: "vora_metrics_updated", tree_code: e.data.tree_code }, "*");
+          }
+        }
       }
     };
     window.addEventListener("message", handler);
@@ -793,7 +823,7 @@ export default function Reconstruct() {
         <div className="absolute inset-0 z-0 bg-white pt-[68px]">
           {currentScan ? (
             <iframe
-              src={`${BACKEND_URL}/viewer.html?v=11&url=${encodeURIComponent(currentScan.splat_file_url)}`}
+              src={`${BACKEND_URL}/viewer.html?v=11&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}`}
               allow="xr-spatial-tracking; autoplay; fullscreen"
               className="w-full h-full border-none"
               title="3D Tree Gaussian Splat Viewer"
@@ -1005,9 +1035,9 @@ export default function Reconstruct() {
                   </span>
                 </div>
 
-                {currentScan.species_predictions && currentScan.species_predictions.length > 0 ? (
+                {predictions && predictions.length > 0 ? (
                   <div className="space-y-3">
-                    {currentScan.species_predictions[0] && (
+                    {predictions[0] && (
                       <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-slate-50 border border-emerald-100 relative overflow-hidden">
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -1015,17 +1045,17 @@ export default function Reconstruct() {
                               Top Specimen Match
                             </span>
                             <h4 className="text-sm font-semibold text-[#191919] italic font-serif">
-                              {currentScan.species_predictions[0].scientific_name}
+                              {predictions[0]?.scientific_name ?? "Unknown"}
                             </h4>
-                            {currentScan.species_predictions[0].common_name && (
+                            {predictions[0]?.common_name && (
                               <p className="text-xs text-slate-500 font-medium capitalize mt-0.5">
-                                {currentScan.species_predictions[0].common_name}
+                                {predictions[0]?.common_name}
                               </p>
                             )}
                           </div>
                           <div className="flex flex-col items-end">
                             <span className="text-sm font-bold text-emerald-700 font-serif">
-                              {currentScan.species_predictions[0].confidence.toFixed(1)}%
+                              {(predictions[0]?.confidence ?? 0).toFixed(1)}%
                             </span>
                             <span className="text-[9px] text-emerald-600/70 font-medium">Confidence</span>
                           </div>
@@ -1033,19 +1063,19 @@ export default function Reconstruct() {
                         <div className="w-full h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-3">
                           <div
                             className="h-full bg-emerald-500 rounded-full transition-all duration-700"
-                            style={{ width: `${currentScan.species_predictions[0].confidence}%` }}
+                            style={{ width: `${predictions[0]?.confidence ?? 0}%` }}
                           />
                         </div>
                       </div>
                     )}
 
-                    {currentScan.species_predictions.length > 1 && (
+                    {predictions.length > 1 && (
                       <div className="space-y-2 pt-1">
                         <span className="text-[10px] font-medium text-slate-400 block px-1">
                           Other Probable Candidates
                         </span>
                         <div className="divide-y divide-slate-100">
-                          {currentScan.species_predictions.slice(1).map((pred, idx) => (
+                          {predictions.slice(1).map((pred, idx) => (
                             <div key={idx} className="py-2 px-1 flex items-center justify-between hover:bg-slate-50/50 rounded-lg transition-colors">
                               <div>
                                 <span className="text-xs font-medium text-[#191919] italic block">
@@ -1058,7 +1088,7 @@ export default function Reconstruct() {
                                 )}
                               </div>
                               <span className="text-xs font-medium text-slate-400">
-                                {pred.confidence.toFixed(1)}%
+                                {(pred.confidence ?? 0).toFixed(1)}%
                               </span>
                             </div>
                           ))}
@@ -1104,8 +1134,8 @@ export default function Reconstruct() {
                       <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
                       <div className="space-y-1 text-slate-600 font-medium">
                         <div>Species Matched: <span className="font-semibold text-[#191919] italic">
-                          {currentScan.species_predictions?.[0]
-                            ? `${currentScan.species_predictions[0].scientific_name} (${currentScan.species_predictions[0].confidence.toFixed(1)}%)`
+                          {predictions?.[0]
+                            ? `${predictions[0].scientific_name ?? "Unknown"} (${(predictions[0].confidence ?? 0).toFixed(1)}%)`
                             : "None (Generic Fallback)"}
                         </span></div>
                         <div>Wood Density (ρ): <span className="font-semibold text-[#191919]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
@@ -1156,22 +1186,72 @@ export default function Reconstruct() {
               </div>
             )}
 
-            {/* Recalibrate Trunk */}
+            {/* 3D manual alignment and recalibration controls */}
             {currentScan && (
-              <button
-                onClick={() => {
-                  setClickedPoints([]);
-                  setRecalibError(null);
-                  setMousePos(null);
-                  setRecalibModalOpen(true);
-                }}
-                className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2 mt-2"
-              >
-                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
-                </svg>
-                Recalibrate Trunk (2D Photo)
-              </button>
+              <div className="flex flex-col gap-2 mt-2">
+                {isEditing3D ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        const iframe = document.querySelector("iframe");
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: "save_3d_edit" }, "*");
+                        }
+                      }}
+                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Save 3D Alignment
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing3D(false);
+                        const iframe = document.querySelector("iframe");
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: "cancel_3d_edit" }, "*");
+                        }
+                      }}
+                      className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      Cancel Edit
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setClickedPoints([]);
+                        setRecalibError(null);
+                        setMousePos(null);
+                        setRecalibModalOpen(true);
+                      }}
+                      className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
+                      </svg>
+                      Recalibrate Trunk (2D Photo)
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing3D(true);
+                        const iframe = document.querySelector("iframe");
+                        if (iframe && iframe.contentWindow) {
+                          iframe.contentWindow.postMessage({ type: "start_3d_edit" }, "*");
+                        }
+                      }}
+                      className="w-full py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit 3D Alignment (Manual)
+                    </button>
+                  </>
+                )}
+              </div>
             )}
 
             {/* Scan History Timeline */}
@@ -1265,7 +1345,7 @@ export default function Reconstruct() {
         {/* 2D Recalibration Modal */}
         {recalibModalOpen && currentScan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="font-serif text-xl text-[#191919] font-normal">Recalibrate Trunk Axis</h3>
@@ -1285,55 +1365,112 @@ export default function Reconstruct() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-2">
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
-                  {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
-                  {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                    {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                    {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                    {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
+                  </div>
+
+                  <div
+                    className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
+                    style={{ maxHeight: "50vh" }}
+                  >
+                    <img
+                      src={currentScan.thumbnail_url}
+                      alt="Representative Scan Frame"
+                      onLoad={handleImageLoad}
+                      onClick={(e) => {
+                        if (clickedPoints.length >= 2) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setClickedPoints([...clickedPoints, {
+                          x: e.clientX - rect.left,
+                          y: e.clientY - rect.top,
+                          dispWidth: rect.width,
+                          dispHeight: rect.height,
+                        }]);
+                      }}
+                      onMouseMove={(e) => {
+                        if (clickedPoints.length !== 1) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                      }}
+                      className="max-h-[50vh] object-contain cursor-crosshair max-w-full"
+                    />
+
+                    <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                      {clickedPoints.map((pt, idx) => (
+                        <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
+                      ))}
+                      {clickedPoints.map((pt, idx) => (
+                        <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
+                          {idx === 0 ? "1: Base" : "2: Top"}
+                        </text>
+                      ))}
+                      {clickedPoints.length === 2 && (
+                        <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={clickedPoints[1].x} y2={clickedPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
+                      )}
+                      {clickedPoints.length === 1 && mousePos && (
+                        <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={mousePos.x} y2={mousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
+                      )}
+                    </svg>
+                  </div>
                 </div>
 
-                <div
-                  className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
-                  style={{ maxHeight: "50vh" }}
-                >
-                  <img
-                    src={currentScan.thumbnail_url}
-                    alt="Representative Scan Frame"
-                    onLoad={handleImageLoad}
-                    onClick={(e) => {
-                      if (clickedPoints.length >= 2) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setClickedPoints([...clickedPoints, {
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top,
-                        dispWidth: rect.width,
-                        dispHeight: rect.height,
-                      }]);
-                    }}
-                    onMouseMove={(e) => {
-                      if (clickedPoints.length !== 1) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-                    }}
-                    className="max-h-[50vh] object-contain cursor-crosshair max-w-full"
-                  />
+                {/* VISUAL GUIDE CARD */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 h-fit">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Trunk Click Guide</h4>
+                  <div className="flex justify-center py-2 bg-white rounded-xl border border-slate-100">
+                    <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
+                      {/* Ground */}
+                      <path d="M10 135C40 135 80 135 110 135" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round"/>
+                      
+                      {/* Root Flare (Incorrect zone) */}
+                      <path d="M40 90C40 110 30 130 15 135C45 135 50 120 60 120C70 120 75 135 105 135C90 130 80 110 80 90Z" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1.5" />
+                      
+                      {/* Trunk (Straight cylinder) */}
+                      <rect x="45" y="30" width="30" height="70" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1.5" />
+                      
+                      {/* Leaves / Canopy */}
+                      <circle cx="60" cy="25" r="20" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
+                      <circle cx="45" cy="20" r="15" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
+                      <circle cx="75" cy="20" r="15" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
 
-                  <svg className="absolute inset-0 pointer-events-none w-full h-full">
-                    {clickedPoints.map((pt, idx) => (
-                      <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
-                    ))}
-                    {clickedPoints.map((pt, idx) => (
-                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
-                        {idx === 0 ? "1: Base" : "2: Top"}
-                      </text>
-                    ))}
-                    {clickedPoints.length === 2 && (
-                      <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={clickedPoints[1].x} y2={clickedPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
-                    )}
-                    {clickedPoints.length === 1 && mousePos && (
-                      <line x1={clickedPoints[0].x} y1={clickedPoints[0].y} x2={mousePos.x} y2={mousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
-                    )}
-                  </svg>
+                      {/* Dotted Axis Line */}
+                      <line x1="60" y1="90" x2="60" y2="40" stroke="#10b981" strokeWidth="2" strokeDasharray="3 3" />
+
+                      {/* Correct clicks */}
+                      {/* Pt 2 (Top) */}
+                      <circle cx="60" cy="45" r="5" fill="#0284c7" stroke="white" strokeWidth="1.5" />
+                      <text x="70" y="48" fill="#0284c7" fontSize="9" fontWeight="bold">Pt 2 (Top)</text>
+                      
+                      {/* Pt 1 (Base) */}
+                      <circle cx="60" cy="85" r="5" fill="#10b981" stroke="white" strokeWidth="1.5" />
+                      <text x="70" y="88" fill="#10b981" fontSize="9" fontWeight="bold">Pt 1 (Base)</text>
+
+                      {/* Too Low Warning Zone */}
+                      <circle cx="60" cy="120" r="6" fill="#ef4444" />
+                      <line x1="57" y1="117" x2="63" y2="123" stroke="white" strokeWidth="1.5" />
+                      <line x1="63" y1="117" x2="57" y2="123" stroke="white" strokeWidth="1.5" />
+                      <text x="12" y="112" fill="#ef4444" fontSize="8" fontWeight="bold">Too Low (Root Flare)</text>
+                      <path d="M50 115C35 115 30 115 25 115" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <ul className="text-[11px] text-slate-500 space-y-2 leading-normal">
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 font-bold shrink-0">✗</span>
+                      <span className="text-red-600/80"><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
 
@@ -1404,7 +1541,7 @@ export default function Reconstruct() {
         {/* Stepper */}
         <Stepper currentPhase={phase} />
 
-        <div className="w-full max-w-lg">
+        <div className={`w-full transition-all duration-300 ${phase === "marking" ? "max-w-3xl" : "max-w-lg"}`}>
 
           {/* ── Phase 1: Upload ── */}
           {phase === "upload" && (
@@ -1586,56 +1723,113 @@ export default function Reconstruct() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
-                  {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
-                  {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
-                  {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
+                <div className="flex flex-col gap-2">
+                  <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                    {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
+                    {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
+                    {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
+                  </div>
+
+                  <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
+                    <img
+                      src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
+                      alt="Extracted Frame"
+                      onLoad={(e) => {
+                        setCalibrationImgSize({
+                          width: e.currentTarget.naturalWidth,
+                          height: e.currentTarget.naturalHeight,
+                        });
+                      }}
+                      onClick={(e) => {
+                        if (calibrationPoints.length >= 2) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setCalibrationPoints([...calibrationPoints, {
+                          x: e.clientX - rect.left,
+                          y: e.clientY - rect.top,
+                          dispWidth: rect.width,
+                          dispHeight: rect.height,
+                        }]);
+                      }}
+                      onMouseMove={(e) => {
+                        if (calibrationPoints.length !== 1) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setCalibrationMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                      }}
+                      className="max-h-[40vh] object-contain cursor-crosshair max-w-full"
+                    />
+                    <svg className="absolute inset-0 pointer-events-none w-full h-full">
+                      {calibrationPoints.map((pt, idx) => (
+                        <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
+                      ))}
+                      {calibrationPoints.map((pt, idx) => (
+                        <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
+                          {idx === 0 ? "1: Base" : "2: Top"}
+                        </text>
+                      ))}
+                      {calibrationPoints.length === 2 && (
+                        <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationPoints[1].x} y2={calibrationPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
+                      )}
+                      {calibrationPoints.length === 1 && calibrationMousePos && (
+                        <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationMousePos.x} y2={calibrationMousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
+                      )}
+                    </svg>
+                  </div>
                 </div>
 
-                <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
-                  <img
-                    src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
-                    alt="Extracted Frame"
-                    onLoad={(e) => {
-                      setCalibrationImgSize({
-                        width: e.currentTarget.naturalWidth,
-                        height: e.currentTarget.naturalHeight,
-                      });
-                    }}
-                    onClick={(e) => {
-                      if (calibrationPoints.length >= 2) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setCalibrationPoints([...calibrationPoints, {
-                        x: e.clientX - rect.left,
-                        y: e.clientY - rect.top,
-                        dispWidth: rect.width,
-                        dispHeight: rect.height,
-                      }]);
-                    }}
-                    onMouseMove={(e) => {
-                      if (calibrationPoints.length !== 1) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setCalibrationMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-                    }}
-                    className="max-h-[40vh] object-contain cursor-crosshair max-w-full"
-                  />
-                  <svg className="absolute inset-0 pointer-events-none w-full h-full">
-                    {calibrationPoints.map((pt, idx) => (
-                      <circle key={idx} cx={pt.x} cy={pt.y} r="6" fill={idx === 0 ? "#10b981" : "#0284c7"} stroke="white" strokeWidth="2" />
-                    ))}
-                    {calibrationPoints.map((pt, idx) => (
-                      <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
-                        {idx === 0 ? "1: Base" : "2: Top"}
-                      </text>
-                    ))}
-                    {calibrationPoints.length === 2 && (
-                      <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationPoints[1].x} y2={calibrationPoints[1].y} stroke="#10b981" strokeWidth="3" strokeDasharray="4 4" />
-                    )}
-                    {calibrationPoints.length === 1 && calibrationMousePos && (
-                      <line x1={calibrationPoints[0].x} y1={calibrationPoints[0].y} x2={calibrationMousePos.x} y2={calibrationMousePos.y} stroke="#a855f7" strokeWidth="2" strokeDasharray="4 4" opacity="0.7" />
-                    )}
-                  </svg>
+                {/* VISUAL GUIDE CARD */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 h-fit">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Trunk Click Guide</h4>
+                  <div className="flex justify-center py-2 bg-white rounded-xl border border-slate-100">
+                    <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
+                      {/* Ground */}
+                      <path d="M10 135C40 135 80 135 110 135" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round"/>
+                      
+                      {/* Root Flare (Incorrect zone) */}
+                      <path d="M40 90C40 110 30 130 15 135C45 135 50 120 60 120C70 120 75 135 105 135C90 130 80 110 80 90Z" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1.5" />
+                      
+                      {/* Trunk (Straight cylinder) */}
+                      <rect x="45" y="30" width="30" height="70" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1.5" />
+                      
+                      {/* Leaves / Canopy */}
+                      <circle cx="60" cy="25" r="20" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
+                      <circle cx="45" cy="20" r="15" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
+                      <circle cx="75" cy="20" r="15" fill="#def7ec" stroke="#bcefdb" strokeWidth="1.5" />
+
+                      {/* Dotted Axis Line */}
+                      <line x1="60" y1="90" x2="60" y2="40" stroke="#10b981" strokeWidth="2" strokeDasharray="3 3" />
+
+                      {/* Correct clicks */}
+                      {/* Pt 2 (Top) */}
+                      <circle cx="60" cy="45" r="5" fill="#0284c7" stroke="white" strokeWidth="1.5" />
+                      <text x="70" y="48" fill="#0284c7" fontSize="9" fontWeight="bold">Pt 2 (Top)</text>
+                      
+                      {/* Pt 1 (Base) */}
+                      <circle cx="60" cy="85" r="5" fill="#10b981" stroke="white" strokeWidth="1.5" />
+                      <text x="70" y="88" fill="#10b981" fontSize="9" fontWeight="bold">Pt 1 (Base)</text>
+
+                      {/* Too Low Warning Zone */}
+                      <circle cx="60" cy="120" r="6" fill="#ef4444" />
+                      <line x1="57" y1="117" x2="63" y2="123" stroke="white" strokeWidth="1.5" />
+                      <line x1="63" y1="117" x2="57" y2="123" stroke="white" strokeWidth="1.5" />
+                      <text x="12" y="112" fill="#ef4444" fontSize="8" fontWeight="bold">Too Low (Root Flare)</text>
+                      <path d="M50 115C35 115 30 115 25 115" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <ul className="text-[11px] text-slate-500 space-y-2 leading-normal">
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-500 font-bold shrink-0">✗</span>
+                      <span className="text-red-600/80"><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
 
