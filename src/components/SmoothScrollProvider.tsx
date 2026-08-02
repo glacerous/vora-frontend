@@ -17,6 +17,14 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
       smoothWheel: true,
     });
 
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
     function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -26,6 +34,7 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
 
     // Clean up
     return () => {
+      resizeObserver.disconnect();
       lenis.destroy();
     };
   }, []);
