@@ -44,6 +44,20 @@ interface ScanRecord {
   gps_lat?: number | null;
   gps_lon?: number | null;
   thumbnail_url?: string;
+  scale_status?: string;
+  scale_factor_used?: number;
+  calibration_source?: string;
+  height_used?: string;
+  total_height_used_m?: number | null;
+  segment_height_m?: number | null;
+  height_fallback_reason?: string;
+  height_validated?: boolean;
+  height_validation_reason?: string;
+  quality_status?: string;
+  root_to_shoot_ratio?: number;
+  co2e_uncertainty_pct?: number;
+  co2e_low_kg?: number | null;
+  co2e_high_kg?: number | null;
 }
 
 // ── Main Page Component ─────────────────────────────────────────────────────
@@ -895,6 +909,40 @@ export default function Reconstruct() {
               pointerEvents: sceneLoaded ? "auto" : "none",
             }}
           >
+            {currentScan.scale_status === "uncalibrated" && (
+              <div className="bg-red-600/95 backdrop-blur-sm border border-red-700 text-white text-[11px] sm:text-xs font-bold px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 max-w-md sm:max-w-2xl animate-pulse">
+                <svg className="w-5 h-5 text-white shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>
+                  ⚠ HASIL BELUM DIKALIBRASI SKALA — angka DBH/karbon memakai unit PLY default dan
+                  TIDAK DAPAT DIANDALKAN. Lakukan kalibrasi skala (calibrate_scale.py / auto-pose)
+                  sebelum mempercayai hasil.
+                </span>
+              </div>
+            )}
+
+            {currentScan.quality_status === "low_points" && (
+              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
+                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Kualitas rendah: terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.</span>
+              </div>
+            )}
+
+            {currentScan.height_used === "user_manual_height" && (
+              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
+                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>
+                  Tinggi diinput manual oleh user — nilai TIDAK divalidasi otomatis terhadap point cloud
+                  (sepenuhnya tanggung jawab input user).
+                </span>
+              </div>
+            )}
+
             {currentScan.confidence_note?.includes("WARNING") && (
               <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
                 <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1153,6 +1201,21 @@ export default function Reconstruct() {
                         </span></div>
                         <div>Climate Zone (Köppen): <span className="font-semibold text-[#191919]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
                         <div>Formula Used: <span className="font-semibold text-emerald-800">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
+                        <div>Height Usage: <span className="font-semibold text-[#191919]">
+                          {currentScan.height_used === "full_height"
+                            ? `Full tree height (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`
+                            : currentScan.height_used === "user_manual_height"
+                              ? `Manual height input (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`
+                              : "DBH-only (tinggi tidak dipakai)"}
+                        </span></div>
+                        {currentScan.height_validated === false && currentScan.height_validation_reason && (
+                          <div className="text-[10px] text-amber-700/80">Catatan validasi: {currentScan.height_validation_reason}</div>
+                        )}
+                        {currentScan.height_used === "dbh_only_fallback" && currentScan.height_fallback_reason && (
+                          <div className="text-[10px] text-amber-700/80">Alasan: {currentScan.height_fallback_reason}</div>
+                        )}
+                        <div>Root-to-Shoot Ratio: <span className="font-semibold text-[#191919]">{currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"}</span></div>
+                        <div>Scale Status: <span className={`font-semibold ${currentScan.scale_status === "calibrated" ? "text-emerald-700" : "text-red-600"}`}>{currentScan.scale_status === "calibrated" ? "Calibrated" : "Uncalibrated"}</span>{currentScan.scale_factor_used != null && currentScan.scale_factor_used !== 1.0 ? ` (×${currentScan.scale_factor_used?.toFixed(4)})` : ""}</div>
                       </div>
                     </div>
 
@@ -1165,7 +1228,7 @@ export default function Reconstruct() {
                         </div>
                         <div className="flex justify-between">
                           <span>Below-Ground Biomass (BGB):</span>
-                          <span className="font-semibold text-[#191919]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(AGB × 0.24)</span></span>
+                          <span className="font-semibold text-[#191919]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(AGB × {currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"})</span></span>
                         </div>
                         <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5 font-bold">
                           <span className="text-[#191919]">Total Dry Biomass:</span>
@@ -1179,6 +1242,11 @@ export default function Reconstruct() {
                           <span>CO₂ Equivalent (CO₂e):</span>
                           <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(Carbon × 3.67)</span></span>
                         </div>
+                        {currentScan.co2e_low_kg != null && currentScan.co2e_high_kg != null && (
+                          <div className="text-[10px] text-slate-400">
+                            Rentang ±{currentScan.co2e_uncertainty_pct?.toFixed(0) ?? "10"}%: {currentScan.co2e_low_kg.toFixed(1)} – {currentScan.co2e_high_kg.toFixed(1)} kg
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
