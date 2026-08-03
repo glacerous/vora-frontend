@@ -143,23 +143,6 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-slate-50/60 flex flex-col font-sans text-[#191919]">
 
-      {/* ── Navbar — 100% identical to landing page ──────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
-        <Link href="/" className="flex items-center cursor-pointer">
-          <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
-        </Link>
-
-        {/* Center links (matching landing page perfectly) */}
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-          <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Home
-          </Link>
-          <Link href="/gallery" className="text-sm text-[#191919] font-medium transition-colors duration-200">
-            Gallery
-          </Link>
-        </div>
-      </nav>
-
       {/* ── Main content area ────────────────────────────────────── */}
       <main className="flex-1 pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto">

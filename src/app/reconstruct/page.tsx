@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -107,43 +108,39 @@ export default function Reconstruct() {
   const [calcOpen, setCalcOpen] = useState(false);
 
   // States for optional authentication and plot claiming
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const { user: currentUser } = useAuth();
   const [userPlots, setUserPlots] = useState<any[]>([]);
   const [selectedPlotId, setSelectedPlotId] = useState<string>("");
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
 
-  // Fetch current user and user plots when view result is shown
+  // Fetch user plots when view result is shown
   useEffect(() => {
-    const fetchUserAndPlots = async () => {
+    if (!currentUser) {
+      setUserPlots([]);
+      return;
+    }
+
+    const fetchPlots = async () => {
       try {
-        const userRes = await fetch(`${BACKEND_URL}/auth/me`, {
+        const plotsRes = await fetch(`${BACKEND_URL}/users/${currentUser.id}/plots`, {
           credentials: "include",
         });
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          setCurrentUser(userData);
-          
-          // Fetch user's plots
-          const plotsRes = await fetch(`${BACKEND_URL}/users/${userData.id}/plots`, {
-            credentials: "include",
-          });
-          if (plotsRes.ok) {
-            const plotsData = await plotsRes.json();
-            setUserPlots(plotsData.plots || []);
-            if (plotsData.plots && plotsData.plots.length > 0) {
-              setSelectedPlotId(plotsData.plots[0].id.toString());
-            }
+        if (plotsRes.ok) {
+          const plotsData = await plotsRes.json();
+          setUserPlots(plotsData.plots || []);
+          if (plotsData.plots && plotsData.plots.length > 0) {
+            setSelectedPlotId(plotsData.plots[0].id.toString());
           }
         }
       } catch (err) {
-        console.error("Auth status: not logged in.");
+        console.error("Gagal mengambil plot user:", err);
       }
     };
 
-    fetchUserAndPlots();
-  }, [phase, currentScan?.id]);
+    fetchPlots();
+  }, [phase, currentScan?.id, currentUser]);
 
   const getSpeciesPredictions = (scan: any) => {
     if (!scan || !scan.species_predictions) return [];
@@ -943,20 +940,7 @@ export default function Reconstruct() {
           )}
         </div>
 
-        {/* Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
-          <Link href="/" className="flex items-center cursor-pointer">
-            <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-            <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-              Home
-            </Link>
-            <Link href="/gallery" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-              Gallery
-            </Link>
-          </div>
-        </nav>
+
 
         {/* Floating Sidebar Toggle */}
         {!sidebarOpen && (
@@ -1729,20 +1713,7 @@ export default function Reconstruct() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans text-[#191919]">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 py-4 sm:py-5 flex justify-between items-center bg-white/90 backdrop-blur-sm border-b border-slate-100">
-        <Link href="/" className="flex items-center cursor-pointer">
-          <span className="font-bold text-xl tracking-tight text-[#191919]">Vora.</span>
-        </Link>
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-          <Link href="/" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Home
-          </Link>
-          <Link href="/gallery" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
-            Gallery
-          </Link>
-        </div>
-      </nav>
+
 
       <main className="flex-1 flex flex-col items-center justify-center pt-28 pb-20 px-4">
 
