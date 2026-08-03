@@ -58,6 +58,8 @@ interface ScanRecord {
   co2e_uncertainty_pct?: number;
   co2e_low_kg?: number | null;
   co2e_high_kg?: number | null;
+  plot_id?: number | null;
+  claimed_by_user_id?: number | null;
 }
 
 // ── Main Page Component ─────────────────────────────────────────────────────
@@ -103,6 +105,45 @@ export default function Reconstruct() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+
+  // States for optional authentication and plot claiming
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userPlots, setUserPlots] = useState<any[]>([]);
+  const [selectedPlotId, setSelectedPlotId] = useState<string>("");
+  const [claiming, setClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
+  const [claimError, setClaimError] = useState<string | null>(null);
+
+  // Fetch current user and user plots when view result is shown
+  useEffect(() => {
+    const fetchUserAndPlots = async () => {
+      try {
+        const userRes = await fetch(`${BACKEND_URL}/auth/me`, {
+          credentials: "include",
+        });
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setCurrentUser(userData);
+          
+          // Fetch user's plots
+          const plotsRes = await fetch(`${BACKEND_URL}/users/${userData.id}/plots`, {
+            credentials: "include",
+          });
+          if (plotsRes.ok) {
+            const plotsData = await plotsRes.json();
+            setUserPlots(plotsData.plots || []);
+            if (plotsData.plots && plotsData.plots.length > 0) {
+              setSelectedPlotId(plotsData.plots[0].id.toString());
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Auth status: not logged in.");
+      }
+    };
+
+    fetchUserAndPlots();
+  }, [phase, currentScan?.id]);
 
   const getSpeciesPredictions = (scan: any) => {
     if (!scan || !scan.species_predictions) return [];
@@ -343,6 +384,43 @@ export default function Reconstruct() {
   }, [currentScan?.id, currentScan?.splat_file_url]);
 
   // ── Handlers ────────────────────────────────────────────────────────────
+
+  const handleClaimScan = async () => {
+    if (!currentScan || !selectedPlotId) return;
+    setClaiming(true);
+    setClaimError(null);
+    setClaimSuccess(false);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/plots/${selectedPlotId}/claim-scan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tree_code: currentScan.tree_code }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Gagal mengklaim scan");
+      }
+
+      setClaimSuccess(true);
+      setCurrentScan(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          claimed_by_user_id: currentUser?.id,
+          plot_id: parseInt(selectedPlotId),
+        };
+      });
+    } catch (err: any) {
+      setClaimError(err.message || "Gagal mengklaim scan");
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   const handleRecalibrate = async () => {
     if (clickedPoints.length < 2 || !imgDimensions || !currentScan) return;
@@ -1004,6 +1082,68 @@ export default function Reconstruct() {
                 </div>
               </div>
             </div>
+
+            {/* Claim scan box for logged-in users */}
+            {currentUser && (
+              <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex flex-col gap-0.5 w-full sm:w-auto">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Status Plot & Klaim</span>
+                  <div className="text-xs text-[#191919] font-medium mt-0.5">
+                    {currentScan.claimed_by_user_id ? (
+                      <span className="text-emerald-600 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        ✓ Terklaim ke Plot Anda
+                      </span>
+                    ) : (
+                      <span>Belum diklaim ke plot mana pun</span>
+                    )}
+                  </div>
+                </div>
+
+                {!currentScan.claimed_by_user_id && userPlots.length > 0 && (
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <select
+                      value={selectedPlotId}
+                      onChange={(e) => setSelectedPlotId(e.target.value)}
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    >
+                      {userPlots.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.plot_code})
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={handleClaimScan}
+                      disabled={claiming}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl px-4 py-2 transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      {claiming ? "Mengklaim..." : "Klaim ke Plot"}
+                    </button>
+                  </div>
+                )}
+
+                {!currentScan.claimed_by_user_id && userPlots.length === 0 && (
+                  <div className="text-xs text-slate-400 italic">
+                    Belum memiliki plot.{" "}
+                    <Link href="/plots/create" className="text-emerald-600 font-bold hover:underline">
+                      Buat Plot Baru
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Prompt to log in for guest users */}
+            {!currentUser && !currentScan.claimed_by_user_id && (
+              <div className="bg-[#161920]/95 backdrop-blur-xl border border-slate-800 text-slate-300 text-xs rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between gap-4">
+                <span>Ingin menyimpan hasil scan ini ke plot Anda?</span>
+                <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
+                  Masuk Akun & Klaim
+                </Link>
+              </div>
+            )}
           </div>
         )}
 

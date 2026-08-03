@@ -37,7 +37,41 @@ const ArrowRight = () => (
   </svg>
 );
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
+
 export default function Home() {
+  const [currentUser, setCurrentUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/auth/me`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data);
+        }
+      } catch (err) {
+        // ignore not logged in
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setCurrentUser(null);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden flex flex-col font-sans">
       
@@ -57,6 +91,39 @@ export default function Home() {
           <Link href="/gallery" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
             Gallery
           </Link>
+          {currentUser ? (
+            <Link href="/my-plots" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+              My Plots
+            </Link>
+          ) : (
+            <Link href="/login" className="text-sm text-[#191919]/70 hover:text-[#191919] transition-colors duration-200">
+              Login
+            </Link>
+          )}
+        </div>
+
+        {/* Right action links */}
+        <div className="flex items-center gap-4">
+          {currentUser ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1.5 rounded-xl">
+                {currentUser.display_name || currentUser.username}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-xs text-red-600 font-semibold hover:text-red-500 transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/register"
+              className="text-xs font-semibold bg-[#191919] text-white hover:bg-[#191919]/90 px-4 py-2 rounded-xl transition-all"
+            >
+              Sign Up
+            </Link>
+          )}
         </div>
       </nav>
 
