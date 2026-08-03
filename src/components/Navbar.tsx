@@ -50,7 +50,7 @@ export default function Navbar() {
               pathname === "/my-plots" ? "text-[#191919] font-medium" : "text-[#191919]/70 hover:text-[#191919]"
             }`}
           >
-            My Plots
+            Dashboard
           </Link>
         )}
       </div>
