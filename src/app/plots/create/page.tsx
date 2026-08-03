@@ -17,6 +17,7 @@ export default function CreatePlotPage() {
   const [privacy, setPrivacy] = useState<"private" | "public">("private");
   const [lat, setLat] = useState("");
   const [lon, setLon] = useState("");
+  const [targetCo2e, setTargetCo2e] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +39,7 @@ export default function CreatePlotPage() {
         privacy,
         gps_centroid_lat: lat ? parseFloat(lat) : null,
         gps_centroid_lon: lon ? parseFloat(lon) : null,
+        target_co2e_kg: targetCo2e ? parseFloat(targetCo2e) : null,
       };
 
       const res = await fetch(`${BACKEND_URL}/plots`, {
@@ -155,6 +157,20 @@ export default function CreatePlotPage() {
                     <span className="text-[9px] text-center leading-normal opacity-85">Bisa dilihat oleh juri/publik</span>
                   </button>
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  Target Estimasi CO₂e (kg) (Opsional)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={targetCo2e}
+                  onChange={(e) => setTargetCo2e(e.target.value)}
+                  placeholder="Misal: 5000"
+                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

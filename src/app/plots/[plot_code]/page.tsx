@@ -36,6 +36,7 @@ interface Plot {
   created_at: string;
   owner: Owner;
   owner_user_id?: number;
+  target_co2e_kg: number | null;
 }
 
 interface Scan {
@@ -629,40 +630,44 @@ export default function PlotDetailPage() {
                   </span>
                 </div>
 
-                <h3 className="font-bold text-[10px] text-slate-450 uppercase tracking-widest self-start mb-1 select-none">Progres Target Karbon</h3>
-                
-                {/* Curved SVG Gauge */}
-                <div className="relative flex flex-col items-center justify-center py-3 select-none">
-                  <svg className="w-40 h-22" viewBox="0 0 100 60">
-                    <path
-                      d="M 10 50 A 40 40 0 0 1 90 50"
-                      fill="none"
-                      stroke="#f1f5f9"
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M 10 50 A 40 40 0 0 1 90 50"
-                      fill="none"
-                      stroke="url(#progressGradient)"
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                      strokeDasharray="125.6"
-                      strokeDashoffset={125.6 - (Math.min(totalCo2e / 5000, 1) * 125.6)}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                    <defs>
-                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#059669" />
-                        <stop offset="100%" stopColor="#0284c7" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute bottom-1 text-center">
-                    <span className="text-xl font-semibold text-[#191919]">{Math.round(Math.min(totalCo2e / 5000, 1) * 100)}%</span>
-                    <span className="text-[9px] text-slate-400 block font-medium mt-0.5">dari target 5k kg</span>
-                  </div>
-                </div>
+                {plot?.target_co2e_kg && plot.target_co2e_kg > 0 ? (
+                  <>
+                    <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest self-start mb-1 select-none">Progres Target Karbon</h3>
+                    
+                    {/* Curved SVG Gauge */}
+                    <div className="relative flex flex-col items-center justify-center py-3 select-none">
+                      <svg className="w-40 h-22" viewBox="0 0 100 60">
+                        <path
+                          d="M 10 50 A 40 40 0 0 1 90 50"
+                          fill="none"
+                          stroke="#f1f5f9"
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M 10 50 A 40 40 0 0 1 90 50"
+                          fill="none"
+                          stroke="url(#progressGradient)"
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                          strokeDasharray="125.6"
+                          strokeDashoffset={125.6 - (Math.min(totalCo2e / plot.target_co2e_kg, 1) * 125.6)}
+                          className="transition-all duration-1000 ease-out"
+                        />
+                        <defs>
+                          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#059669" />
+                            <stop offset="100%" stopColor="#0284c7" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute bottom-1 text-center">
+                        <span className="text-xl font-semibold text-[#191919]">{Math.round(Math.min(totalCo2e / plot.target_co2e_kg, 1) * 100)}%</span>
+                        <span className="text-[9px] text-slate-400 block font-medium mt-0.5">dari target {plot.target_co2e_kg >= 1000 ? `${(plot.target_co2e_kg / 1000).toFixed(0)}k` : plot.target_co2e_kg} kg</span>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
 
                 <div className="text-center w-full border-t border-slate-100 pt-3 mt-1.5 select-none">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
@@ -735,16 +740,22 @@ export default function PlotDetailPage() {
                   </div>
                 </div>
 
-                {/* Stylized density bar graph (wave simulation) */}
-                <div className="flex items-end justify-between h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 select-none">
-                  {[45, 60, 30, 80, 50, 75, 45, 90, 65, 35, 70, 55, 85, 30].map((h, i) => (
-                    <div
-                      key={i}
-                      style={{ height: `${h}%` }}
-                      className="w-1.5 bg-emerald-500/20 hover:bg-emerald-500 rounded-full transition-all duration-300 cursor-pointer"
-                    />
-                  ))}
-                </div>
+                {/* Stylized density bar graph (wave simulation) - only if scans length >= 5 */}
+                {scans.length >= 5 ? (
+                  <div className="flex items-end justify-between h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 select-none">
+                    {[45, 60, 30, 80, 50, 75, 45, 90, 65, 35, 70, 55, 85, 30].map((h, i) => (
+                      <div
+                        key={i}
+                        style={{ height: `${h}%` }}
+                        className="w-1.5 bg-emerald-500/20 hover:bg-emerald-500 rounded-full transition-all duration-300 cursor-pointer"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 text-[10px] text-slate-400 font-medium italic select-none text-center">
+                    Butuh minimal 5 pohon untuk melihat sebaran DBH
+                  </div>
+                )}
               </section>
 
             </div>
@@ -830,30 +841,40 @@ export default function PlotDetailPage() {
                         return (
                           <div
                             key={scan.id}
-                            draggable={isOwner}
-                            onDragStart={(e) => handleDragStart(e, scan.tree_code)}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedNode(scan);
-                            }}
                             style={{
                               position: "absolute",
                               left: `${pos.x * CELL_SIZE}px`,
                               top: `${pos.y * CELL_SIZE}px`,
                               width: "48px",
-                              height: "48px",
+                              height: "64px",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
                             }}
-                            className={`rounded-lg border-2 cursor-pointer transition-all flex flex-col items-center justify-center relative hover:scale-105 hover:shadow-md ${
-                              specColor.bg.split(' ')[0]
-                            } ${specColor.border} ${
-                              isSelected ? "ring-4 ring-emerald-500/35 border-emerald-600 shadow-md scale-105" : ""
-                            }`}
+                            title={scan.tree_code}
                           >
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M12 3L7 9m5-6l5 6M7 13h10" />
-                            </svg>
-                            <span className="absolute bottom-0.5 right-1 text-[7px] font-mono font-bold text-white bg-[#191919]/35 px-1 py-0.2 rounded">
-                              {scan.tree_code.replace("POHON-", "")}
+                            {/* The 48x48px Node Box */}
+                            <div
+                              draggable={isOwner}
+                              onDragStart={(e) => handleDragStart(e, scan.tree_code)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedNode(scan);
+                              }}
+                              className={`w-12 h-12 rounded-lg border-2 cursor-pointer transition-all flex items-center justify-center hover:scale-105 hover:shadow-md ${
+                                specColor.bg.split(' ')[0]
+                              } ${specColor.border} ${
+                                isSelected ? "ring-4 ring-emerald-500/35 border-emerald-600 shadow-md scale-105" : ""
+                              }`}
+                            >
+                              <svg className="w-5.5 h-5.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19v2m-5-8h10L12 5zM4 17h16L12 11z" />
+                              </svg>
+                            </div>
+                            
+                            {/* Small label below node */}
+                            <span className="text-[8px] font-mono font-bold text-slate-505 bg-white/80 border border-slate-200/50 px-1 py-0.2 rounded shadow-xs mt-1 block w-fit mx-auto text-center pointer-events-none select-none shrink-0 truncate max-w-full">
+                              #{scan.tree_code.replace("POHON-", "")}
                             </span>
                           </div>
                         );
