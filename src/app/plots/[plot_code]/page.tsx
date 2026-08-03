@@ -102,7 +102,11 @@ export default function PlotDetailPage() {
   // Fine-grid dimensions configurations (24px cells)
   const CELL_SIZE = 24;
   const DEFAULT_COLS = 24;
-  const DEFAULT_ROWS = 22;
+  const DEFAULT_ROWS = 21; // perfectly aligns with height 504px
+
+  // Table expansion & filter tabs
+  const [expandedScanId, setExpandedScanId] = useState<number | null>(null);
+  const [filterTab, setFilterTab] = useState<"all" | "large" | "small">("all");
 
   // Check ownership
   useEffect(() => {
@@ -546,6 +550,13 @@ export default function PlotDetailPage() {
 
   const gpsScans = scans.filter((s) => s.gps_lat !== null && s.gps_lon !== null);
 
+  // Table filtering based on tab selection
+  const filteredScans = scans.filter((s) => {
+    if (filterTab === "large") return s.dbh_cm > 10;
+    if (filterTab === "small") return s.dbh_cm <= 10;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col font-sans">
       <main className="flex-1 pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
@@ -579,19 +590,146 @@ export default function PlotDetailPage() {
             <div>
               <h1 className="text-2xl font-normal tracking-tight text-[#191919] font-serif">{plot?.name}</h1>
               <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">{plot?.description || "Tidak ada deskripsi lokasi."}</p>
-              <p className="text-[10px] text-slate-400 mt-2.5 leading-none">
+              <p className="text-[10px] text-slate-450 mt-2.5 leading-none">
                 Dibuat oleh <span className="text-slate-650 font-semibold">{plot?.owner.display_name}</span> pada {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
           </section>
 
-          {/* Column Layout Dashboard - Dense spacing with gap-4 */}
-          <div className="flex flex-col lg:flex-row gap-4 items-start">
+          {/* Main Layout Grid structured to align with reference layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             
-            {/* Kolom Kiri: Dominan Kanvas Grid Spasial */}
-            <div className="flex-1 w-full lg:max-w-[70%] flex flex-col gap-4">
+            {/* KOLOM KIRI (col-span-4): Stats, progress circular, dan diagram spesies */}
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
               
-              {/* Kanvas Grid Spasial Card */}
+              {/* Card 1: Progress & Target CO2e (Today's Delivery Progress) */}
+              <section className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
+                <h3 className="font-bold text-[10px] text-slate-450 uppercase tracking-widest self-start">Progres Target Karbon</h3>
+                
+                {/* Curved SVG Gauge */}
+                <div className="relative flex flex-col items-center justify-center py-4 select-none">
+                  <svg className="w-44 h-24" viewBox="0 0 100 60">
+                    {/* Background track */}
+                    <path
+                      d="M 10 50 A 40 40 0 0 1 90 50"
+                      fill="none"
+                      stroke="#f1f5f9"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                    />
+                    {/* Foreground progress */}
+                    <path
+                      d="M 10 50 A 40 40 0 0 1 90 50"
+                      fill="none"
+                      stroke="url(#progressGradient)"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray="125.6"
+                      strokeDashoffset={125.6 - (Math.min(totalCo2e / 5000, 1) * 125.6)}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                    <defs>
+                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#059669" />
+                        <stop offset="100%" stopColor="#0284c7" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute bottom-1 text-center">
+                    <span className="text-2xl font-semibold text-[#191919]">{Math.round(Math.min(totalCo2e / 5000, 1) * 100)}%</span>
+                    <span className="text-[9px] text-slate-400 block font-medium mt-0.5">dari target 5k kg</span>
+                  </div>
+                </div>
+
+                <div className="text-center w-full border-t border-slate-100 pt-3.5 mt-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
+                  <h2 className="font-serif text-3xl font-normal text-slate-900 tracking-tight">
+                    {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
+                    <span className="text-xs font-sans text-slate-450 font-medium">kg</span>
+                  </h2>
+                  <div className="mt-2 flex justify-center gap-1.5">
+                    <span className="text-[9px] font-bold text-slate-500 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                      Pohon: {scans.length}
+                    </span>
+                    {aggregation && (
+                      <span className="text-[9px] font-bold text-slate-500 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                        Uncertainty: &plusmn;{aggregation.combined_uncertainty_pct.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
+              <section className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest">Kontribusi per Spesies</h3>
+                
+                <div className="flex flex-col gap-3.5 max-h-[280px] overflow-y-auto pr-1">
+                  {speciesList.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic py-4 text-center">Spesies belum terklasifikasi</p>
+                  ) : (
+                    speciesList.map((spec, idx) => {
+                      const specScans = scans.filter(s => getSpeciesName(s)?.trim().toLowerCase() === spec);
+                      const specCo2e = specScans.reduce((sum, s) => sum + s.co2e_kg, 0);
+                      const specPct = totalCo2e > 0 ? (specCo2e / totalCo2e) * 100 : 0;
+                      const color = getSpeciesColor(spec);
+                      return (
+                        <div key={idx} className="flex flex-col gap-1.5">
+                          <div className="flex justify-between items-center text-xs text-slate-650 font-semibold capitalize">
+                            <div className="flex items-center gap-2 truncate max-w-[80%]">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${color.bg.split(' ')[0]}`} />
+                              <span className="italic truncate">{spec}</span>
+                              <span className="text-[10px] text-slate-400 font-normal shrink-0">({specScans.length} pohon)</span>
+                            </div>
+                            <span className="font-bold text-slate-800 shrink-0">{specPct.toFixed(0)}%</span>
+                          </div>
+                          {/* Progress bar track */}
+                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+                            <div 
+                              className={`h-full ${color.bg.split(' ')[0]} rounded-full transition-all duration-500`} 
+                              style={{ width: `${specPct}%` }} 
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </section>
+
+              {/* Card 3: Rata-rata & Visual Wave Dist (Fuel Usage & Cost) */}
+              <section className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                <h3 className="font-bold text-[10px] text-slate-450 uppercase tracking-widest">Dimensi Rata-rata & Kerapatan DBH</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Avg DBH</span>
+                    <span className="text-xl font-bold font-serif text-slate-800">{avgDbh.toFixed(1)} cm</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Avg Tinggi</span>
+                    <span className="text-xl font-bold font-serif text-slate-800">{avgTinggi.toFixed(1)} m</span>
+                  </div>
+                </div>
+
+                {/* Stylized density bar graph (wave simulation) */}
+                <div className="flex items-end justify-between h-14 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-1 select-none">
+                  {[45, 60, 30, 80, 50, 75, 45, 90, 65, 35, 70, 55, 85, 30].map((h, i) => (
+                    <div
+                      key={i}
+                      style={{ height: `${h}%` }}
+                      className="w-1.5 bg-emerald-500/20 hover:bg-emerald-500 rounded-full transition-all duration-300 cursor-pointer"
+                    />
+                  ))}
+                </div>
+              </section>
+
+            </div>
+
+            {/* KOLOM KANAN (col-span-8): Kanvas Spasial, Collapsible GPS Map, dan Orders-style Table */}
+            <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
+              
+              {/* Card 4: Kanvas Spasial Grid Hutan */}
               <div 
                 onClick={() => setSelectedNode(null)}
                 className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 relative select-none"
@@ -608,26 +746,26 @@ export default function PlotDetailPage() {
                         handleSaveLayout();
                       }}
                       disabled={actionLoading}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg px-3 py-1.5 shadow-sm cursor-pointer transition-all"
+                      className="bg-[#191919] hover:bg-[#191919]/90 text-white font-bold text-[10px] rounded-lg px-3 py-1.5 shadow-sm cursor-pointer transition-all"
                     >
                       {actionLoading ? "Menyimpan..." : "Simpan Tata Letak"}
                     </button>
                   )}
                 </div>
 
-                {/* Grid Canvas Wrapper - 100% width fully stretched */}
+                {/* Grid Canvas Wrapper */}
                 <div className="w-full overflow-x-auto border border-slate-200/50 rounded-lg bg-slate-50/20 p-2">
                   <div 
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     style={{
-                      height: "504px", // exactly 21 rows of 24px each
+                      height: `${DEFAULT_ROWS * CELL_SIZE}px`,
                       backgroundImage: "linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px)",
                       backgroundSize: "24px 24px",
                     }}
                     className="relative bg-[#fafbfd] rounded-lg overflow-hidden w-full select-none"
                   >
-                    {/* Render tree node items as 48x48px square footprints */}
+                    {/* Render tree node items */}
                     {scans.map((scan) => {
                       const pos = gridPositions[scan.tree_code];
                       if (!pos) return null;
@@ -657,12 +795,9 @@ export default function PlotDetailPage() {
                             isSelected ? "ring-4 ring-emerald-500/35 border-emerald-600 shadow-md scale-105" : ""
                           }`}
                         >
-                          {/* Footprint style tree icon centered */}
                           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M12 3L7 9m5-6l5 6M7 13h10" />
                           </svg>
-                          
-                          {/* Compact label at the bottom right */}
                           <span className="absolute bottom-0.5 right-1 text-[7px] font-mono font-bold text-white bg-[#191919]/35 px-1 py-0.2 rounded">
                             {scan.tree_code.replace("POHON-", "")}
                           </span>
@@ -670,19 +805,16 @@ export default function PlotDetailPage() {
                       );
                     })}
 
-                    {/* Absolute Popover (Appears next to selected node footprint) */}
+                    {/* Absolute Popover */}
                     {selectedNode && (() => {
                       const pos = gridPositions[selectedNode.tree_code];
                       if (!pos) return null;
                       const specName = getSpeciesName(selectedNode);
-                      const specCommon = getSpeciesCommonName(selectedNode);
                       const specColor = getSpeciesColor(specName);
                       
-                      // Calculate grid dimensions dynamically on drop boundary
-                      // Default default width fits around 24 cols on normal desktop
                       const showOnLeft = pos.x > 15;
                       const popoverLeft = showOnLeft ? pos.x * CELL_SIZE - 200 : pos.x * CELL_SIZE + 52;
-                      const popoverTop = Math.max(10, Math.min(pos.y * CELL_SIZE - 10, 504 - 170));
+                      const popoverTop = Math.max(10, Math.min(pos.y * CELL_SIZE - 10, (DEFAULT_ROWS * CELL_SIZE) - 170));
 
                       return (
                         <div
@@ -708,7 +840,7 @@ export default function PlotDetailPage() {
                             </button>
                           </div>
 
-                          <div className="flex flex-col gap-1 text-[11px] text-slate-500">
+                          <div className="flex flex-col gap-1 text-[11px] text-slate-555">
                             {specName && (
                               <span className={`text-[8px] font-semibold border ${specColor.border} ${specColor.lightBg} ${specColor.text} px-2 py-0.5 rounded capitalize w-fit`}>
                                 <i>{specName}</i>
@@ -740,118 +872,21 @@ export default function PlotDetailPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Kolom Kanan: Stats, Actions, Carbon Bar, Collapsible Map (Stacked closely) */}
-            <div className="w-full lg:w-[30%] flex flex-col gap-3">
-              
-              {/* Large Editorial Hero Stat */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col gap-4">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-0.5">Total Biomassa Karbon Plot</span>
-                  <div className="flex flex-wrap items-baseline gap-1">
-                    <h2 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] leading-none">
-                      {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                    </h2>
-                    <span className="text-xs font-sans text-slate-450 font-medium">kg CO₂e</span>
-                  </div>
-                  {aggregation && aggregation.total_co2e_kg > 0 && (
-                    <div className="mt-1.5">
-                      <span className="text-[9px] font-semibold text-slate-500 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded">
-                        &plusmn; {aggregation.combined_uncertainty_kg.toFixed(1)} kg ({aggregation.combined_uncertainty_pct.toFixed(1)}%)
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="mt-3 flex flex-col gap-2 text-xs text-slate-500 font-medium border-t border-slate-100 pt-3">
-                    <div className="flex justify-between">
-                      <span>Jumlah Pohon:</span>
-                      <span className="text-slate-700 font-bold">{scans.length} pohon</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Spesies Terdeteksi:</span>
-                      <span className="text-slate-700 font-bold">{totalSpecies} spesies</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Rata-rata DBH:</span>
-                      <span className="text-slate-700 font-bold">{avgDbh.toFixed(1)} cm</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Rata-rata Tinggi:</span>
-                      <span className="text-slate-700 font-bold">{avgTinggi.toFixed(1)} m</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Carbon Contribution Stacked Bar */}
-              {scans.length > 0 && (
-                <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col gap-2.5">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Komposisi Karbon</span>
-                    <span className="text-[9px] text-slate-400 italic">Hover segmen</span>
-                  </div>
-                  
-                  <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-105 border border-slate-250/20 shadow-inner select-none">
-                    {scans.map((scan) => {
-                      const specName = getSpeciesName(scan);
-                      const color = getSpeciesColor(specName);
-                      const pct = totalCo2e > 0 ? (scan.co2e_kg / totalCo2e) * 100 : 0;
-                      if (pct < 0.5) return null;
-                      return (
-                        <div
-                          key={scan.id}
-                          className={`${color.bg} transition-all duration-300 relative group cursor-pointer border-r border-white/20 last:border-r-0`}
-                          style={{ width: `${pct}%` }}
-                        >
-                          {/* Custom Tooltip */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 min-w-[150px] bg-[#0d0f12] text-white rounded-lg p-2 shadow-xl text-[10px] leading-normal pointer-events-none">
-                            <div className="font-bold border-b border-white/10 pb-0.5 mb-1">{scan.tree_code}</div>
-                            <div className="italic text-slate-300 truncate">{specName || "Spesies..."}</div>
-                            <div className="flex justify-between mt-1 text-slate-450">
-                              <span>CO₂e:</span>
-                              <span className="font-bold text-emerald-450">{scan.co2e_kg.toFixed(1)} kg</span>
-                            </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#0d0f12]" />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {speciesList.length > 0 && (
-                    <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 mt-0.5">
-                      {speciesList.slice(0, 3).map((spec, idx) => {
-                        const color = getSpeciesColor(spec);
-                        return (
-                          <div key={idx} className="flex items-center gap-1 text-[9px] text-slate-500 font-semibold capitalize">
-                            <span className={`w-1.5 h-1.5 rounded-full ${color.bg.split(' ')[0]}`} />
-                            <span className="italic truncate max-w-[70px]">{spec}</span>
-                          </div>
-                        );
-                      })}
-                      {speciesList.length > 3 && (
-                        <span className="text-[9px] text-slate-400 font-semibold">+{speciesList.length - 3} lagi</span>
-                      )}
-                    </div>
-                  )}
-                </section>
-              )}
-
-              {/* Collapsible Leaflet Map Section */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+              {/* Card 5: Collapsible GPS Map Section */}
+              <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">Peta GPS Asli</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Peta GPS Asli</h2>
                   <button
                     onClick={() => setIsMapExpanded(prev => !prev)}
-                    className="text-[10px] text-emerald-650 hover:text-emerald-700 font-semibold cursor-pointer border border-emerald-200/70 rounded px-2 py-0.5 hover:bg-emerald-50 transition-all select-none font-sans"
+                    className="text-[10px] text-emerald-650 hover:text-emerald-700 font-semibold cursor-pointer border border-emerald-250/70 rounded px-2.5 py-1.5 hover:bg-emerald-50 transition-all select-none font-sans"
                   >
-                    {isMapExpanded ? "Sembunyikan" : "Lihat Peta"}
+                    {isMapExpanded ? "Sembunyikan Peta" : "Buka Peta Leaflet"}
                   </button>
                 </div>
                 
                 <div className={`transition-all duration-300 ease-in-out overflow-hidden relative ${
-                  isMapExpanded ? "h-[200px] border border-slate-200 rounded-lg mt-1" : "h-0 border-0"
+                  isMapExpanded ? "h-[220px] border border-slate-200 rounded-lg mt-1" : "h-0 border-0"
                 }`}>
                   {isMapExpanded && (
                     <PlotMap
@@ -863,21 +898,192 @@ export default function PlotDetailPage() {
                 </div>
                 
                 {isMapExpanded && gpsScans.length < scans.length && (
-                  <p className="text-[9px] text-slate-450 leading-normal italic">
-                    * Menampilkan {gpsScans.length} dari {scans.length} pohon.
+                  <p className="text-[9px] text-slate-455 leading-normal italic">
+                    * Menampilkan {gpsScans.length} dari {scans.length} pohon dengan metadata GPS EXIF.
                   </p>
                 )}
               </section>
 
-              {/* Action Controls for Owner */}
-              {isOwner && (
-                <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col gap-2">
-                  <h3 className="font-bold text-xs text-slate-550 uppercase tracking-widest mb-0.5">Aksi Plot</h3>
+              {/* Card 6: Orders-style Tree Scans Table */}
+              <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Daftar Rekaman Pohon ({filteredScans.length})</h3>
+                  </div>
                   
+                  {/* Tab Filters */}
+                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
+                    <button 
+                      onClick={() => setFilterTab("all")} 
+                      className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                        filterTab === "all" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-750"
+                      }`}
+                    >
+                      Semua
+                    </button>
+                    <button 
+                      onClick={() => setFilterTab("large")} 
+                      className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                        filterTab === "large" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-750"
+                      }`}
+                    >
+                      DBH &gt; 10cm
+                    </button>
+                    <button 
+                      onClick={() => setFilterTab("small")} 
+                      className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                        filterTab === "small" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-750"
+                      }`}
+                    >
+                      DBH &le; 10cm
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table Layout */}
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-xs text-slate-500">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                        <th className="py-2.5 px-3">Pohon</th>
+                        <th className="py-2.5 px-3">Klasifikasi Spesies</th>
+                        <th className="py-2.5 px-3">Metrik Fisik</th>
+                        <th className="py-2.5 px-3 text-right">Biomassa</th>
+                        <th className="py-2.5 px-3 text-right">CO₂e</th>
+                        <th className="py-2.5 px-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredScans.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center italic text-slate-400">
+                            Belum ada rekaman pohon untuk kriteria ini.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredScans.map((scan) => {
+                          const isExpanded = expandedScanId === scan.id;
+                          const specName = getSpeciesName(scan);
+                          const specCommon = getSpeciesCommonName(scan);
+                          const specColor = getSpeciesColor(specName);
+
+                          return (
+                            <React.Fragment key={scan.id}>
+                              {/* Row click to expand */}
+                              <tr 
+                                onClick={() => setExpandedScanId(isExpanded ? null : scan.id)}
+                                className={`border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors cursor-pointer ${
+                                  isExpanded ? "bg-slate-50/40" : ""
+                                }`}
+                              >
+                                <td className="py-3 px-3">
+                                  <div className="flex items-center gap-2.5">
+                                    {scan.thumbnail_url ? (
+                                      <img
+                                        src={scan.thumbnail_url}
+                                        alt={scan.tree_code}
+                                        className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="font-bold text-slate-800 block text-xs">{scan.tree_code}</span>
+                                      <span className="text-[10px] text-slate-400 block font-mono">
+                                        {new Date(scan.scan_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                                
+                                <td className="py-3 px-3">
+                                  {specName ? (
+                                    <div className="flex flex-col">
+                                      <span className={`text-[10px] font-semibold ${specColor.text} capitalize`}>
+                                        <i>{specName}</i>
+                                      </span>
+                                      {specCommon && <span className="text-[9px] text-slate-400">{specCommon}</span>}
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-400 italic">Tidak terklasifikasi</span>
+                                  )}
+                                </td>
+                                
+                                <td className="py-3 px-3">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span>DBH: <span className="font-semibold text-slate-700">{scan.dbh_cm.toFixed(1)} cm</span></span>
+                                    <span>Tinggi: <span className="font-semibold text-slate-700">{scan.tinggi_m.toFixed(1)} m</span></span>
+                                  </div>
+                                </td>
+                                
+                                <td className="py-3 px-3 text-right font-medium text-slate-600">
+                                  {scan.biomassa_kg.toFixed(1)} kg
+                                </td>
+                                
+                                <td className="py-3 px-3 text-right font-bold text-slate-800">
+                                  {scan.co2e_kg.toFixed(1)} kg
+                                </td>
+                                
+                                <td className="py-3 px-3 text-right">
+                                  <span className="text-slate-400 text-xs transition-transform duration-300 inline-block" style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>
+                                    ▼
+                                  </span>
+                                </td>
+                              </tr>
+
+                              {/* Expanded Inline splat row */}
+                              {isExpanded && (
+                                <tr className="bg-slate-50/20">
+                                  <td colSpan={6} className="py-4 px-4 border-b border-slate-100">
+                                    <div className="flex flex-col gap-3 animate-fadeIn">
+                                      {scan.splat_file_url ? (
+                                        <div className="flex flex-col gap-3">
+                                          <div className="h-[250px] w-full bg-slate-900 rounded-lg overflow-hidden relative border border-slate-200">
+                                            <iframe
+                                              src={`${BACKEND_URL}/viewer.html?v=11&code=${scan.tree_code}&url=${encodeURIComponent(scan.splat_file_url)}`}
+                                              allow="xr-spatial-tracking; autoplay; fullscreen"
+                                              className="w-full h-full border-none"
+                                              title={`3D Splat Preview ${scan.tree_code}`}
+                                            />
+                                          </div>
+                                          <div className="flex justify-end">
+                                            <Link
+                                              href={`/reconstruct?code=${scan.tree_code}&phase=result`}
+                                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all"
+                                            >
+                                              Buka viewer 3D lengkap →
+                                            </Link>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-center py-6 text-slate-400 text-[10px] italic bg-white/50 border border-slate-100 rounded-lg">
+                                          Data 3D splat tidak tersedia untuk pohon ini.
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* Owner Action Buttons Panel */}
+              {isOwner && (
+                <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={toggleSession}
                     disabled={actionLoading}
-                    className={`w-full py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                       plot?.session_active
                         ? "border-emerald-600 bg-emerald-50 text-emerald-750 hover:bg-emerald-100"
                         : "border-slate-200 hover:border-slate-300 text-slate-650 hover:bg-slate-50"
@@ -890,17 +1096,18 @@ export default function PlotDetailPage() {
                     ) : (
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-350 inline-block" />
                     )}
-                    Sesi: {plot?.session_active ? "Aktif" : "Nonaktif"}
+                    Mode Sesi: {plot?.session_active ? "Aktif" : "Nonaktif"}
                   </button>
 
                   <button
                     onClick={() => setIsAddTreeModalOpen(true)}
-                    className="w-full py-2 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 py-2 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
                   >
                     <span className="text-sm font-bold leading-none">+</span> Tambah Pohon Baru
                   </button>
                 </section>
               )}
+
             </div>
           </div>
         </div>
@@ -961,7 +1168,7 @@ export default function PlotDetailPage() {
                     placeholder="Cari kode pohon (misal: POHON-1234)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-lg px-3 py-1.5 text-xs text-[#191919] placeholder-slate-450 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                    className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-lg px-3 py-1.5 text-xs text-[#191919] placeholder-slate-455 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
                   />
 
                   {claimError && (
