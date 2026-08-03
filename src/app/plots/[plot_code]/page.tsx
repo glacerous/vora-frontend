@@ -37,6 +37,10 @@ interface Plot {
   owner: Owner;
   owner_user_id?: number;
   target_co2e_kg: number | null;
+  area_x1: number | null;
+  area_y1: number | null;
+  area_x2: number | null;
+  area_y2: number | null;
 }
 
 interface Scan {
@@ -96,6 +100,29 @@ export default function PlotDetailPage() {
   const [isLayoutDirty, setIsLayoutDirty] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Scan | null>(null);
   const [draggedTreeCode, setDraggedTreeCode] = useState<string | null>(null);
+
+  // States for Area Bounding Box Drawing Mode
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
+  const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
+  const [tempBounds, setTempBounds] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+
+  // Sync tempBounds when plot fetches
+  useEffect(() => {
+    if (plot) {
+      if (plot.area_x1 !== null && plot.area_y1 !== null && plot.area_x2 !== null && plot.area_y2 !== null) {
+        setTempBounds({
+          x1: plot.area_x1,
+          y1: plot.area_y1,
+          x2: plot.area_x2,
+          y2: plot.area_y2,
+        });
+      } else {
+        setTempBounds(null);
+      }
+    }
+  }, [plot]);
 
   // Spatial display mode (grid canvas or Leaflet gps map)
   const [spatialMode, setSpatialMode] = useState<"grid" | "gps">("grid");
@@ -317,6 +344,41 @@ export default function PlotDetailPage() {
     setDraggedTreeCode(null);
   };
 
+  const handleGridMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDrawingMode || !isOwner) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(Math.floor((e.clientX - rect.left) / CELL_SIZE), DEFAULT_COLS));
+    const y = Math.max(0, Math.min(Math.floor((e.clientY - rect.top) / CELL_SIZE), DEFAULT_ROWS));
+    setDrawStart({ x, y });
+    setDrawCurrent({ x, y });
+    setIsDragging(true);
+  };
+
+  const handleGridMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging || !drawStart) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(Math.floor((e.clientX - rect.left) / CELL_SIZE), DEFAULT_COLS));
+    const y = Math.max(0, Math.min(Math.floor((e.clientY - rect.top) / CELL_SIZE), DEFAULT_ROWS));
+    setDrawCurrent({ x, y });
+  };
+
+  const handleGridMouseUp = () => {
+    if (!isDragging || !drawStart || !drawCurrent) return;
+    setIsDragging(false);
+    
+    if (drawStart.x !== drawCurrent.x && drawStart.y !== drawCurrent.y) {
+      setTempBounds({
+        x1: Math.min(drawStart.x, drawCurrent.x),
+        y1: Math.min(drawStart.y, drawCurrent.y),
+        x2: Math.max(drawStart.x, drawCurrent.x),
+        y2: Math.max(drawStart.y, drawCurrent.y),
+      });
+      setIsLayoutDirty(true);
+    }
+    setDrawStart(null);
+    setDrawCurrent(null);
+  };
+
   const handleSaveLayout = async () => {
     if (!plot) return;
     setActionLoading(true);
@@ -332,7 +394,13 @@ export default function PlotDetailPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ layout: layoutData }),
+        body: JSON.stringify({
+          layout: layoutData,
+          area_x1: tempBounds ? tempBounds.x1 : null,
+          area_y1: tempBounds ? tempBounds.y1 : null,
+          area_x2: tempBounds ? tempBounds.x2 : null,
+          area_y2: tempBounds ? tempBounds.y2 : null,
+        }),
         credentials: "include",
       });
 
@@ -530,6 +598,46 @@ export default function PlotDetailPage() {
   );
   const totalSpecies = uniqueSpecies.size;
   const totalCo2e = aggregation?.total_co2e_kg || 0;
+  
+  // Carbon density calculation
+  const SCALE_M = 2; // 2 meters per cell
+  let areaM2 = 0;
+  let areaHa = 0;
+  let densityCarbon = 0;
+  let insideCo2eKg = 0;
+  let treesOutsideCount = 0;
+  let hasBounds = false;
+
+  if (tempBounds) {
+    hasBounds = true;
+    const { x1, y1, x2, y2 } = tempBounds;
+    const widthCells = Math.abs(x2 - x1);
+    const heightCells = Math.abs(y2 - y1);
+    areaM2 = widthCells * heightCells * (SCALE_M * SCALE_M);
+    areaHa = areaM2 / 10000;
+
+    const xMin = Math.min(x1, x2);
+    const xMax = Math.max(x1, x2);
+    const yMin = Math.min(y1, y2);
+    const yMax = Math.max(y1, y2);
+
+    scans.forEach((scan) => {
+      const pos = gridPositions[scan.tree_code];
+      if (pos) {
+        const isInside = pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax;
+        if (isInside) {
+          insideCo2eKg += scan.co2e_kg;
+        } else {
+          treesOutsideCount++;
+        }
+      } else {
+        treesOutsideCount++;
+      }
+    });
+
+    const insideCo2eTons = insideCo2eKg / 1000;
+    densityCarbon = areaHa > 0 ? insideCo2eTons / areaHa : 0;
+  }
 
   // Species-based colors
   const speciesList = Array.from(uniqueSpecies);
@@ -669,22 +777,58 @@ export default function PlotDetailPage() {
                   </>
                 ) : null}
 
-                <div className="text-center w-full border-t border-slate-100 pt-3 mt-1.5 select-none">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
-                  <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
-                    {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
-                    <span className="text-xs font-sans text-slate-450 font-medium">kg</span>
-                  </h2>
-                  <div className="mt-2 flex justify-center gap-1.5">
-                    <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
-                      Pohon: {scans.length}
-                    </span>
-                    {aggregation && (
-                      <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
-                        Uncertainty: &plusmn;{aggregation.combined_uncertainty_pct.toFixed(1)}%
-                      </span>
-                    )}
+                <div className="w-full border-t border-slate-100 pt-3 mt-1.5 select-none flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-4 text-center items-start">
+                    <div className="border-r border-slate-100 pr-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
+                      <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
+                        {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
+                        <span className="text-xs font-sans text-slate-450 font-medium">kg</span>
+                      </h2>
+                      <div className="mt-2 flex justify-center gap-1.5">
+                        <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                          Pohon: {scans.length}
+                        </span>
+                        {aggregation && (
+                          <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                            &plusmn;{aggregation.combined_uncertainty_pct.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pl-2 flex flex-col items-center justify-center min-h-[64px]">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Kepadatan Karbon</span>
+                      {hasBounds ? (
+                        <>
+                          <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
+                            {densityCarbon.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                            <span className="text-xs font-sans text-slate-450 font-medium font-bold">t/ha</span>
+                          </h2>
+                          <div className="mt-2 flex justify-center gap-1.5">
+                            <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                              Area: {areaHa.toFixed(3)} ha
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-[9px] text-slate-400 font-medium italic text-center leading-normal max-w-[150px] mt-1">
+                          Gambar area plot untuk melihat kepadatan karbon per hektar
+                        </p>
+                      )}
+                    </div>
                   </div>
+
+                  {hasBounds && treesOutsideCount > 0 && (
+                    <div className="flex items-center gap-2 text-amber-600 bg-amber-50 border border-amber-200/50 p-2 rounded-lg text-[9px] leading-normal font-semibold text-left">
+                      <svg className="w-4.5 h-4.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>
+                        {treesOutsideCount} pohon berada di luar area yang ditandai, tidak termasuk dalam perhitungan kepadatan
+                      </span>
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -795,6 +939,37 @@ export default function PlotDetailPage() {
                       </button>
                     )}
 
+                    {/* Area Drawing Tools */}
+                    {spatialMode === "grid" && isOwner && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsDrawingMode(!isDrawingMode);
+                          }}
+                          className={`font-semibold text-[10px] rounded-lg px-2.5 py-1.5 shadow-xs cursor-pointer transition-all border ${
+                            isDrawingMode
+                              ? "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700"
+                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {isDrawingMode ? "Selesai Menandai" : "Tandai Luas Area"}
+                        </button>
+                        {tempBounds && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTempBounds(null);
+                              setIsLayoutDirty(true);
+                            }}
+                            className="bg-red-50 border border-red-150 text-red-650 hover:bg-red-100 font-semibold text-[10px] rounded-lg px-2.5 py-1.5 shadow-xs cursor-pointer transition-all"
+                          >
+                            Hapus Area
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                     {/* Mode Toggle Tabs */}
                     <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
                       <button 
@@ -823,13 +998,72 @@ export default function PlotDetailPage() {
                     <div 
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
+                      onMouseDown={handleGridMouseDown}
+                      onMouseMove={handleGridMouseMove}
+                      onMouseUp={handleGridMouseUp}
                       style={{
                         height: `${DEFAULT_ROWS * CELL_SIZE}px`,
                         backgroundImage: "linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px)",
                         backgroundSize: "24px 24px",
                       }}
-                      className="relative bg-[#fafbfd] rounded-lg overflow-hidden w-full select-none"
+                      className={`relative bg-[#fafbfd] rounded-lg overflow-hidden w-full select-none ${isDrawingMode ? 'cursor-crosshair' : ''}`}
                     >
+                      {/* Temporary drawing selection overlay */}
+                      {isDragging && drawStart && drawCurrent && (() => {
+                        const xMin = Math.min(drawStart.x, drawCurrent.x);
+                        const xMax = Math.max(drawStart.x, drawCurrent.x);
+                        const yMin = Math.min(drawStart.y, drawCurrent.y);
+                        const yMax = Math.max(drawStart.y, drawCurrent.y);
+                        const left = xMin * CELL_SIZE;
+                        const top = yMin * CELL_SIZE;
+                        const width = (xMax - xMin) * CELL_SIZE;
+                        const height = (yMax - yMin) * CELL_SIZE;
+                        return (
+                          <div 
+                            style={{
+                              position: "absolute",
+                              left: `${left}px`,
+                              top: `${top}px`,
+                              width: `${width}px`,
+                              height: `${height}px`,
+                              pointerEvents: "none",
+                              zIndex: 10,
+                            }}
+                            className="border-2 border-emerald-500 border-dashed bg-emerald-500/10"
+                          />
+                        );
+                      })()}
+
+                      {/* Finalized selection overlay */}
+                      {tempBounds && !isDragging && (() => {
+                        const { x1, y1, x2, y2 } = tempBounds;
+                        const xMin = Math.min(x1, x2);
+                        const xMax = Math.max(x1, x2);
+                        const yMin = Math.min(y1, y2);
+                        const yMax = Math.max(y1, y2);
+                        const left = xMin * CELL_SIZE;
+                        const top = yMin * CELL_SIZE;
+                        const width = (xMax - xMin) * CELL_SIZE;
+                        const height = (yMax - yMin) * CELL_SIZE;
+                        return (
+                          <div 
+                            style={{
+                              position: "absolute",
+                              left: `${left}px`,
+                              top: `${top}px`,
+                              width: `${width}px`,
+                              height: `${height}px`,
+                              pointerEvents: "none",
+                              zIndex: 5,
+                            }}
+                            className="border-2 border-emerald-500 bg-emerald-500/10 rounded-md"
+                          >
+                            <span className="absolute top-1.5 left-2 bg-emerald-600 text-white font-bold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs">
+                              Area Plot ({areaHa.toFixed(3)} ha)
+                            </span>
+                          </div>
+                        );
+                      })()}
                       {/* Render tree node items */}
                       {scans.map((scan) => {
                         const pos = gridPositions[scan.tree_code];
@@ -855,7 +1089,7 @@ export default function PlotDetailPage() {
                           >
                             {/* The 48x48px Node Box */}
                             <div
-                              draggable={isOwner}
+                              draggable={isOwner && !isDrawingMode}
                               onDragStart={(e) => handleDragStart(e, scan.tree_code)}
                               onClick={(e) => {
                                 e.stopPropagation();
