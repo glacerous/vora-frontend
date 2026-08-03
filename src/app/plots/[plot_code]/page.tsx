@@ -12,7 +12,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrend
 const PlotMap = dynamic(() => import("@/components/PlotMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-3xl flex items-center justify-center min-h-[350px]">
+    <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-3xl flex items-center justify-center min-h-[250px]">
       <span className="w-6 h-6 border-2 border-[#191919] border-t-transparent rounded-full animate-spin mr-2" />
       <p className="text-xs text-slate-500 font-medium">Memuat peta satelit...</p>
     </div>
@@ -99,7 +99,7 @@ export default function PlotDetailPage() {
   // Leaflet map visibility state
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
-  const GRID_SIZE = 6; // 6x6 spatial grid
+  const GRID_SIZE = 10; // 10x10 spatial grid density
 
   // Check ownership
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function PlotDetailPage() {
     fetchPlotDetails();
   }, [plotCode]);
 
-  // Visual Spatial Grid Auto-layout logic
+  // Visual Spatial Grid Auto-layout logic for 10x10 grid
   useEffect(() => {
     if (scans.length === 0) {
       setGridPositions({});
@@ -515,7 +515,7 @@ export default function PlotDetailPage() {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-emerald-500/5 blur-[130px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-slate-200/50 blur-[130px] pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Back Link & Info Badges */}
           <div className="mb-8 flex justify-between items-center">
             <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
@@ -545,143 +545,33 @@ export default function PlotDetailPage() {
                 Dibuat oleh <span className="text-slate-700 font-semibold">{plot?.owner.display_name}</span> pada {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </p>
             </div>
-
-            {isOwner && (
-              <div className="flex items-center gap-3 w-full md:w-auto shrink-0 select-none">
-                <button
-                  onClick={toggleSession}
-                  disabled={actionLoading}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    plot?.session_active
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                      : "border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {actionLoading ? (
-                    <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
-                  ) : plot?.session_active ? (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                  ) : (
-                    <span className="w-2 h-2 rounded-full bg-slate-350 inline-block" />
-                  )}
-                  Mode Sesi: {plot?.session_active ? "Aktif" : "Nonaktif"}
-                </button>
-
-                <button
-                  onClick={() => setIsAddTreeModalOpen(true)}
-                  className="px-4 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-1"
-                >
-                  <span className="text-sm font-bold leading-none">+</span> Tambah Pohon
-                </button>
-              </div>
-            )}
           </section>
 
-          {/* Large Editorial Hero Stat */}
-          <section className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm mb-8 flex flex-col gap-6">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Total Biomassa Karbon Plot</span>
-              <div className="flex flex-wrap items-baseline gap-2">
-                <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-normal tracking-tight text-[#191919] leading-none">
-                  {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                </h2>
-                <span className="text-lg sm:text-xl font-sans text-slate-400 font-medium">kg CO₂e</span>
-                {aggregation && aggregation.total_co2e_kg > 0 && (
-                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded ml-2 inline-block align-middle">
-                    &plusmn; {aggregation.combined_uncertainty_kg.toFixed(1)} kg ({aggregation.combined_uncertainty_pct.toFixed(1)}%)
-                  </span>
-                )}
-              </div>
+          {/* Column Layout Dashboard */}
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            
+            {/* Kolom Kiri: Kanvas Grid Spasial + Daftar Ringkasan Kartu Pohon */}
+            <div className="flex-1 w-full lg:max-w-[65%] flex flex-col gap-6">
               
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 font-medium border-t border-slate-100 pt-4">
-                <span>{scans.length} pohon terdata</span>
-                <span className="w-1 h-1 rounded-full bg-slate-350" />
-                <span>{totalSpecies} spesies terdeteksi</span>
-                <span className="w-1 h-1 rounded-full bg-slate-350" />
-                <span>Rata-rata DBH: {avgDbh.toFixed(1)} cm</span>
-                <span className="w-1 h-1 rounded-full bg-slate-350" />
-                <span>Rata-rata Tinggi: {avgTinggi.toFixed(1)} m</span>
-              </div>
-            </div>
-
-            {/* Horizontal Stacked Bar Chart for Carbon Contribution */}
-            {scans.length > 0 && (
-              <div className="flex flex-col gap-2.5 border-t border-slate-100 pt-5">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Komposisi Kontribusi Karbon per Pohon</span>
-                  <span className="text-[9px] text-slate-400 font-semibold italic">Hover segmen untuk melihat data pohon</span>
-                </div>
-                
-                <div className="flex h-5 w-full rounded-full overflow-hidden bg-slate-100 border border-slate-200/40 shadow-inner select-none">
-                  {scans.map((scan) => {
-                    const specName = getSpeciesName(scan);
-                    const color = getSpeciesColor(specName);
-                    const pct = totalCo2e > 0 ? (scan.co2e_kg / totalCo2e) * 100 : 0;
-                    if (pct < 0.5) return null;
-                    return (
-                      <div
-                        key={scan.id}
-                        className={`${color.bg} transition-all duration-300 relative group cursor-pointer border-r border-white/20 last:border-r-0`}
-                        style={{ width: `${pct}%` }}
-                      >
-                        {/* Custom Tooltip */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 min-w-[200px] bg-[#0d0f12] text-white rounded-xl p-3 shadow-xl text-xs leading-normal pointer-events-none">
-                          <div className="font-bold border-b border-white/10 pb-1 mb-1">{scan.tree_code}</div>
-                          <div className="text-[10px] text-slate-300 italic mb-1">{specName || "Spesies tidak terklasifikasi"}</div>
-                          <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                            <span>CO₂e:</span>
-                            <span className="font-semibold text-emerald-400">{scan.co2e_kg.toFixed(1)} kg</span>
-                          </div>
-                          <div className="flex justify-between text-[10px] text-slate-400">
-                            <span>Kontribusi:</span>
-                            <span className="font-semibold text-white">{pct.toFixed(1)}%</span>
-                          </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#0d0f12]" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Species Legend */}
-                {speciesList.length > 0 && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1">
-                    {speciesList.map((spec, idx) => {
-                      const color = getSpeciesColor(spec);
-                      return (
-                        <div key={idx} className="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold capitalize">
-                          <span className={`w-2.5 h-2.5 rounded-full ${color.bg.split(' ')[0]}`} />
-                          <span className="italic">{spec}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* Spatial Grid Canvas Section */}
-          <section className="mb-8">
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 relative select-none">
-              <div className="flex-1 flex flex-col gap-4">
+              {/* Kanvas Grid Spasial Card */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-4 relative select-none">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Kanvas Visual Spasial Plot</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Drag-and-drop node pohon untuk merapikan tata letak kebun sebenarnya</p>
+                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Peta Spasial Grid Hutan (10x10)</h3>
+                    <p className="text-xs text-slate-450 mt-0.5">Drag-and-drop node pohon untuk merapikan tata letak kebun sebenarnya</p>
                   </div>
                   {isLayoutDirty && isOwner && (
                     <button
                       onClick={handleSaveLayout}
                       disabled={actionLoading}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl px-4 py-2 shadow-sm cursor-pointer transition-all animate-pulse"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl px-4 py-2 shadow-sm cursor-pointer transition-all"
                     >
                       {actionLoading ? "Menyimpan..." : "Simpan Tata Letak"}
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-6 gap-2 sm:gap-3 bg-slate-50 border border-slate-200/60 p-3 sm:p-4 rounded-2xl w-full aspect-square relative">
+                <div className="grid grid-cols-10 gap-1.5 bg-slate-50 border border-slate-200/60 p-3 rounded-2xl w-full aspect-square relative">
                   {Array.from({ length: GRID_SIZE }).map((_, y) => (
                     <React.Fragment key={y}>
                       {Array.from({ length: GRID_SIZE }).map((_, x) => {
@@ -697,7 +587,7 @@ export default function PlotDetailPage() {
                             className={`aspect-square rounded-xl border border-dashed flex items-center justify-center relative transition-colors ${
                               scanAtCell 
                                 ? "border-transparent bg-white shadow-sm cursor-grab active:cursor-grabbing" 
-                                : "border-slate-200 hover:border-slate-350 hover:bg-slate-100/50"
+                                : "border-slate-200/60 hover:border-slate-350 hover:bg-slate-100/50"
                             }`}
                           >
                             {scanAtCell ? (() => {
@@ -708,23 +598,19 @@ export default function PlotDetailPage() {
                                   draggable={isOwner}
                                   onDragStart={(e) => handleDragStart(e, scanAtCell.tree_code)}
                                   onClick={() => setSelectedNode(scanAtCell)}
-                                  className={`w-[90%] h-[90%] rounded-xl flex flex-col items-center justify-center p-1.5 transition-all text-center gap-1.5 select-none border ${specColor.border} ${specColor.lightBg} hover:shadow-md cursor-pointer`}
+                                  className={`w-[92%] h-[92%] rounded-xl flex flex-col items-center justify-center p-1 transition-all text-center gap-1 border ${specColor.border} ${specColor.lightBg} hover:shadow-sm cursor-pointer`}
                                 >
-                                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white ${specColor.bg.split(' ')[0]}`}>
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                  <div className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center text-white ${specColor.bg.split(' ')[0]}`}>
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M12 3L7 9m5-6l5 6M7 13h10" />
                                     </svg>
                                   </div>
-                                  <span className="text-[9px] font-bold text-slate-800 truncate max-w-full">
+                                  <span className="text-[8px] sm:text-[9px] font-bold text-slate-800 truncate max-w-full">
                                     {scanAtCell.tree_code.replace("POHON-", "")}
                                   </span>
                                 </div>
                               );
-                            })() : (
-                              <span className="text-[9px] text-slate-300 font-mono">
-                                {x},{y}
-                              </span>
-                            )}
+                            })() : null}
                           </div>
                         );
                       })}
@@ -733,15 +619,117 @@ export default function PlotDetailPage() {
                 </div>
               </div>
 
-              {/* Side popover details */}
-              <div className="w-full md:w-72 shrink-0 flex flex-col gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-6">
-                <h3 className="font-bold text-xs text-slate-550 uppercase tracking-widest">Detail Node Terpilih</h3>
+              {/* Tree Scans list cards */}
+              <div className="flex flex-col gap-4">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Daftar Rekaman Pohon ({scans.length})</h2>
+                
+                {scans.length === 0 ? (
+                  <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-400 italic text-xs leading-relaxed">
+                    Belum ada rekaman pohon dalam plot ini. Silakan klik "+ Tambah Pohon" di atas untuk memasukkan data.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {scans.map((scan) => {
+                      const specName = getSpeciesName(scan);
+                      const specColor = getSpeciesColor(specName);
+                      return (
+                        <Link
+                          key={scan.id}
+                          href={`/reconstruct?code=${scan.tree_code}&phase=result`}
+                          className="border border-slate-200 hover:border-emerald-600 rounded-3xl bg-white p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3">
+                            {scan.thumbnail_url ? (
+                              <img
+                                src={scan.thumbnail_url}
+                                alt={scan.tree_code}
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            )}
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 group-hover:text-emerald-700 transition-colors">
+                                {scan.tree_code}
+                              </h4>
+                              <p className="text-[10px] text-slate-505 mt-0.5">
+                                DBH: <span className="font-semibold text-slate-700">{scan.dbh_cm.toFixed(1)} cm</span> | 
+                                Tinggi: <span className="font-semibold text-slate-700">{scan.tinggi_m.toFixed(1)} m</span>
+                              </p>
+                              {specName && (
+                                <span className={`inline-block text-[8px] font-semibold border ${specColor.border} ${specColor.lightBg} ${specColor.text} px-2 py-0.5 rounded-full capitalize mt-1`}>
+                                  {specName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-bold text-slate-900 block">{scan.co2e_kg.toFixed(1)} kg</span>
+                            <span className="text-[9px] text-slate-450 font-medium block">CO₂e</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Kolom Kanan: Stats, Detail Node Terpilih, Carbon Bar, Actions, Collapsible Map */}
+            <div className="w-full lg:w-[35%] flex flex-col gap-6">
+              
+              {/* Large Editorial Hero Stat */}
+              <section className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col gap-5">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Total Biomassa Karbon Plot</span>
+                  <div className="flex flex-wrap items-baseline gap-1.5">
+                    <h2 className="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-[#191919] leading-none">
+                      {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    </h2>
+                    <span className="text-sm font-sans text-slate-400 font-medium">kg CO₂e</span>
+                  </div>
+                  {aggregation && aggregation.total_co2e_kg > 0 && (
+                    <div className="mt-2.5">
+                      <span className="text-[9px] font-semibold text-slate-500 bg-slate-50 border border-slate-200/50 px-2.5 py-1 rounded-xl">
+                        &plusmn; {aggregation.combined_uncertainty_kg.toFixed(1)} kg ({aggregation.combined_uncertainty_pct.toFixed(1)}%)
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="mt-4 flex flex-col gap-2.5 text-xs text-slate-500 font-medium border-t border-slate-100 pt-4">
+                    <div className="flex justify-between">
+                      <span>Jumlah Pohon:</span>
+                      <span className="text-slate-700 font-bold">{scans.length} pohon</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Spesies Terdeteksi:</span>
+                      <span className="text-slate-700 font-bold">{totalSpecies} spesies</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Rata-rata DBH:</span>
+                      <span className="text-slate-700 font-bold">{avgDbh.toFixed(1)} cm</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Rata-rata Tinggi:</span>
+                      <span className="text-slate-700 font-bold">{avgTinggi.toFixed(1)} m</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Selected Node Details Panel */}
+              <section className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col gap-4">
+                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Detail Node Terpilih</h3>
                 {selectedNode ? (() => {
                   const specName = getSpeciesName(selectedNode);
                   const specCommon = getSpeciesCommonName(selectedNode);
                   const specColor = getSpeciesColor(specName);
                   return (
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col gap-4 animate-fadeIn">
+                    <div className="flex flex-col gap-4 animate-fadeIn">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-mono bg-slate-200/80 text-slate-600 px-2.5 py-1 rounded-xl">
                           {selectedNode.tree_code}
@@ -750,7 +738,7 @@ export default function PlotDetailPage() {
                           onClick={() => setSelectedNode(null)}
                           className="text-slate-400 hover:text-slate-700 text-xs font-bold"
                         >
-                          ✕ Close
+                          ✕ Tutup
                         </button>
                       </div>
 
@@ -761,32 +749,32 @@ export default function PlotDetailPage() {
                           className="w-full h-32 rounded-xl object-cover border border-slate-200 shadow-inner"
                         />
                       ) : (
-                        <div className="w-full h-32 rounded-xl bg-slate-100/50 border border-slate-200 border-dashed flex items-center justify-center text-slate-400 text-xs font-medium">
-                          No Image Thumbnail
+                        <div className="w-full h-32 rounded-xl bg-slate-50 border border-slate-200 border-dashed flex items-center justify-center text-slate-400 text-xs font-medium">
+                          Tidak ada gambar
                         </div>
                       )}
 
-                      <div className="flex flex-col gap-1.5 text-xs text-slate-600">
+                      <div className="flex flex-col gap-2 text-xs text-slate-600">
                         {specName && (
-                          <div className="mb-1.5">
+                          <div className="mb-1">
                             <span className={`inline-block text-[9px] font-semibold border ${specColor.border} ${specColor.lightBg} ${specColor.text} px-2.5 py-0.5 rounded-full capitalize`}>
                               <i>{specName}</i> {specCommon ? `(${specCommon})` : ''}
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between border-b border-slate-200/50 pb-1.5">
+                        <div className="flex justify-between border-b border-slate-100 pb-1.5">
                           <span>DBH:</span>
                           <span className="font-bold text-slate-800">{selectedNode.dbh_cm.toFixed(1)} cm</span>
                         </div>
-                        <div className="flex justify-between border-b border-slate-200/50 pb-1.5">
+                        <div className="flex justify-between border-b border-slate-100 pb-1.5">
                           <span>Tinggi:</span>
                           <span className="font-bold text-slate-800">{selectedNode.tinggi_m.toFixed(1)} m</span>
                         </div>
-                        <div className="flex justify-between border-b border-slate-200/50 pb-1.5">
+                        <div className="flex justify-between border-b border-slate-100 pb-1.5">
                           <span>Biomassa:</span>
                           <span className="font-bold text-slate-800">{selectedNode.biomassa_kg.toFixed(1)} kg</span>
                         </div>
-                        <div className="flex justify-between text-emerald-800 font-semibold pt-0.5">
+                        <div className="flex justify-between text-emerald-800 font-semibold pt-1">
                           <span>Estimasi CO₂e:</span>
                           <span className="font-bold text-sm text-emerald-700">{selectedNode.co2e_kg.toFixed(1)} kg</span>
                         </div>
@@ -801,103 +789,130 @@ export default function PlotDetailPage() {
                     </div>
                   );
                 })() : (
-                  <div className="bg-slate-50 border border-slate-200/60 border-dashed rounded-2xl p-8 text-center text-xs text-slate-400 italic flex items-center justify-center min-h-[220px]">
-                    Klik salah satu node pohon pada peta spasial grid untuk melihat detail ringkas.
+                  <div className="text-center text-xs text-slate-400 italic py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                    Pilih salah satu node pohon pada peta grid spasial untuk melihat detail.
                   </div>
                 )}
-              </div>
-            </div>
-          </section>
+              </section>
 
-          {/* Leaflet Map Centroid Location Collapsible Visualizer */}
-          <div className="flex flex-col gap-4 mb-8">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Peta Sebaran & Lokasi Plot</h2>
-              <button
-                onClick={() => setIsMapExpanded(prev => !prev)}
-                className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer border border-emerald-200 rounded-xl px-3 py-1.5 hover:bg-emerald-50 transition-all select-none"
-              >
-                {isMapExpanded ? "Sembunyikan Peta" : "Lihat lokasi GPS asli"}
-              </button>
-            </div>
-            
-            <div className={`transition-all duration-500 ease-in-out overflow-hidden shadow-sm ${
-              isMapExpanded ? "h-[400px] border border-slate-200 rounded-3xl" : "h-0 border-0"
-            }`}>
-              {isMapExpanded && (
-                <PlotMap
-                  scans={scans}
-                  centroidLat={plot?.gps_centroid_lat || null}
-                  centroidLon={plot?.gps_centroid_lon || null}
-                />
+              {/* Carbon Contribution Stacked Bar */}
+              {scans.length > 0 && (
+                <section className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col gap-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Komposisi Karbon</span>
+                    <span className="text-[9px] text-slate-400 italic">Hover segmen</span>
+                  </div>
+                  
+                  <div className="flex h-4 w-full rounded-full overflow-hidden bg-slate-100 border border-slate-250/20 shadow-inner select-none">
+                    {scans.map((scan) => {
+                      const specName = getSpeciesName(scan);
+                      const color = getSpeciesColor(specName);
+                      const pct = totalCo2e > 0 ? (scan.co2e_kg / totalCo2e) * 100 : 0;
+                      if (pct < 0.5) return null;
+                      return (
+                        <div
+                          key={scan.id}
+                          className={`${color.bg} transition-all duration-300 relative group cursor-pointer border-r border-white/20 last:border-r-0`}
+                          style={{ width: `${pct}%` }}
+                        >
+                          {/* Custom Tooltip */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 min-w-[160px] bg-[#0d0f12] text-white rounded-xl p-2.5 shadow-xl text-[10px] leading-normal pointer-events-none">
+                            <div className="font-bold border-b border-white/10 pb-0.5 mb-1">{scan.tree_code}</div>
+                            <div className="italic text-slate-300 truncate">{specName || "Spesies..."}</div>
+                            <div className="flex justify-between mt-1 text-slate-450">
+                              <span>CO₂e:</span>
+                              <span className="font-bold text-emerald-400">{scan.co2e_kg.toFixed(1)} kg</span>
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#0d0f12]" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {speciesList.length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                      {speciesList.slice(0, 4).map((spec, idx) => {
+                        const color = getSpeciesColor(spec);
+                        return (
+                          <div key={idx} className="flex items-center gap-1 text-[9px] text-slate-500 font-semibold capitalize">
+                            <span className={`w-2 h-2 rounded-full ${color.bg.split(' ')[0]}`} />
+                            <span className="italic truncate max-w-[80px]">{spec}</span>
+                          </div>
+                        );
+                      })}
+                      {speciesList.length > 4 && (
+                        <span className="text-[9px] text-slate-400 font-semibold">+{speciesList.length - 4} spesies lagi</span>
+                      )}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* Collapsible Leaflet Map Section */}
+              <section className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">Peta GPS Asli</h2>
+                  <button
+                    onClick={() => setIsMapExpanded(prev => !prev)}
+                    className="text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer border border-emerald-250/70 rounded-lg px-2.5 py-1 hover:bg-emerald-50 transition-all select-none"
+                  >
+                    {isMapExpanded ? "Sembunyikan" : "Lihat Peta"}
+                  </button>
+                </div>
+                
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden relative ${
+                  isMapExpanded ? "h-[260px] border border-slate-200 rounded-2xl" : "h-0 border-0"
+                }`}>
+                  {isMapExpanded && (
+                    <PlotMap
+                      scans={scans}
+                      centroidLat={plot?.gps_centroid_lat || null}
+                      centroidLon={plot?.gps_centroid_lon || null}
+                    />
+                  )}
+                </div>
+                
+                {isMapExpanded && gpsScans.length < scans.length && (
+                  <p className="text-[9px] text-slate-450 leading-normal italic mt-1">
+                    * Menampilkan {gpsScans.length} dari {scans.length} pohon.
+                  </p>
+                )}
+              </section>
+
+              {/* Action Controls for Owner */}
+              {isOwner && (
+                <section className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col gap-3">
+                  <h3 className="font-bold text-xs text-slate-550 uppercase tracking-widest mb-1">Aksi Plot</h3>
+                  
+                  <button
+                    onClick={toggleSession}
+                    disabled={actionLoading}
+                    className={`w-full py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      plot?.session_active
+                        ? "border-emerald-650 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        : "border-slate-200 hover:border-slate-300 text-slate-650 hover:bg-slate-50"
+                    }`}
+                  >
+                    {actionLoading ? (
+                      <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
+                    ) : plot?.session_active ? (
+                      <span className="w-2 h-2 rounded-full bg-emerald-550 inline-block animate-pulse" />
+                    ) : (
+                      <span className="w-2 h-2 rounded-full bg-slate-350 inline-block" />
+                    )}
+                    Sesi Capture: {plot?.session_active ? "Aktif" : "Nonaktif"}
+                  </button>
+
+                  <button
+                    onClick={() => setIsAddTreeModalOpen(true)}
+                    className="w-full py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                  >
+                    <span className="text-sm font-bold leading-none">+</span> Tambah Pohon Baru
+                  </button>
+                </section>
               )}
             </div>
-            
-            {isMapExpanded && gpsScans.length < scans.length && (
-              <p className="text-[10px] text-slate-450 leading-normal italic">
-                * Menampilkan {gpsScans.length} dari {scans.length} pohon ({scans.length - gpsScans.length} pohon tidak memiliki data GPS EXIF).
-              </p>
-            )}
-          </div>
-
-          {/* Tree Scans list cards */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Daftar Rekaman Pohon ({scans.length})</h2>
-            
-            {scans.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-400 italic text-xs leading-relaxed">
-                Belum ada rekaman pohon dalam plot ini. Silakan klik "+ Tambah Pohon" di atas untuk memasukkan data.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {scans.map((scan) => {
-                  const specName = getSpeciesName(scan);
-                  const specCommon = getSpeciesCommonName(scan);
-                  const specColor = getSpeciesColor(specName);
-                  return (
-                    <Link
-                      key={scan.id}
-                      href={`/reconstruct?code=${scan.tree_code}&phase=result`}
-                      className="border border-slate-200 hover:border-emerald-600 rounded-3xl bg-white p-4 sm:p-5 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all group cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        {scan.thumbnail_url ? (
-                          <img
-                            src={scan.thumbnail_url}
-                            alt={scan.tree_code}
-                            className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 group-hover:text-emerald-700 transition-colors">
-                            {scan.tree_code}
-                          </h4>
-                          <p className="text-xs text-slate-500 mt-1">
-                            DBH: <span className="font-semibold">{scan.dbh_cm.toFixed(1)} cm</span> | 
-                            Tinggi: <span className="font-semibold">{scan.tinggi_m.toFixed(1)} m</span>
-                          </p>
-                          {specName && (
-                            <span className={`inline-block text-[9px] font-semibold border ${specColor.border} ${specColor.lightBg} ${specColor.text} px-2 py-0.5 rounded-full capitalize mt-1.5`}>
-                              <i>{specName}</i>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-sm font-bold text-slate-900 block">{scan.co2e_kg.toFixed(1)} kg</span>
-                        <span className="text-[10px] text-slate-450 font-medium block">CO₂e</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       </main>
