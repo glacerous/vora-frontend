@@ -565,76 +565,71 @@ export default function PlotDetailPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-slate-200/50 blur-[130px] pointer-events-none" />
 
         <div className="max-w-[1440px] mx-auto relative z-10 flex flex-col gap-4">
-          {/* Back Link & Info Badges */}
-          <div className="flex justify-between items-center select-none">
+          {/* Top toolbar matching dashboard reference */}
+          <div className="flex justify-between items-center select-none pb-2 border-b border-slate-200/40">
             <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
               ← Kembali ke Dashboard
             </Link>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono bg-slate-100 text-slate-500 border border-slate-200/50 px-2 py-0.5 rounded-lg">
-                {plot?.plot_code}
-              </span>
-              <span className={`text-[10px] uppercase px-2 py-0.5 rounded-lg border font-bold ${
+
+            <div className="flex items-center gap-3">
+              <span className={`text-[9px] uppercase px-2 py-0.5 rounded border font-bold ${
                 plot?.privacy === "public"
                   ? "bg-sky-50 text-sky-700 border-sky-100"
                   : "bg-slate-100 text-slate-600 border-slate-200"
               }`}>
                 {plot?.privacy}
               </span>
+              
+              {isOwner && (
+                <div className="flex items-center gap-1.5 shrink-0 select-none">
+                  <button
+                    onClick={toggleSession}
+                    disabled={actionLoading}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      plot?.session_active
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-755 hover:bg-emerald-100"
+                        : "border-slate-200 hover:border-slate-300 text-slate-655 hover:bg-slate-50"
+                    }`}
+                  >
+                    {actionLoading ? (
+                      <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
+                    ) : plot?.session_active ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block animate-pulse" />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-350 inline-block" />
+                    )}
+                    Sesi: {plot?.session_active ? "Aktif" : "Nonaktif"}
+                  </button>
+
+                  <button
+                    onClick={() => setIsAddTreeModalOpen(true)}
+                    className="px-3 py-1.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                  >
+                    <span className="text-xs font-bold leading-none">+</span> Tambah Pohon
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Plot Information & Header Actions Block - Layout aligned directly to top title dashboard reference */}
-          <section className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-xl font-normal tracking-tight text-[#191919] font-serif">{plot?.name}</h1>
-              <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-                {plot?.description || "Tidak ada deskripsi lokasi."}{" "}
-                <span className="text-slate-300">|</span> Dibuat oleh <span className="text-slate-655 font-semibold">{plot?.owner.display_name}</span>
-              </p>
-            </div>
-
-            {isOwner && (
-              <div className="flex items-center gap-2 shrink-0 select-none w-full md:w-auto">
-                <button
-                  onClick={toggleSession}
-                  disabled={actionLoading}
-                  className={`flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    plot?.session_active
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-750 hover:bg-emerald-100"
-                      : "border-slate-200 hover:border-slate-300 text-slate-650 hover:bg-slate-50"
-                  }`}
-                >
-                  {actionLoading ? (
-                    <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
-                  ) : plot?.session_active ? (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block animate-pulse" />
-                  ) : (
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-355 inline-block" />
-                  )}
-                  Mode Sesi: {plot?.session_active ? "Aktif" : "Nonaktif"}
-                </button>
-
-                <button
-                  onClick={() => setIsAddTreeModalOpen(true)}
-                  className="flex-1 md:flex-initial px-3.5 py-1.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[11px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
-                >
-                  <span className="text-sm font-bold leading-none">+</span> Tambah Pohon
-                </button>
-              </div>
-            )}
-          </section>
-
           {/* Main Layout Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start mt-2">
             
-            {/* KOLOM KIRI (col-span-4): Stats, progress circular, dan diagram spesies */}
+            {/* KOLOM KIRI (col-span-4): Plot Profile, Stats, progress circular, dan diagram spesies */}
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
               
-              {/* Card 1: Progress & Target CO2e (Today's Delivery Progress) */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col items-center justify-center">
-                <h3 className="font-bold text-[10px] text-slate-450 uppercase tracking-widest self-start">Progres Target Karbon</h3>
+              {/* Card 1: Plot Profile & Carbon Target Gauge (Unified Left Dashboard Header) */}
+              <section className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
+                <div className="w-full border-b border-slate-100 pb-3.5 mb-4 flex flex-col gap-1 text-left select-none">
+                  <span className="text-[9px] font-mono text-emerald-750 font-bold block mb-0.5">{plot?.plot_code}</span>
+                  <h1 className="text-lg font-bold tracking-tight text-slate-800 font-serif leading-tight">{plot?.name}</h1>
+                  <p className="text-[10px] text-slate-500 leading-normal line-clamp-3 mt-1.5">{plot?.description || "Tidak ada deskripsi lokasi."}</p>
+                  <span className="text-[9px] text-slate-400 mt-2 block font-medium">
+                    Oleh <span className="text-slate-600 font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-[10px] text-slate-450 uppercase tracking-widest self-start mb-1 select-none">Progres Target Karbon</h3>
                 
                 {/* Curved SVG Gauge */}
                 <div className="relative flex flex-col items-center justify-center py-3 select-none">
@@ -669,7 +664,7 @@ export default function PlotDetailPage() {
                   </div>
                 </div>
 
-                <div className="text-center w-full border-t border-slate-100 pt-3 mt-1.5">
+                <div className="text-center w-full border-t border-slate-100 pt-3 mt-1.5 select-none">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
                   <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
                     {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
@@ -690,7 +685,7 @@ export default function PlotDetailPage() {
 
               {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
               <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest">Kontribusi per Spesies</h3>
+                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Kontribusi per Spesies</h3>
                 
                 <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
@@ -727,15 +722,15 @@ export default function PlotDetailPage() {
 
               {/* Card 3: Rata-rata & Visual Wave Dist (Fuel Usage & Cost) */}
               <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest">Dimensi Rata-rata & Kerapatan DBH</h3>
+                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Dimensi Rata-rata & Kerapatan DBH</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Avg DBH</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block select-none">Avg DBH</span>
                     <span className="text-lg font-bold font-serif text-slate-800">{avgDbh.toFixed(1)} cm</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Avg Tinggi</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block select-none">Avg Tinggi</span>
                     <span className="text-lg font-bold font-serif text-slate-800">{avgTinggi.toFixed(1)} m</span>
                   </div>
                 </div>
@@ -941,7 +936,7 @@ export default function PlotDetailPage() {
                 )}
                 
                 {spatialMode === "gps" && gpsScans.length < scans.length && (
-                  <p className="text-[9px] text-slate-455 leading-normal italic mt-1">
+                  <p className="text-[9px] text-slate-455 leading-normal italic mt-1 select-none">
                     * Menampilkan {gpsScans.length} dari {scans.length} pohon dengan metadata GPS EXIF.
                   </p>
                 )}
@@ -951,11 +946,11 @@ export default function PlotDetailPage() {
               <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Daftar Rekaman Pohon ({filteredScans.length})</h3>
+                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest select-none">Daftar Rekaman Pohon ({filteredScans.length})</h3>
                   </div>
                   
                   {/* Tab Filters */}
-                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
+                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50 select-none">
                     <button 
                       onClick={() => setFilterTab("all")} 
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
@@ -987,7 +982,7 @@ export default function PlotDetailPage() {
                 <div className="w-full overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs text-slate-500">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none">
                         <th className="py-2.5 px-3">Pohon</th>
                         <th className="py-2.5 px-3">Klasifikasi Spesies</th>
                         <th className="py-2.5 px-3">Metrik Fisik</th>
