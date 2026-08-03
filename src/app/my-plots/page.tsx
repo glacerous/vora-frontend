@@ -37,6 +37,26 @@ interface ScanRecord {
   }> | string;
 }
 
+const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="1.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 22V12" />
+    <path d="M12 12L8 8" />
+    <path d="M12 10L16 6" />
+    <path d="M12 15L7 10" />
+    <path d="M12 13L17 8" />
+    <path d="M12 7L9 4" />
+    <path d="M12 5L15 2" />
+  </svg>
+);
+
 export default function MyPlotsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -211,83 +231,71 @@ export default function MyPlotsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {scans.map((scan) => {
-                  const specName = getSpeciesName(scan);
-                  const specCommon = getSpeciesCommonName(scan);
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+                {scans.map((record) => {
+                  const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                   return (
-                    <div
-                      key={scan.id}
-                      className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:border-slate-350 transition-all flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex justify-between items-start mb-3 select-none">
-                          <span className="text-[10px] font-mono tracking-wider bg-slate-100 text-slate-500 border border-slate-200/50 px-2 py-0.5 rounded">
-                            {scan.tree_code}
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-mono">
-                            {new Date(scan.scan_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                          </span>
-                        </div>
+                    <div key={record.id} className="vora-card animate-fadeIn">
+                      <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
+                        {record.thumbnail_url ? (
+                          <img
+                            src={record.thumbnail_url}
+                            alt={`Thumbnail for ${record.tree_code}`}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-amber-500/10 bg-[#fef4e2]">
+                            <TreeIcon className="w-16 h-16" />
+                          </div>
+                        )}
 
-                        <div className="flex items-start gap-3.5 mb-4">
-                          {scan.thumbnail_url ? (
-                            <img
-                              src={scan.thumbnail_url}
-                              alt={scan.tree_code}
-                              className="w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0"
-                            />
+                        {record.thumbnail_url && (
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-0" />
+                        )}
+
+                        <header className="vora-card-hero-header relative z-10 w-full">
+                          <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
+                            record.thumbnail_url 
+                              ? "bg-black/30 border-white/10 text-white" 
+                              : "bg-white/40 border-slate-200 text-slate-600"
+                          }`}>
+                            #{record.id}
+                          </span>
+                        </header>
+
+                        <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
+                          record.thumbnail_url 
+                            ? "text-white" 
+                            : "text-[#141417]"
+                        }`}>
+                          {record.tree_code}
+                        </p>
+                      </section>
+
+                      <footer className="vora-card-footer">
+                        <div className="vora-card-job-summary flex flex-col items-start font-sans">
+                          <div className="card__job text-base font-extrabold text-[#141417] leading-none mb-1">
+                            {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
+                          </div>
+                          {isInvalid ? (
+                            <span className="text-[10px] text-rose-500 font-semibold">
+                              Invalid scan
+                            </span>
                           ) : (
-                            <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                              </svg>
+                            <div className="text-[10px] text-slate-450 font-semibold">
+                              {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
                             </div>
                           )}
-
-                          <div className="min-w-0">
-                            {specName ? (
-                              <div className="flex flex-col">
-                                <span className="text-xs font-semibold text-slate-800 capitalize truncate italic">
-                                  {specName}
-                                </span>
-                                {specCommon && (
-                                  <span className="text-[10px] text-slate-450 truncate">
-                                    {specCommon}
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-xs text-slate-400 italic">Belum terklasifikasi</span>
-                            )}
-                          </div>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-3.5 bg-slate-50/50 rounded-xl p-3 border border-slate-100 text-[11px] text-slate-500 mb-2">
-                          <div>
-                            <span className="text-[9px] text-slate-400 uppercase font-bold block select-none">DBH</span>
-                            <span className="font-semibold text-slate-700">{scan.dbh_cm.toFixed(1)} cm</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] text-slate-400 uppercase font-bold block select-none">Tinggi</span>
-                            <span className="font-semibold text-slate-700">{scan.tinggi_m.toFixed(1)} m</span>
-                          </div>
+                        <div className="vora-card-view-save select-none">
+                          <Link
+                            href={`/reconstruct?code=${encodeURIComponent(record.tree_code)}&phase=result`}
+                            className="vora-card-btn"
+                          >
+                            View
+                          </Link>
                         </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-100/60 flex justify-between items-baseline mt-4 select-none">
-                        <div>
-                          <span className="text-[9px] text-slate-400 uppercase font-bold block">Estimasi CO₂e</span>
-                          <span className="text-sm font-bold text-slate-800">{scan.co2e_kg.toFixed(1)} kg</span>
-                        </div>
-                        
-                        <Link
-                          href={`/reconstruct?code=${scan.tree_code}&phase=result`}
-                          className="text-xs text-emerald-650 font-bold hover:text-emerald-700 transition-colors"
-                        >
-                          Detail 3D &rarr;
-                        </Link>
-                      </div>
+                      </footer>
                     </div>
                   );
                 })}
