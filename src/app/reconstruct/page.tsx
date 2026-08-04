@@ -306,10 +306,34 @@ export default function Reconstruct() {
               setLoading(true);
               await fetchTreeHistoryWithRetry(code);
               setLoading(false);
-            } else if (data.stage === "error") {
+            } else if (data.stage === "error" && data.tree_code === calibrationCode) {
               setError(data.error || "Reconstruction failed");
               transitionPhase("upload");
               setLoading(false);
+            } else if (data.stage === "idle" || (data.tree_code && data.tree_code !== calibrationCode)) {
+              // Bug 1 Fix: Check if tree_code already has a complete record in the database
+              try {
+                const historyRes = await fetch(`${BACKEND_URL}/history/${calibrationCode}`);
+                if (historyRes.ok) {
+                  const historyData = await historyRes.json();
+                  if (historyData.success && historyData.history && historyData.history.length > 0) {
+                    const latestScan = historyData.history[0];
+                    if (latestScan.scan_date) {
+                      const code = calibrationCode;
+                      setPhase("result");
+                      setActiveTreeCode(code);
+                      syncUrl("result", code);
+                      setHistory(historyData.history);
+                      setCurrentScan(latestScan);
+                      setSidebarOpen(true);
+                      setError(null);
+                      return;
+                    }
+                  }
+                }
+              } catch (historyErr) {
+                console.error("Error checking scan history during fallback:", historyErr);
+              }
             }
           }
         } catch (err) {
@@ -328,12 +352,24 @@ export default function Reconstruct() {
 
   useEffect(() => {
     if (phase === "processing") {
-      if (!timerRef.current) {
-        setElapsedTime(0);
-        timerRef.current = setInterval(() => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      
+      const updateTimer = () => {
+        if (pipelineStatus?.started_at) {
+          const serverStartMs = pipelineStatus.started_at * 1000;
+          const diffSeconds = Math.max(0, Math.floor((Date.now() - serverStartMs) / 1000));
+          setElapsedTime(diffSeconds);
+        }
+      };
+      
+      updateTimer();
+      timerRef.current = setInterval(() => {
+        if (pipelineStatus?.started_at) {
+          updateTimer();
+        } else {
           setElapsedTime((prev) => prev + 1);
-        }, 1000);
-      }
+        }
+      }, 1000);
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -343,7 +379,7 @@ export default function Reconstruct() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [phase]);
+  }, [phase, pipelineStatus?.started_at]);
 
   // ── Iframe message listener ──────────────────────────────────────────────
 
@@ -771,6 +807,9 @@ export default function Reconstruct() {
 
     const currentMsg = pipelineStatus?.message || "";
     let activeStageIndex = 0;
+    if (pipelineStatus?.stage === "reconstructing") {
+      activeStageIndex = 1;
+    }
     if (currentMsg.includes("Initializing geometry")) activeStageIndex = 1;
     else if (currentMsg.includes("Training Gaussians")) activeStageIndex = 2;
     else if (currentMsg.includes("Extracting point cloud")) activeStageIndex = 3;
