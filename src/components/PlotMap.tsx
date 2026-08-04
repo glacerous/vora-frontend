@@ -87,7 +87,7 @@ export default function PlotMap({ scans, centroidLat, centroidLon }: PlotMapProp
         <div style="color: #0d0f12; font-family: sans-serif; padding: 4px;">
           <h4 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600;">${scan.tree_code}</h4>
           <p style="margin: 0 0 6px 0; font-size: 11px; color: #4a5568;">Biomass CO₂e: <b>${scan.co2e_kg.toFixed(2)} kg</b></p>
-          ${scan.thumbnail_url ? `<img src="${scan.thumbnail_url}" style="width: 100%; max-height: 80px; object-fit: cover; border-radius: 6px;" />` : ""}
+          ${scan.thumbnail_url ? `<img src="${scan.thumbnail_url}" loading="lazy" style="width: 100%; max-height: 80px; object-fit: cover; border-radius: 6px;" />` : ""}
         </div>
       `;
 

@@ -294,6 +294,7 @@ export default function HistoryPage() {
                                   <img
                                     src={record.thumbnail_url}
                                     alt={`Thumbnail for ${record.tree_code}`}
+                                    loading="lazy"
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                                   />
                                 ) : (
@@ -434,6 +435,7 @@ export default function HistoryPage() {
                                 className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-slate-200"
                                 src={url}
                                 alt="Tree avatar"
+                                loading="lazy"
                               />
                             ))
                           ) : (

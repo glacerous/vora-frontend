@@ -44,8 +44,11 @@ export default function Navbar() {
         {/* New Scan Action Button */}
         <Link
           href="/reconstruct"
-          className="text-xs font-semibold bg-[#191919] text-white hover:bg-[#191919]/90 px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-xs"
+          className="text-xs font-semibold bg-[#191919] text-white hover:bg-[#191919]/90 px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 shadow-xs"
         >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
           New Scan
         </Link>
 

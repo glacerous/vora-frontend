@@ -1218,10 +1218,9 @@ export default function PlotDetailPage() {
             {/* KOLOM KANAN (col-span-8): Visualisasi Spasial (Grid/GPS Map) dan Table */}
             <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
               
-              {/* Card 4: Visualisasi Spasial (Grid Canvas dan Leaflet Map disatukan dalam tab) */}
               <div 
                 onClick={() => setSelectedNode(null)}
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 relative select-none"
+                className="hidden md:flex bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex-col gap-4 relative select-none"
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
@@ -1845,6 +1844,7 @@ export default function PlotDetailPage() {
                                       <img
                                         src={scan.thumbnail_url}
                                         alt={scan.tree_code}
+                                        loading="lazy"
                                         className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
                                       />
                                     ) : (

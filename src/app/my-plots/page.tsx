@@ -241,6 +241,7 @@ export default function MyPlotsPage() {
                           <img
                             src={record.thumbnail_url}
                             alt={`Thumbnail for ${record.tree_code}`}
+                            loading="lazy"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                           />
                         ) : (
@@ -336,11 +337,6 @@ export default function MyPlotsPage() {
                           {plot.plot_code}
                         </span>
                         <div className="flex items-center gap-2">
-                          {plot.session_active && (
-                            <span className="flex items-center gap-1.2 text-[9px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                              Sesi Aktif
-                            </span>
-                          )}
                           <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${
                             plot.privacy === "public"
                               ? "bg-sky-50 text-sky-700 border-sky-100"
@@ -373,6 +369,7 @@ export default function MyPlotsPage() {
                                 className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-slate-200"
                                 src={url}
                                 alt="Tree avatar"
+                                loading="lazy"
                               />
                             ))
                           ) : (
