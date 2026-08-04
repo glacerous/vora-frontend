@@ -973,48 +973,7 @@ export default function Reconstruct() {
               pointerEvents: sceneLoaded ? "auto" : "none",
             }}
           >
-            {currentScan.scale_status !== "calibrated" && (
-              <div className="bg-red-600/95 backdrop-blur-sm border border-red-700 text-white text-[11px] sm:text-xs font-bold px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 max-w-md sm:max-w-2xl animate-pulse">
-                <svg className="w-5 h-5 text-white shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>
-                  ⚠ HASIL BELUM DIKALIBRASI SKALA — angka DBH/karbon memakai unit PLY default dan
-                  TIDAK DAPAT DIANDALKAN. Lakukan kalibrasi skala (calibrate_scale.py / auto-pose)
-                  sebelum mempercayai hasil.
-                </span>
-              </div>
-            )}
 
-            {currentScan.quality_status === "low_points" && (
-              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
-                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>Kualitas rendah: terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.</span>
-              </div>
-            )}
-
-            {currentScan.height_used === "user_manual_height" && (
-              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
-                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>
-                  Tinggi diinput manual oleh user — nilai TIDAK divalidasi otomatis terhadap point cloud
-                  (sepenuhnya tanggung jawab input user).
-                </span>
-              </div>
-            )}
-
-            {currentScan.confidence_note?.includes("WARNING") && (
-              <div className="bg-amber-50/95 backdrop-blur-sm border border-amber-200/60 text-amber-900 text-[10px] sm:text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-md sm:max-w-xl">
-                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{currentScan.confidence_note}</span>
-              </div>
-            )}
 
             <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
               <div className="flex flex-col gap-0.5">
@@ -1177,38 +1136,6 @@ export default function Reconstruct() {
             {/* Mobile-only Metrics Panel (Replaces absolute overlays on mobile) */}
             {currentScan && (
               <div className="block lg:hidden space-y-4">
-                {/* Warnings Stack on Mobile */}
-                {currentScan.scale_status !== "calibrated" && (
-                  <div className="bg-red-650 text-white text-[11px] font-bold px-4 py-3 rounded-xl shadow-md flex flex-col gap-1.5 animate-pulse">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <span className="uppercase tracking-wider text-[9px] font-extrabold">Warning: Uncalibrated</span>
-                    </div>
-                    <span>
-                      Hasil belum dikalibrasi skala. Angka DBH/karbon memakai unit PLY default dan TIDAK DAPAT DIANDALKAN.
-                    </span>
-                  </div>
-                )}
-
-                {currentScan.quality_status === "low_points" && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
-                    ⚠️ Kualitas rendah: terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.
-                  </div>
-                )}
-
-                {currentScan.height_used === "user_manual_height" && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
-                    ⚠️ Tinggi diinput manual oleh user — nilai tidak divalidasi otomatis terhadap point cloud.
-                  </div>
-                )}
-
-                {currentScan.confidence_note?.includes("WARNING") && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
-                    ⚠️ {currentScan.confidence_note}
-                  </div>
-                )}
 
                 {/* 2x2 grid of metrics */}
                 <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 grid grid-cols-2 gap-4">
@@ -1641,6 +1568,50 @@ export default function Reconstruct() {
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Active Scan Warnings (Unified for Desktop & Mobile) */}
+            {currentScan && (currentScan.scale_status !== "calibrated" ||
+              currentScan.quality_status === "low_points" ||
+              currentScan.height_used === "user_manual_height" ||
+              currentScan.confidence_note?.includes("WARNING")) && (
+              <div className="space-y-2 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Scan Alerts & Warnings
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {currentScan.scale_status !== "calibrated" && (
+                    <div className="text-[11px] text-red-750 bg-red-50 border border-red-200 rounded-xl p-2.5 leading-relaxed">
+                      <strong className="block text-red-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Uncalibrated Scale</strong>
+                      Angka DBH/karbon memakai unit PLY default dan TIDAK DAPAT DIANDALKAN. Lakukan kalibrasi skala (calibrate_scale.py / auto-pose).
+                    </div>
+                  )}
+
+                  {currentScan.quality_status === "low_points" && (
+                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
+                      <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Kualitas Rendah</strong>
+                      Terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.
+                    </div>
+                  )}
+
+                  {currentScan.height_used === "user_manual_height" && (
+                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
+                      <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Tinggi Input Manual</strong>
+                      Tinggi diinput manual oleh user — nilai tidak divalidasi otomatis terhadap point cloud.
+                    </div>
+                  )}
+
+                  {currentScan.confidence_note?.includes("WARNING") && (
+                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
+                      <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Tinggi Batang Kurang</strong>
+                      {currentScan.confidence_note}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
