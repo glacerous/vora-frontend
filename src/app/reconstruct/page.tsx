@@ -680,7 +680,7 @@ export default function Reconstruct() {
 
         let isExtracted = false;
         let attempts = 0;
-        const maxAttempts = 100;
+        const maxAttempts = 300;
         const pollInterval = 1500;
 
         setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
