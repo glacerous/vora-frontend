@@ -83,7 +83,7 @@ export default function Reconstruct() {
   const [error, setError] = useState<string | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [removeBackground] = useState(false);
+  const [removeBackground, setRemoveBackground] = useState(true);
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const isCancelledRef = React.useRef(false);
@@ -1947,6 +1947,25 @@ export default function Reconstruct() {
                         className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
                         disabled={loading}
                       />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mt-2 hover:bg-slate-100/50 transition">
+                    <input
+                      type="checkbox"
+                      id="removeBackground"
+                      checked={removeBackground}
+                      onChange={(e) => setRemoveBackground(e.target.checked)}
+                      className="w-4 h-4 accent-slate-900 cursor-pointer rounded border-slate-300"
+                      disabled={loading}
+                    />
+                    <div className="flex flex-col">
+                      <label htmlFor="removeBackground" className="text-xs font-bold text-[#191919] cursor-pointer">
+                        Hapus Background (rembg)
+                      </label>
+                      <span className="text-[10px] text-slate-400 leading-normal">
+                        Rekomendasi. Mengisolasi pohon dan menghilangkan objek latar belakang agar visualisasi 3D bersih.
+                      </span>
                     </div>
                   </div>
 
