@@ -66,24 +66,24 @@ export default function Home() {
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-between">
           
           {/* Hero copy block */}
-          <div className="pt-28 sm:pt-32 md:pt-36 lg:pt-40 px-4 sm:px-6 flex flex-col items-center text-center">
-            <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.1] tracking-tighter text-[#191919] font-normal">
+          <div className="pt-28 sm:pt-32 md:pt-36 lg:pt-40 px-6 sm:px-6 flex flex-col items-center text-center w-full">
+            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.15] sm:leading-[1.1] tracking-tighter text-[#191919] font-normal max-w-xs sm:max-w-none">
               Measure forest <br className="hidden sm:inline" /> carbon.
             </h1>
-            <p className="max-w-sm sm:max-w-md mt-5 sm:mt-6 md:mt-8 text-sm md:text-base text-[#191919]/70 leading-relaxed">
+            <p className="max-w-sm sm:max-w-md mt-5 sm:mt-6 md:mt-8 text-sm md:text-base text-[#191919]/70 leading-relaxed px-2">
               3D Gaussian Splatting and carbon metrics estimation for environmental conservation. Reconstruct high-fidelity tree models, measure DBH, and estimate forest carbon storage from your browser.
             </p>
             
-            <div className="flex gap-4 mt-6 sm:mt-8 md:mt-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8 md:mt-10 w-full sm:w-auto px-4 sm:px-0 max-w-[290px] sm:max-w-none">
               <Link
                 href="/reconstruct"
-                className="px-8 py-3.5 bg-[#191919] text-white text-sm font-medium rounded-lg hover:bg-[#191919]/90 transition-colors duration-200 shadow-md"
+                className="px-6 sm:px-8 py-3.5 bg-[#191919] text-white text-sm font-semibold rounded-xl hover:bg-[#191919]/90 transition-all duration-205 shadow-md text-center"
               >
                 Start Analyzing
               </Link>
               <Link
                 href="/example"
-                className="px-8 py-3.5 bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm border border-slate-200"
+                className="px-6 sm:px-8 py-3.5 bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] text-sm font-semibold rounded-xl transition-all duration-205 shadow-sm border border-slate-200 text-center"
               >
                 View Example Scan
               </Link>
