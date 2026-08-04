@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -65,8 +65,11 @@ interface ScanRecord {
 
 // ── Main Page Component ─────────────────────────────────────────────────────
 
-export default function Reconstruct() {
+function ReconstructContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const codeParam = searchParams.get("code");
+  const phaseParam = searchParams.get("phase") as typeof phase | null;
 
   // Phase management
   const [phase, setPhase] = useState<"upload" | "marking" | "processing" | "result">("upload");
@@ -265,28 +268,40 @@ export default function Reconstruct() {
     }
   };
 
-  // ── On-mount URL reading (FIX 2) ────────────────────────────────────────
+  // ── Reactive URL parameter synchronization ────────────────────────────────
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const urlPhase = params.get("phase") as typeof phase | null;
-
-    if (code) {
-      setActiveTreeCode(code);
-      if (urlPhase === "processing") {
+    if (codeParam) {
+      setActiveTreeCode(codeParam);
+      if (phaseParam === "processing") {
         // Resume polling — user refreshed during processing
-        setCalibrationCode(code);
+        setCalibrationCode(codeParam);
         setPhase("processing");
+      } else if (phaseParam === "marking") {
+        setCalibrationCode(codeParam);
+        setPhase("marking");
       } else {
         // Result view — direct load or ?phase=result
         setPhase("result");
-        fetchTreeHistory(code);
+        const isAlreadyLoaded = activeTreeCode === codeParam && currentScan && currentScan.tree_code === codeParam;
+        if (!isAlreadyLoaded && !loading) {
+          fetchTreeHistory(codeParam);
+        }
       }
+    } else {
+      // No code in URL: Reset all state back to initial upload phase (e.g. user clicked "New Scan")
+      setPhase("upload");
+      setSubmittedCode(null);
+      setError(null);
+      setProgressMsg("");
+      setVideoFile(null);
+      setPhotoFiles(null);
+      setTreeCode("");
+      setCurrentScan(null);
+      setHistory([]);
+      setActiveTreeCode("");
     }
-    // If no code, stay on upload phase (default)
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [codeParam, phaseParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Phase 3 polling ──────────────────────────────────────────────────────
 
@@ -2245,5 +2260,18 @@ export default function Reconstruct() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Reconstruct() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
+        <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-slate-500 font-medium">Memuat halaman scan...</p>
+      </main>
+    }>
+      <ReconstructContent />
+    </Suspense>
   );
 }
