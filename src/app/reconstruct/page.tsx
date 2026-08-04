@@ -732,7 +732,7 @@ export default function Reconstruct() {
                   {isCompleted ? "✓" : idx + 1}
                 </span>
                 <span
-                  className={`text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
+                  className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
                     isActive
                       ? "text-[#191919]"
                       : isCompleted
@@ -745,7 +745,7 @@ export default function Reconstruct() {
               </div>
               {idx < steps.length - 1 && (
                 <div
-                  className={`h-[1px] w-4 sm:w-8 transition-colors ${
+                  className={`h-[1px] w-2 sm:w-8 transition-colors ${
                     isCompleted ? "bg-emerald-200" : "bg-slate-200"
                   }`}
                 />
@@ -906,10 +906,13 @@ export default function Reconstruct() {
 
   if (phase === "result") {
     return (
-      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919]">
+      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919] flex flex-col pt-[60px] lg:pt-[72px]">
 
-        {/* Full-screen 3D Viewer */}
-        <div className="absolute inset-0 z-0 bg-white pt-[68px]">
+        {/* Unified Dashboard layout: flex-col on mobile/tablet, flex-row on desktop */}
+        <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
+          
+          {/* 3D Viewer Frame Container (Left/Top Side) */}
+          <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative border-b lg:border-b-0 border-slate-100 bg-white shrink-0">
           {currentScan ? (
             <iframe
               src={`${BACKEND_URL}/viewer.html?v=11&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}`}
@@ -938,11 +941,10 @@ export default function Reconstruct() {
               )}
             </div>
           )}
-        </div>
 
 
 
-        {/* Floating Sidebar Toggle */}
+        {/* Floating Sidebar Toggle (Desktop-only) */}
         {!sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
@@ -951,7 +953,7 @@ export default function Reconstruct() {
               pointerEvents: !currentScan || sceneLoaded ? "auto" : "none",
               transition: "opacity 0.5s ease 0.1s",
             }}
-            className="fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
+            className="hidden lg:flex fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
             aria-label="Toggle Details Drawer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -960,10 +962,10 @@ export default function Reconstruct() {
           </button>
         )}
 
-        {/* Carbon metrics Command Dock */}
+        {/* Desktop-only Carbon Metrics overlays inside the viewer area */}
         {currentScan && (
           <div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-4xl w-[92%] sm:w-auto flex flex-col gap-2"
+            className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-30 max-w-3xl w-[92%] sm:w-auto flex flex-col gap-2"
             style={{
               opacity: sceneLoaded ? 1 : 0,
               transform: `translateX(-50%) translateY(${sceneLoaded ? 0 : 16}px)`,
@@ -1130,12 +1132,16 @@ export default function Reconstruct() {
             )}
           </div>
         )}
+      </div>
 
-        {/* Sidebar Intelligence Drawer — identical to original estimator */}
+        {/* Sidebar Intelligence Drawer Wrapper (Responsive: Drawer on desktop, scrollable pane below viewer on mobile) */}
         <div
-          className={`fixed top-0 right-0 bottom-0 z-40 w-80 sm:w-96 bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out pt-[60px] sm:pt-[72px] ${
-            sidebarOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`
+            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-40 lg:w-96 lg:pt-[72px] lg:border-l lg:border-slate-200/80 lg:shadow-2xl
+            lg:transition-transform lg:duration-300 lg:ease-in-out
+            ${sidebarOpen ? "lg:translate-x-0" : "lg:translate-x-full"}
+            w-full flex-1 bg-white flex flex-col overflow-y-auto lg:overflow-hidden shrink-0
+          `}
           style={{
             opacity: !currentScan || sceneLoaded ? 1 : 0,
             pointerEvents: !currentScan || sceneLoaded ? "auto" : "none",
@@ -1167,6 +1173,134 @@ export default function Reconstruct() {
 
           {/* Scrollable Body */}
           <div data-lenis-prevent className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+
+            {/* Mobile-only Metrics Panel (Replaces absolute overlays on mobile) */}
+            {currentScan && (
+              <div className="block lg:hidden space-y-4">
+                {/* Warnings Stack on Mobile */}
+                {currentScan.scale_status !== "calibrated" && (
+                  <div className="bg-red-650 text-white text-[11px] font-bold px-4 py-3 rounded-xl shadow-md flex flex-col gap-1.5 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span className="uppercase tracking-wider text-[9px] font-extrabold">Warning: Uncalibrated</span>
+                    </div>
+                    <span>
+                      Hasil belum dikalibrasi skala. Angka DBH/karbon memakai unit PLY default dan TIDAK DAPAT DIANDALKAN.
+                    </span>
+                  </div>
+                )}
+
+                {currentScan.quality_status === "low_points" && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
+                    ⚠️ Kualitas rendah: terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.
+                  </div>
+                )}
+
+                {currentScan.height_used === "user_manual_height" && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
+                    ⚠️ Tinggi diinput manual oleh user — nilai tidak divalidasi otomatis terhadap point cloud.
+                  </div>
+                )}
+
+                {currentScan.confidence_note?.includes("WARNING") && (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold px-4 py-2.5 rounded-xl">
+                    ⚠️ {currentScan.confidence_note}
+                  </div>
+                )}
+
+                {/* 2x2 grid of metrics */}
+                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                    <div className="flex items-baseline">
+                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-slate-400 font-medium ml-1">cm</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
+                    <div className="flex items-baseline">
+                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-slate-400 font-medium ml-1">m</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5 border-t border-slate-200/50 pt-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Biomass</span>
+                    <div className="flex items-baseline">
+                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-slate-400 font-medium ml-1">kg</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5 border-t border-slate-200/50 pt-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Carbon</span>
+                    <div className="flex items-baseline">
+                      <span className="font-serif text-xl text-emerald-950 font-bold">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-emerald-600/70 font-medium ml-1">kg</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5 col-span-2 border-t border-slate-200/50 pt-3">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CO₂ Equivalent (CO₂e)</span>
+                    <div className="flex items-baseline">
+                      <span className="font-serif text-2xl text-[#191919] font-extrabold">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Claim Plot Box */}
+                {currentUser && (
+                  <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-3">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Status Plot & Klaim</span>
+                      <div className="text-xs text-[#191919] font-medium mt-0.5">
+                        {currentScan.claimed_by_user_id ? (
+                          <span className="text-emerald-600 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            ✓ Terklaim ke Plot Anda
+                          </span>
+                        ) : (
+                          <span>Belum diklaim ke plot mana pun</span>
+                        )}
+                      </div>
+                    </div>
+                    {!currentScan.claimed_by_user_id && userPlots.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <select
+                          value={selectedPlotId}
+                          onChange={(e) => setSelectedPlotId(e.target.value)}
+                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none w-full"
+                        >
+                          {userPlots.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.plot_code})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={handleClaimScan}
+                          disabled={claiming}
+                          className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl py-2 transition-all cursor-pointer text-center w-full"
+                        >
+                          {claiming ? "Mengklaim..." : "Klaim ke Plot"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Mobile Login Prompt */}
+                {!currentUser && !currentScan.claimed_by_user_id && (
+                  <div className="bg-[#161920] border border-slate-800 text-slate-350 text-xs rounded-2xl p-4 flex justify-between items-center gap-4">
+                    <span>Ingin menyimpan hasil scan ini ke plot Anda?</span>
+                    <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
+                      Masuk Akun & Klaim
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Search Form */}
             <div>
@@ -1426,6 +1560,7 @@ export default function Reconstruct() {
                       </svg>
                       Recalibrate Trunk (2D Photo)
                     </button>
+                    {/* On Desktop/Tablet: Show Manual 3D Alignment Button */}
                     <button
                       onClick={() => {
                         setIsEditing3D(true);
@@ -1434,13 +1569,19 @@ export default function Reconstruct() {
                           iframe.contentWindow.postMessage({ type: "start_3d_edit" }, "*");
                         }
                       }}
-                      className="w-full py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                      className="hidden md:flex w-full py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition items-center justify-center gap-2"
                     >
                       <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                       Edit 3D Alignment (Manual)
                     </button>
+                    {/* On Mobile: Show touchscreen limitation message */}
+                    <div className="flex md:hidden w-full text-center py-2.5 px-3 bg-slate-50 border border-slate-200/60 rounded-xl justify-center items-center">
+                      <span className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                        Fitur Edit 3D Alignment memerlukan layar lebih besar (Tablet/Desktop)
+                      </span>
+                    </div>
                   </>
                 )}
               </div>
@@ -1525,6 +1666,7 @@ export default function Reconstruct() {
             </button>
           </div>
         </div>
+      </div>
 
         {/* Error toast */}
         {error && (
