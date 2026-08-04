@@ -105,7 +105,7 @@ export default function ExampleDashboard() {
       <div className="absolute inset-0 z-0 bg-white">
         {currentScan ? (
           <iframe
-            src={`${BACKEND_URL}/viewer.html?v=10&url=${encodeURIComponent(currentScan.splat_file_url)}`}
+            src={`${BACKEND_URL}/viewer.html?v=10&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
             allow="xr-spatial-tracking; autoplay; fullscreen"
             className="w-full h-full border-none"
             title="3D Tree Gaussian Splat Viewer"
