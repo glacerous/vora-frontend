@@ -20,28 +20,12 @@ export default function Navbar() {
       {/* Center links */}
       <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
         <Link 
-          href="/" 
-          className={`text-sm transition-colors duration-200 ${
-            pathname === "/" ? "text-[#191919] font-medium" : "text-[#191919]/70 hover:text-[#191919]"
-          }`}
-        >
-          Home
-        </Link>
-        <Link 
           href="/gallery" 
           className={`text-sm transition-colors duration-200 ${
             pathname === "/gallery" ? "text-[#191919] font-medium" : "text-[#191919]/70 hover:text-[#191919]"
           }`}
         >
           Gallery
-        </Link>
-        <Link 
-          href="/reconstruct" 
-          className={`text-sm transition-colors duration-200 ${
-            pathname === "/reconstruct" ? "text-[#191919] font-medium" : "text-[#191919]/70 hover:text-[#191919]"
-          }`}
-        >
-          New Scan
         </Link>
         {user && (
           <Link 
@@ -57,6 +41,14 @@ export default function Navbar() {
 
       {/* Right action links */}
       <div className="flex items-center gap-4 min-h-[32px]">
+        {/* New Scan Action Button */}
+        <Link
+          href="/reconstruct"
+          className="text-xs font-semibold bg-[#191919] text-white hover:bg-[#191919]/90 px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-xs"
+        >
+          New Scan
+        </Link>
+
         {!loading && (
           user ? (
             <div className="flex items-center gap-3">
@@ -80,7 +72,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/register"
-                className="text-xs font-semibold bg-[#191919] text-white hover:bg-[#191919]/90 px-4 py-2 rounded-xl transition-all cursor-pointer"
+                className="text-xs font-semibold border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-[#191919] px-4 py-2 rounded-xl transition-all cursor-pointer"
               >
                 Sign Up
               </Link>
