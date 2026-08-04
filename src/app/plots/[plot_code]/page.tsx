@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -41,6 +41,14 @@ interface Plot {
   area_y1: number | null;
   area_x2: number | null;
   area_y2: number | null;
+  areas?: Array<{
+    id?: number;
+    name?: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }>;
 }
 
 interface Scan {
@@ -87,6 +95,9 @@ export default function PlotDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // State for custom delete confirmation modal
+  const [treeToRemove, setTreeToRemove] = useState<string | null>(null);
+
   // States for plot add / claim tree modal
   const [isAddTreeModalOpen, setIsAddTreeModalOpen] = useState(false);
   const [unclaimedScans, setUnclaimedScans] = useState<Scan[]>([]);
@@ -100,27 +111,59 @@ export default function PlotDetailPage() {
   const [isLayoutDirty, setIsLayoutDirty] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Scan | null>(null);
   const [draggedTreeCode, setDraggedTreeCode] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Custom container width measurement, panning offset states, and ResizeObserver
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(960);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // States for Area Bounding Box Drawing Mode
+  interface PlotArea {
+    id?: number;
+    name?: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
-  const [tempBounds, setTempBounds] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const [plotAreas, setPlotAreas] = useState<PlotArea[]>([]);
+  const [selectedAreaIndex, setSelectedAreaIndex] = useState<number | null>(null);
+  const [editingAreaIndex, setEditingAreaIndex] = useState<number | null>(null);
 
-  // Sync tempBounds when plot fetches
+  // Sync plotAreas when plot fetches
   useEffect(() => {
     if (plot) {
-      if (plot.area_x1 !== null && plot.area_y1 !== null && plot.area_x2 !== null && plot.area_y2 !== null) {
-        setTempBounds({
+      if (plot.areas && Array.isArray(plot.areas) && plot.areas.length > 0) {
+        setPlotAreas(plot.areas);
+      } else if (plot.area_x1 !== null && plot.area_y1 !== null && plot.area_x2 !== null && plot.area_y2 !== null) {
+        setPlotAreas([{
+          name: "Area Utama",
           x1: plot.area_x1,
           y1: plot.area_y1,
           x2: plot.area_x2,
           y2: plot.area_y2,
-        });
+        }]);
       } else {
-        setTempBounds(null);
+        setPlotAreas([]);
       }
+      setSelectedAreaIndex(null);
+      setEditingAreaIndex(null);
     }
   }, [plot]);
 
@@ -129,8 +172,34 @@ export default function PlotDetailPage() {
 
   // Fine-grid dimensions configurations (24px cells)
   const CELL_SIZE = 24;
-  const DEFAULT_COLS = 24;
-  const DEFAULT_ROWS = 21; // perfectly aligns with height 504px
+  const DEFAULT_ROWS = 40; // perfectly aligns with height 960px
+  const cols = Math.floor(containerWidth / CELL_SIZE);
+
+  // Zoom logic
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const ZOOM_LEVELS = [0.5, 0.75, 1.0, 1.25];
+
+  const zoomIn = () => {
+    setZoomLevel((prev) => {
+      const idx = ZOOM_LEVELS.indexOf(prev);
+      if (idx !== -1 && idx < ZOOM_LEVELS.length - 1) {
+        return ZOOM_LEVELS[idx + 1];
+      }
+      return prev;
+    });
+  };
+
+  const zoomOut = () => {
+    setZoomLevel((prev) => {
+      const idx = ZOOM_LEVELS.indexOf(prev);
+      if (idx !== -1 && idx > 0) {
+        return ZOOM_LEVELS[idx - 1];
+      }
+      return prev;
+    });
+  };
+
+  const logicalWidth = containerWidth / Math.min(1, zoomLevel);
 
   // Table filter tabs
   const [filterTab, setFilterTab] = useState<"all" | "large" | "small">("all");
@@ -194,7 +263,7 @@ export default function PlotDetailPage() {
       if (s.grid_position_x !== undefined && s.grid_position_x !== null &&
           s.grid_position_y !== undefined && s.grid_position_y !== null) {
         // Ensure within reasonable grid boundaries
-        const xVal = Math.max(0, Math.min(s.grid_position_x, DEFAULT_COLS - 2));
+        const xVal = Math.max(0, Math.min(s.grid_position_x, cols - 2));
         const yVal = Math.max(0, Math.min(s.grid_position_y, DEFAULT_ROWS - 2));
         newPositions[s.tree_code] = { x: xVal, y: yVal };
       } else {
@@ -216,7 +285,7 @@ export default function PlotDetailPage() {
 
     const findAvailableCell = () => {
       for (let y = 0; y < DEFAULT_ROWS - 1; y += 2) {
-        for (let x = 0; x < DEFAULT_COLS - 1; x += 2) {
+        for (let x = 0; x < cols - 1; x += 2) {
           if (!isOccupied(x, y)) {
             return { x, y };
           }
@@ -224,7 +293,7 @@ export default function PlotDetailPage() {
       }
       // fall back to sequential cells if stepped grid is full
       for (let y = 0; y < DEFAULT_ROWS - 1; y++) {
-        for (let x = 0; x < DEFAULT_COLS - 1; x++) {
+        for (let x = 0; x < cols - 1; x++) {
           if (!isOccupied(x, y)) {
             return { x, y };
           }
@@ -249,7 +318,7 @@ export default function PlotDetailPage() {
         const lat = scan.gps_lat as number;
         const lon = scan.gps_lon as number;
 
-        let targetX = minLon === maxLon ? Math.floor(DEFAULT_COLS / 2) : Math.round(((lon - minLon) / (maxLon - minLon)) * (DEFAULT_COLS - 2));
+        let targetX = minLon === maxLon ? Math.floor(cols / 2) : Math.round(((lon - minLon) / (maxLon - minLon)) * (cols - 2));
         let targetY = minLat === maxLat ? Math.floor(DEFAULT_ROWS / 2) : (DEFAULT_ROWS - 2) - Math.round(((lat - minLat) / (maxLat - minLat)) * (DEFAULT_ROWS - 2));
 
         // Ensure indices are even numbers to align nicely with 2x2 grid stepping
@@ -258,13 +327,13 @@ export default function PlotDetailPage() {
 
         if (isOccupied(targetX, targetY)) {
           let resolved = false;
-          const maxRadius = Math.max(DEFAULT_COLS, DEFAULT_ROWS);
+          const maxRadius = Math.max(cols, DEFAULT_ROWS);
           for (let r = 2; r < maxRadius && !resolved; r += 2) {
             for (let dy = -r; dy <= r && !resolved; dy += 2) {
               for (let dx = -r; dx <= r && !resolved; dx += 2) {
                 const nx = targetX + dx;
                 const ny = targetY + dy;
-                if (nx >= 0 && nx < DEFAULT_COLS - 1 && ny >= 0 && ny < DEFAULT_ROWS - 1 && !isOccupied(nx, ny)) {
+                if (nx >= 0 && nx < cols - 1 && ny >= 0 && ny < DEFAULT_ROWS - 1 && !isOccupied(nx, ny)) {
                   targetX = nx;
                   targetY = ny;
                   resolved = true;
@@ -290,7 +359,7 @@ export default function PlotDetailPage() {
     });
 
     setGridPositions(newPositions);
-  }, [scans]);
+  }, [scans, cols]);
 
   // Native HTML5 Drag and Drop handlers using screen offsets relative to grid canvas rect
   const handleDragStart = (e: React.DragEvent, treeCode: string) => {
@@ -309,15 +378,15 @@ export default function PlotDetailPage() {
     const clientX = e.clientX;
     const clientY = e.clientY;
 
-    const offsetX = clientX - rect.left;
-    const offsetY = clientY - rect.top;
+    const offsetX = (clientX - rect.left) / zoomLevel;
+    const offsetY = (clientY - rect.top) / zoomLevel;
 
     // Center of 48px node is 24px, so subtract 24px to match drag pointer coordinate index
     const targetX = Math.round((offsetX - 24) / CELL_SIZE);
     const targetY = Math.round((offsetY - 24) / CELL_SIZE);
 
-    const cols = Math.floor(rect.width / CELL_SIZE);
-    const rows = Math.floor(rect.height / CELL_SIZE);
+    const cols = Math.floor((rect.width / zoomLevel) / CELL_SIZE);
+    const rows = Math.floor((rect.height / zoomLevel) / CELL_SIZE);
 
     // Keep the 2x2 footprint completely inside the grid bounding container
     const clampedX = Math.max(0, Math.min(targetX, cols - 2));
@@ -344,11 +413,34 @@ export default function PlotDetailPage() {
     setDraggedTreeCode(null);
   };
 
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0 || isDrawingMode) return;
+
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
+    const startPanX = panOffset.x;
+    const startPanY = panOffset.y;
+
+    const handleWindowMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - startMouseX;
+      const dy = moveEvent.clientY - startMouseY;
+      setPanOffset({ x: startPanX + dx, y: startPanY + dy });
+    };
+
+    const handleWindowMouseUp = () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
+  };
+
   const handleGridMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDrawingMode || !isOwner) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(Math.floor((e.clientX - rect.left) / CELL_SIZE), DEFAULT_COLS));
-    const y = Math.max(0, Math.min(Math.floor((e.clientY - rect.top) / CELL_SIZE), DEFAULT_ROWS));
+    const x = Math.max(0, Math.min(Math.floor(((e.clientX - rect.left) / zoomLevel) / CELL_SIZE), cols));
+    const y = Math.max(0, Math.min(Math.floor(((e.clientY - rect.top) / zoomLevel) / CELL_SIZE), DEFAULT_ROWS));
     setDrawStart({ x, y });
     setDrawCurrent({ x, y });
     setIsDragging(true);
@@ -357,8 +449,8 @@ export default function PlotDetailPage() {
   const handleGridMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || !drawStart) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(Math.floor((e.clientX - rect.left) / CELL_SIZE), DEFAULT_COLS));
-    const y = Math.max(0, Math.min(Math.floor((e.clientY - rect.top) / CELL_SIZE), DEFAULT_ROWS));
+    const x = Math.max(0, Math.min(Math.floor(((e.clientX - rect.left) / zoomLevel) / CELL_SIZE), cols));
+    const y = Math.max(0, Math.min(Math.floor(((e.clientY - rect.top) / zoomLevel) / CELL_SIZE), DEFAULT_ROWS));
     setDrawCurrent({ x, y });
   };
 
@@ -367,51 +459,236 @@ export default function PlotDetailPage() {
     setIsDragging(false);
     
     if (drawStart.x !== drawCurrent.x && drawStart.y !== drawCurrent.y) {
-      setTempBounds({
-        x1: Math.min(drawStart.x, drawCurrent.x),
-        y1: Math.min(drawStart.y, drawCurrent.y),
-        x2: Math.max(drawStart.x, drawCurrent.x),
-        y2: Math.max(drawStart.y, drawCurrent.y),
-      });
+      const newX1 = Math.min(drawStart.x, drawCurrent.x);
+      const newY1 = Math.min(drawStart.y, drawCurrent.y);
+      const newX2 = Math.max(drawStart.x, drawCurrent.x);
+      const newY2 = Math.max(drawStart.y, drawCurrent.y);
+
+      const newArea = {
+        name: `Area ${plotAreas.length + 1}`,
+        x1: newX1,
+        y1: newY1,
+        x2: newX2,
+        y2: newY2
+      };
+
+      setPlotAreas(prev => [...prev, newArea]);
+      setSelectedAreaIndex(plotAreas.length);
       setIsLayoutDirty(true);
     }
     setDrawStart(null);
     setDrawCurrent(null);
   };
 
-  const handleSaveLayout = async () => {
+  const handleAreaMouseDown = (
+    e: React.MouseEvent,
+    index: number,
+    actionType: "move" | "resize",
+    handle?: "tl" | "tr" | "bl" | "br"
+  ) => {
+    e.stopPropagation();
+    if (!isOwner) return;
+
+    const areaEl = document.getElementById(`area-box-${index}`) as HTMLDivElement;
+    if (!areaEl) return;
+
+    const area = plotAreas[index];
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startLeft = area.x1 * CELL_SIZE;
+    const startTop = area.y1 * CELL_SIZE;
+    const startWidth = (area.x2 - area.x1) * CELL_SIZE;
+    const startHeight = (area.y2 - area.y1) * CELL_SIZE;
+
+    let hasMoved = false;
+
+    const handleWindowMouseMove = (moveEvent: MouseEvent) => {
+      hasMoved = true;
+      const dx = (moveEvent.clientX - startX) / zoomLevel;
+      const dy = (moveEvent.clientY - startY) / zoomLevel;
+
+      if (actionType === "move") {
+        const maxLeft = (cols * CELL_SIZE) - startWidth;
+        const maxTop = (DEFAULT_ROWS * CELL_SIZE) - startHeight;
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+        
+        const transformX = newLeft - startLeft;
+        const transformY = newTop - startTop;
+        areaEl.style.transform = `translate3d(${transformX}px, ${transformY}px, 0)`;
+      } else if (actionType === "resize" && handle) {
+        let newLeft = startLeft;
+        let newTop = startTop;
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+
+        if (handle === "tl") {
+          newLeft = Math.max(0, Math.min(startLeft + dx, startLeft + startWidth - CELL_SIZE));
+          newTop = Math.max(0, Math.min(startTop + dy, startTop + startHeight - CELL_SIZE));
+          newWidth = startWidth - (newLeft - startLeft);
+          newHeight = startHeight - (newTop - startTop);
+        } else if (handle === "tr") {
+          newTop = Math.max(0, Math.min(startTop + dy, startTop + startHeight - CELL_SIZE));
+          newWidth = Math.max(CELL_SIZE, Math.min((cols * CELL_SIZE) - startLeft, startWidth + dx));
+          newHeight = startHeight - (newTop - startTop);
+        } else if (handle === "bl") {
+          newLeft = Math.max(0, Math.min(startLeft + dx, startLeft + startWidth - CELL_SIZE));
+          newWidth = startWidth - (newLeft - startLeft);
+          newHeight = Math.max(CELL_SIZE, Math.min((DEFAULT_ROWS * CELL_SIZE) - startTop, startHeight + dy));
+        } else if (handle === "br") {
+          newWidth = Math.max(CELL_SIZE, Math.min((cols * CELL_SIZE) - startLeft, startWidth + dx));
+          newHeight = Math.max(CELL_SIZE, Math.min((DEFAULT_ROWS * CELL_SIZE) - startTop, startHeight + dy));
+        }
+
+        areaEl.style.left = `${newLeft}px`;
+        areaEl.style.top = `${newTop}px`;
+        areaEl.style.width = `${newWidth}px`;
+        areaEl.style.height = `${newHeight}px`;
+      }
+    };
+
+    const handleWindowMouseUp = () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+
+      if (!hasMoved) return;
+
+      let finalLeft = startLeft;
+      let finalTop = startTop;
+      let finalWidth = startWidth;
+      let finalHeight = startHeight;
+
+      if (actionType === "move") {
+        const style = window.getComputedStyle(areaEl);
+        const matrix = new DOMMatrix(style.transform);
+        finalLeft = startLeft + matrix.m41;
+        finalTop = startTop + matrix.m42;
+        areaEl.style.transform = "";
+      } else if (actionType === "resize") {
+        finalLeft = parseInt(areaEl.style.left) || startLeft;
+        finalTop = parseInt(areaEl.style.top) || startTop;
+        finalWidth = parseInt(areaEl.style.width) || startWidth;
+        finalHeight = parseInt(areaEl.style.height) || startHeight;
+      }
+
+      const newX1 = Math.max(0, Math.min(Math.round(finalLeft / CELL_SIZE), cols - 1));
+      const newY1 = Math.max(0, Math.min(Math.round(finalTop / CELL_SIZE), DEFAULT_ROWS - 1));
+      const newX2 = Math.max(newX1 + 1, Math.min(Math.round((finalLeft + finalWidth) / CELL_SIZE), cols));
+      const newY2 = Math.max(newY1 + 1, Math.min(Math.round((finalTop + finalHeight) / CELL_SIZE), DEFAULT_ROWS));
+
+      areaEl.style.left = `${newX1 * CELL_SIZE}px`;
+      areaEl.style.top = `${newY1 * CELL_SIZE}px`;
+      areaEl.style.width = `${(newX2 - newX1) * CELL_SIZE}px`;
+      areaEl.style.height = `${(newY2 - newY1) * CELL_SIZE}px`;
+
+      setPlotAreas(prev => {
+        const next = [...prev];
+        next[index] = {
+          ...next[index],
+          x1: newX1,
+          y1: newY1,
+          x2: newX2,
+          y2: newY2
+        };
+        return next;
+      });
+
+      setIsLayoutDirty(true);
+    };
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
+  };
+
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "idle">("idle");
+
+  useEffect(() => {
+    if (!plot || !isOwner || !isLayoutDirty) return;
+
+    setSaveStatus("saving");
+    const timer = setTimeout(async () => {
+      try {
+        const layoutData = Object.entries(gridPositions).map(([treeCode, pos]) => ({
+          tree_code: treeCode,
+          grid_position_x: pos.x,
+          grid_position_y: pos.y,
+        }));
+
+        const res = await fetch(`${BACKEND_URL}/plots/${plot.id}/layout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            layout: layoutData,
+            area_x1: plotAreas.length > 0 ? plotAreas[0].x1 : null,
+            area_y1: plotAreas.length > 0 ? plotAreas[0].y1 : null,
+            area_x2: plotAreas.length > 0 ? plotAreas[0].x2 : null,
+            area_y2: plotAreas.length > 0 ? plotAreas[0].y2 : null,
+            areas: plotAreas.map((a, idx) => ({
+              id: a.id,
+              name: a.name || `Area ${idx + 1}`,
+              x1: a.x1,
+              y1: a.y1,
+              x2: a.x2,
+              y2: a.y2
+            }))
+          }),
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error("Gagal menyimpan tata letak baru.");
+        }
+
+        setIsLayoutDirty(false);
+        setSaveStatus("saved");
+        setTimeout(() => {
+          setSaveStatus((current) => current === "saved" ? "idle" : current);
+        }, 2000);
+      } catch (err: any) {
+        console.error("Auto-save error:", err);
+        setSaveStatus("idle");
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [gridPositions, plotAreas, plot, isOwner, isLayoutDirty]);
+
+  const handleRemoveTree = async (treeCode: string) => {
     if (!plot) return;
     setActionLoading(true);
     try {
-      const layoutData = Object.entries(gridPositions).map(([treeCode, pos]) => ({
-        tree_code: treeCode,
-        grid_position_x: pos.x,
-        grid_position_y: pos.y,
-      }));
-
-      const res = await fetch(`${BACKEND_URL}/plots/${plot.id}/layout`, {
+      const res = await fetch(`${BACKEND_URL}/plots/${plot.id}/remove-scan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          layout: layoutData,
-          area_x1: tempBounds ? tempBounds.x1 : null,
-          area_y1: tempBounds ? tempBounds.y1 : null,
-          area_x2: tempBounds ? tempBounds.x2 : null,
-          area_y2: tempBounds ? tempBounds.y2 : null,
-        }),
+        body: JSON.stringify({ tree_code: treeCode }),
         credentials: "include",
       });
 
       if (!res.ok) {
-        throw new Error("Gagal menyimpan tata letak baru.");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Gagal mengeluarkan pohon dari plot.");
       }
 
-      setIsLayoutDirty(false);
-      await fetchPlotDetails();
+      // If success, remove from gridPositions and scans locally
+      setGridPositions((prev) => {
+        const next = { ...prev };
+        delete next[treeCode];
+        return next;
+      });
+
+      setScans((prev) => prev.filter((s) => s.tree_code !== treeCode));
+      setSelectedNode(null);
+      
+      // Mark layout as dirty so it auto-saves the updated gridPositions (excluding the removed node)
+      setIsLayoutDirty(true);
     } catch (err: any) {
-      setError(err.message || "Gagal menyimpan tata letak.");
+      alert(err.message || "Gagal mengeluarkan pohon.");
     } finally {
       setActionLoading(false);
     }
@@ -601,43 +878,55 @@ export default function PlotDetailPage() {
   
   // Carbon density calculation
   const SCALE_M = 2; // 2 meters per cell
-  let areaM2 = 0;
-  let areaHa = 0;
-  let densityCarbon = 0;
-  let insideCo2eKg = 0;
   let treesOutsideCount = 0;
-  let hasBounds = false;
+  let hasBounds = plotAreas.length > 0;
 
-  if (tempBounds) {
-    hasBounds = true;
-    const { x1, y1, x2, y2 } = tempBounds;
-    const widthCells = Math.abs(x2 - x1);
-    const heightCells = Math.abs(y2 - y1);
-    areaM2 = widthCells * heightCells * (SCALE_M * SCALE_M);
-    areaHa = areaM2 / 10000;
+  const isTreeInsideArea = (treeX: number, treeY: number, area: PlotArea) => {
+    const xMin = Math.min(area.x1, area.x2);
+    const xMax = Math.max(area.x1, area.x2);
+    const yMin = Math.min(area.y1, area.y2);
+    const yMax = Math.max(area.y1, area.y2);
+    return treeX >= xMin && treeX <= xMax && treeY >= yMin && treeY <= yMax;
+  };
 
-    const xMin = Math.min(x1, x2);
-    const xMax = Math.max(x1, x2);
-    const yMin = Math.min(y1, y2);
-    const yMax = Math.max(y1, y2);
-
+  // Count trees outside ALL plot areas
+  if (hasBounds) {
     scans.forEach((scan) => {
       const pos = gridPositions[scan.tree_code];
       if (pos) {
-        const isInside = pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax;
-        if (isInside) {
-          insideCo2eKg += scan.co2e_kg;
-        } else {
+        const insideAny = plotAreas.some(area => isTreeInsideArea(pos.x, pos.y, area));
+        if (!insideAny) {
           treesOutsideCount++;
         }
       } else {
         treesOutsideCount++;
       }
     });
-
-    const insideCo2eTons = insideCo2eKg / 1000;
-    densityCarbon = areaHa > 0 ? insideCo2eTons / areaHa : 0;
   }
+
+  // Calculate density and ha per area
+  const areaStats = plotAreas.map((area, idx) => {
+    const widthCells = Math.abs(area.x2 - area.x1);
+    const heightCells = Math.abs(area.y2 - area.y1);
+    const m2 = widthCells * heightCells * (SCALE_M * SCALE_M);
+    const ha = m2 / 10000;
+    
+    let insideCo2e = 0;
+    scans.forEach((scan) => {
+      const pos = gridPositions[scan.tree_code];
+      if (pos && isTreeInsideArea(pos.x, pos.y, area)) {
+        insideCo2e += scan.co2e_kg;
+      }
+    });
+    
+    const density = ha > 0 ? (insideCo2e / 1000) / ha : 0;
+    return {
+      name: area.name || `Area ${idx + 1}`,
+      ha,
+      co2eKg: insideCo2e,
+      density
+    };
+  });
 
   // Species-based colors
   const speciesList = Array.from(uniqueSpecies);
@@ -797,22 +1086,45 @@ export default function PlotDetailPage() {
                       </div>
                     </div>
 
-                    <div className="pl-2 flex flex-col items-center justify-center min-h-[64px]">
+                    <div className="pl-2 flex flex-col items-center justify-center min-h-[64px] w-full">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Kepadatan Karbon</span>
-                      {hasBounds ? (
+                      {hasBounds && plotAreas.length === 1 ? (
                         <>
                           <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
-                            {densityCarbon.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                            {areaStats[0].density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
                             <span className="text-xs font-sans text-slate-450 font-medium font-bold">t/ha</span>
                           </h2>
                           <div className="mt-2 flex justify-center gap-1.5">
                             <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
-                              Area: {areaHa.toFixed(3)} ha
+                              Area: {areaStats[0].ha.toFixed(3)} ha
                             </span>
                           </div>
                         </>
+                      ) : hasBounds && plotAreas.length > 1 ? (
+                        <div className="flex flex-col gap-1.5 w-full text-left mt-1.5 max-h-[140px] overflow-y-auto pr-1 select-none">
+                          {areaStats.map((stat, idx) => {
+                            const isActive = selectedAreaIndex === idx;
+                            return (
+                              <div 
+                                key={idx} 
+                                onClick={() => setSelectedAreaIndex(idx)}
+                                className={`flex justify-between items-center px-2.5 py-1.5 rounded-lg text-[10px] cursor-pointer transition-all border ${
+                                  isActive 
+                                    ? "bg-emerald-50 border-emerald-250 text-emerald-800 font-semibold shadow-xs" 
+                                    : "bg-slate-50/50 border-slate-100 text-slate-600 hover:bg-slate-50"
+                                }`}
+                              >
+                                <span className="truncate max-w-[50%]">{stat.name}</span>
+                                <div className="text-right">
+                                  <span className="font-serif font-bold text-slate-800">{stat.density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/ha</span>
+                                  <span className="text-[8px] text-slate-400 block">({stat.ha.toFixed(3)} ha)</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       ) : (
-                        <p className="text-[9px] text-slate-400 font-medium italic text-center leading-normal max-w-[150px] mt-1">
+                        <p className="text-[9px] text-slate-450 font-medium italic text-center leading-normal max-w-[150px] mt-1">
                           Gambar area plot untuk melihat kepadatan karbon per hektar
                         </p>
                       )}
@@ -923,147 +1235,383 @@ export default function PlotDetailPage() {
                         : "Menampilkan sebaran geografis koordinat GPS asli pohon di peta"}
                     </p>
                   </div>
-                  
-                  <div className="flex items-center gap-3 self-end sm:self-auto">
-                    {/* Save layout button */}
-                    {spatialMode === "grid" && isLayoutDirty && isOwner && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSaveLayout();
-                        }}
-                        disabled={actionLoading}
-                        className="bg-[#191919] hover:bg-[#191919]/90 text-white font-bold text-[10px] rounded-lg px-2.5 py-1.5 shadow-sm cursor-pointer transition-all"
-                      >
-                        {actionLoading ? "Menyimpan..." : "Simpan Tata Letak"}
-                      </button>
-                    )}
 
-                    {/* Area Drawing Tools */}
-                    {spatialMode === "grid" && isOwner && (
-                      <div className="flex items-center gap-1.5">
+                  {/* Passive Auto-save Indicator */}
+                  {isOwner && spatialMode === "grid" && saveStatus !== "idle" && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-semibold transition-all select-none shadow-xs bg-white shrink-0">
+                      {saveStatus === "saving" ? (
+                        <>
+                          <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block" />
+                          <span className="text-slate-500">Menyimpan...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                          <span className="text-emerald-700 font-bold">Perubahan disimpan</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-3 items-stretch relative w-full">
+                  {/* Vertical Photoshop-style Sidebar */}
+                  <div className="flex flex-row md:flex-col gap-2 bg-slate-50 border border-slate-200/85 p-2 rounded-xl shadow-xs shrink-0 items-center justify-center md:justify-start w-full md:w-12 select-none z-20">
+                    
+                    {/* Grid Mode Button */}
+                    <div className="relative group">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSpatialMode("grid"); }}
+                        className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                          spatialMode === "grid" 
+                            ? "bg-slate-900 border-slate-900 text-white" 
+                            : "bg-white border-slate-100 hover:bg-slate-100/50 text-slate-500"
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                      </button>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        Grid Spasial
+                      </div>
+                    </div>
+
+                    {/* GPS Mode Button */}
+                    <div className="relative group">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSpatialMode("gps"); }}
+                        className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                          spatialMode === "gps" 
+                            ? "bg-slate-900 border-slate-900 text-white" 
+                            : "bg-white border-slate-100 hover:bg-slate-100/50 text-slate-500"
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.89-2.203a.75.75 0 00.407-.675V5.27a.75.75 0 00-1.08-.674L15 6.75 9 3.75 3.28 6.324A.75.75 0 003 7v11.75a.75.75 0 001.08.674L9 17.25l6 3m.503-.002L9 17.25m6 3l4.89-2.203a.75.75 0 00.407-.675V5.27a.75.75 0 00-1.08-.674L15 6.75" />
+                        </svg>
+                      </button>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        Peta GPS
+                      </div>
+                    </div>
+
+                    {/* Divider for Zoom */}
+                    {spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-slate-200 my-0 md:my-1" />}
+
+                    {/* Zoom In Button */}
+                    {spatialMode === "grid" && (
+                      <div className="relative group">
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsDrawingMode(!isDrawingMode);
-                          }}
-                          className={`font-semibold text-[10px] rounded-lg px-2.5 py-1.5 shadow-xs cursor-pointer transition-all border ${
-                            isDrawingMode
-                              ? "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700"
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          onClick={(e) => { e.stopPropagation(); zoomIn(); }}
+                          disabled={zoomLevel >= 1.25}
+                          className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                            zoomLevel >= 1.25
+                              ? "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"
+                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
                           }`}
                         >
-                          {isDrawingMode ? "Selesai Menandai" : "Tandai Luas Area"}
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                          </svg>
                         </button>
-                        {tempBounds && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTempBounds(null);
-                              setIsLayoutDirty(true);
-                            }}
-                            className="bg-red-50 border border-red-150 text-red-650 hover:bg-red-100 font-semibold text-[10px] rounded-lg px-2.5 py-1.5 shadow-xs cursor-pointer transition-all"
-                          >
-                            Hapus Area
-                          </button>
-                        )}
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                          Zoom In ({zoomLevel * 100}%)
+                        </div>
                       </div>
                     )}
 
-                    {/* Mode Toggle Tabs */}
-                    <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setSpatialMode("grid"); }} 
-                        className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${
-                          spatialMode === "grid" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                      >
-                        Grid Spasial
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setSpatialMode("gps"); }} 
-                        className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${
-                          spatialMode === "gps" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                      >
-                        Peta GPS
-                      </button>
-                    </div>
+                    {/* Zoom Out Button */}
+                    {spatialMode === "grid" && (
+                      <div className="relative group">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); zoomOut(); }}
+                          disabled={zoomLevel <= 0.5}
+                          className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                            zoomLevel <= 0.5
+                              ? "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"
+                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                          </svg>
+                        </button>
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                          Zoom Out ({zoomLevel * 100}%)
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Divider for Owner tools */}
+                    {isOwner && spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-slate-200 my-0 md:my-1" />}
+
+                    {/* Draw Area Toggle Button */}
+                    {isOwner && spatialMode === "grid" && (
+                      <div className="relative group">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setIsDrawingMode(!isDrawingMode); }}
+                          className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                            isDrawingMode 
+                              ? "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700" 
+                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0l-6-6" />
+                          </svg>
+                        </button>
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                          {isDrawingMode ? "Selesai Menandai" : "Tandai Area Plot"}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Clear Areas Button */}
+                    {isOwner && spatialMode === "grid" && plotAreas.length > 0 && (
+                      <div className="relative group">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPlotAreas([]);
+                            setSelectedAreaIndex(null);
+                            setIsLayoutDirty(true);
+                          }}
+                          className="p-2 rounded-lg border border-red-150 bg-red-50 text-red-650 hover:bg-red-100 transition-all cursor-pointer"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                          </svg>
+                        </button>
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                          Hapus Semua Area
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Spacer for desktop only */}
+                    <div className="hidden md:block flex-1" />
+
                   </div>
-                </div>
 
-                {/* Spatial display container - height matched to grid to avoid HMR shifts */}
-                {spatialMode === "grid" ? (
-                  <div className="w-full overflow-x-auto border border-slate-200/50 rounded-lg bg-slate-50/20 p-2">
-                    <div 
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                      onMouseDown={handleGridMouseDown}
-                      onMouseMove={handleGridMouseMove}
-                      onMouseUp={handleGridMouseUp}
-                      style={{
-                        height: `${DEFAULT_ROWS * CELL_SIZE}px`,
-                        backgroundImage: "linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px)",
-                        backgroundSize: "24px 24px",
-                      }}
-                      className={`relative bg-[#fafbfd] rounded-lg overflow-hidden w-full select-none ${isDrawingMode ? 'cursor-crosshair' : ''}`}
-                    >
-                      {/* Temporary drawing selection overlay */}
-                      {isDragging && drawStart && drawCurrent && (() => {
-                        const xMin = Math.min(drawStart.x, drawCurrent.x);
-                        const xMax = Math.max(drawStart.x, drawCurrent.x);
-                        const yMin = Math.min(drawStart.y, drawCurrent.y);
-                        const yMax = Math.max(drawStart.y, drawCurrent.y);
-                        const left = xMin * CELL_SIZE;
-                        const top = yMin * CELL_SIZE;
-                        const width = (xMax - xMin) * CELL_SIZE;
-                        const height = (yMax - yMin) * CELL_SIZE;
-                        return (
-                          <div 
+                  {/* Canvas Container */}
+                  <div className="flex-1 min-w-0 relative">
+                    {spatialMode === "grid" ? (
+                      <>
+                        <div 
+                          ref={containerRef}
+                          style={{ height: "650px" }} 
+                          className="w-full border border-slate-200/50 rounded-xl bg-slate-50/20 p-2 relative overflow-hidden select-none"
+                        >
+                          <div
                             style={{
-                              position: "absolute",
-                              left: `${left}px`,
-                              top: `${top}px`,
-                              width: `${width}px`,
-                              height: `${height}px`,
-                              pointerEvents: "none",
-                              zIndex: 10,
+                              transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0)`,
+                              width: `${logicalWidth}px`,
+                              height: `${DEFAULT_ROWS * CELL_SIZE}px`,
                             }}
-                            className="border-2 border-emerald-500 border-dashed bg-emerald-500/10"
-                          />
-                        );
-                      })()}
-
-                      {/* Finalized selection overlay */}
-                      {tempBounds && !isDragging && (() => {
-                        const { x1, y1, x2, y2 } = tempBounds;
-                        const xMin = Math.min(x1, x2);
-                        const xMax = Math.max(x1, x2);
-                        const yMin = Math.min(y1, y2);
-                        const yMax = Math.max(y1, y2);
-                        const left = xMin * CELL_SIZE;
-                        const top = yMin * CELL_SIZE;
-                        const width = (xMax - xMin) * CELL_SIZE;
-                        const height = (yMax - yMin) * CELL_SIZE;
-                        return (
-                          <div 
-                            style={{
-                              position: "absolute",
-                              left: `${left}px`,
-                              top: `${top}px`,
-                              width: `${width}px`,
-                              height: `${height}px`,
-                              pointerEvents: "none",
-                              zIndex: 5,
-                            }}
-                            className="border-2 border-emerald-500 bg-emerald-500/10 rounded-md"
+                            className="absolute top-0 left-0 origin-top-left"
                           >
-                            <span className="absolute top-1.5 left-2 bg-emerald-600 text-white font-bold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs">
-                              Area Plot ({areaHa.toFixed(3)} ha)
-                            </span>
-                          </div>
-                        );
-                      })()}
+                            <div
+                              style={{
+                                transform: `scale(${zoomLevel})`,
+                                transformOrigin: "top left",
+                                transition: "transform 0.15s ease-out",
+                                width: `${logicalWidth}px`,
+                                height: `${DEFAULT_ROWS * CELL_SIZE}px`,
+                              }}
+                              className="absolute top-0 left-0"
+                            >
+                              <div 
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                onMouseDown={(e) => {
+                                  if (isDrawingMode) {
+                                    handleGridMouseDown(e);
+                                  } else {
+                                    handleCanvasMouseDown(e);
+                                  }
+                                }}
+                                onMouseMove={(e) => {
+                                  if (isDrawingMode) {
+                                    handleGridMouseMove(e);
+                                  }
+                                }}
+                                onMouseUp={() => {
+                                  if (isDrawingMode) {
+                                    handleGridMouseUp();
+                                  }
+                                }}
+                                style={{
+                                  width: `${logicalWidth}px`,
+                                  height: `${DEFAULT_ROWS * CELL_SIZE}px`,
+                                  backgroundImage: "linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px)",
+                                  backgroundSize: "24px 24px",
+                                }}
+                                className={`absolute top-0 left-0 bg-[#fafbfd] rounded-lg border border-slate-100 select-none ${isDrawingMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'}`}
+                                ref={gridRef}
+                              >
+
+                          {/* Temporary drawing selection overlay */}
+                          {isDragging && drawStart && drawCurrent && (() => {
+                            const xMin = Math.min(drawStart.x, drawCurrent.x);
+                            const xMax = Math.max(drawStart.x, drawCurrent.x);
+                            const yMin = Math.min(drawStart.y, drawCurrent.y);
+                            const yMax = Math.max(drawStart.y, drawCurrent.y);
+                            const left = xMin * CELL_SIZE;
+                            const top = yMin * CELL_SIZE;
+                            const width = (xMax - xMin) * CELL_SIZE;
+                            const height = (yMax - yMin) * CELL_SIZE;
+                            return (
+                              <div 
+                                style={{
+                                  position: "absolute",
+                                  left: `${left}px`,
+                                  top: `${top}px`,
+                                  width: `${width}px`,
+                                  height: `${height}px`,
+                                  pointerEvents: "none",
+                                  zIndex: 10,
+                                }}
+                                className="border-2 border-emerald-500 border-dashed bg-emerald-500/10"
+                              />
+                            );
+                          })()}
+
+                          {/* Render all finalized plot areas */}
+                          {plotAreas.map((area, index) => {
+                            const isSelected = selectedAreaIndex === index;
+                            const xMin = Math.min(area.x1, area.x2);
+                            const xMax = Math.max(area.x1, area.x2);
+                            const yMin = Math.min(area.y1, area.y2);
+                            const yMax = Math.max(area.y1, area.y2);
+                            const left = xMin * CELL_SIZE;
+                            const top = yMin * CELL_SIZE;
+                            const width = (xMax - xMin) * CELL_SIZE;
+                            const height = (yMax - yMin) * CELL_SIZE;
+                            
+                            const stat = areaStats[index] || { ha: 0, density: 0 };
+
+                            return (
+                              <div
+                                key={index}
+                                id={`area-box-${index}`}
+                                style={{
+                                  position: "absolute",
+                                  left: `${left}px`,
+                                  top: `${top}px`,
+                                  width: `${width}px`,
+                                  height: `${height}px`,
+                                  zIndex: isSelected ? 15 : 5,
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAreaIndex(index);
+                                }}
+                                onMouseDown={(e) => {
+                                  if ((e.target as HTMLElement).dataset.handle) return;
+                                  if (isOwner && !isDrawingMode) {
+                                    handleAreaMouseDown(e, index, "move");
+                                  }
+                                }}
+                                className={`group/area border-2 rounded-md flex flex-col justify-between p-1.5 ${
+                                  isSelected 
+                                    ? "border-emerald-600 bg-emerald-500/15 ring-4 ring-emerald-500/20 shadow-md" 
+                                    : "border-emerald-500/60 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/10"
+                                }`}
+                              >
+                                {/* Area Label & Rename Input */}
+                                <div className="flex items-center gap-1 bg-emerald-600/90 text-white font-bold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs w-fit select-none pointer-events-auto">
+                                  {editingAreaIndex === index ? (
+                                    <input
+                                      type="text"
+                                      defaultValue={area.name || `Area ${index + 1}`}
+                                      autoFocus
+                                      onClick={(e) => e.stopPropagation()}
+                                      onBlur={(e) => {
+                                        const newName = e.target.value.trim();
+                                        if (newName) {
+                                          setPlotAreas(prev => {
+                                            const next = [...prev];
+                                            next[index] = { ...next[index], name: newName };
+                                            return next;
+                                          });
+                                          setIsLayoutDirty(true);
+                                        }
+                                        setEditingAreaIndex(null);
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          e.currentTarget.blur();
+                                        }
+                                      }}
+                                      className="bg-white border-0 rounded px-1 py-0 text-[8px] text-slate-800 font-bold focus:outline-none w-20"
+                                    />
+                                  ) : (
+                                    <span 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isOwner) {
+                                          setEditingAreaIndex(index);
+                                        }
+                                      }}
+                                      title="Klik untuk ubah nama"
+                                      className="cursor-pointer hover:underline"
+                                    >
+                                      {area.name || `Area ${index + 1}`}
+                                    </span>
+                                  )}
+                                  
+                                  {/* Delete single area button */}
+                                  {isOwner && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPlotAreas(prev => prev.filter((_, i) => i !== index));
+                                        setSelectedAreaIndex(null);
+                                        setIsLayoutDirty(true);
+                                      }}
+                                      title="Hapus area ini"
+                                      className="ml-1 text-white hover:text-red-200 font-bold"
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Size label display */}
+                                <span className="absolute bottom-1 right-1 text-[7px] text-slate-500 font-bold bg-white/70 px-1 py-0.1 rounded select-none pointer-events-none">
+                                  {stat.ha.toFixed(3)} ha
+                                </span>
+
+                                {/* Figma-style Resize Handles */}
+                                {isSelected && isOwner && (
+                                  <>
+                                    <div
+                                      data-handle="tl"
+                                      onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "tl")}
+                                      className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
+                                    />
+                                    <div
+                                      data-handle="tr"
+                                      onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "tr")}
+                                      className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
+                                    />
+                                    <div
+                                      data-handle="bl"
+                                      onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "bl")}
+                                      className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
+                                    />
+                                    <div
+                                      data-handle="br"
+                                      onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "br")}
+                                      className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
+                                    />
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })}
+
                       {/* Render tree node items */}
                       {scans.map((scan) => {
                         const pos = gridPositions[scan.tree_code];
@@ -1075,6 +1623,7 @@ export default function PlotDetailPage() {
                         return (
                           <div
                             key={scan.id}
+                            onMouseDown={(e) => e.stopPropagation()}
                             style={{
                               position: "absolute",
                               left: `${pos.x * CELL_SIZE}px`,
@@ -1084,6 +1633,7 @@ export default function PlotDetailPage() {
                               display: "flex",
                               flexDirection: "column",
                               alignItems: "center",
+                              zIndex: isSelected ? 30 : 20,
                             }}
                             title={scan.tree_code}
                           >
@@ -1175,27 +1725,51 @@ export default function PlotDetailPage() {
                             >
                               Buka detail →
                             </Link>
+                            {isOwner && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTreeToRemove(selectedNode.tree_code);
+                                }}
+                                className="border border-red-250 hover:border-red-350 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-[10px] rounded py-1.5 text-center shadow-sm transition-all cursor-pointer"
+                              >
+                                Keluarkan dari Plot
+                              </button>
+                            )}
                           </div>
                         );
                       })()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Explicit Scale Indicator Label (Anchored in place, never scales or scrolls) */}
+                      <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-xs border border-slate-200/60 rounded px-2.5 py-1 text-[9px] font-bold text-slate-505 shadow-sm select-none z-30 pointer-events-none flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>1 kotak grid = 2 meter</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2 w-full">
+                      {gpsScans.length < scans.length && (
+                        <div className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-100 text-[10px] font-semibold text-amber-800 rounded-lg select-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <span>Menampilkan {gpsScans.length} dari {scans.length} pohon — sisanya tidak memiliki data GPS</span>
+                        </div>
+                      )}
+                      <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-slate-200 rounded-lg overflow-hidden relative">
+                        <PlotMap
+                          scans={scans}
+                          centroidLat={plot?.gps_centroid_lat || null}
+                          centroidLon={plot?.gps_centroid_lon || null}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-slate-200 rounded-lg overflow-hidden relative">
-                    <PlotMap
-                      scans={scans}
-                      centroidLat={plot?.gps_centroid_lat || null}
-                      centroidLon={plot?.gps_centroid_lon || null}
-                    />
-                  </div>
-                )}
-                
-                {spatialMode === "gps" && gpsScans.length < scans.length && (
-                  <p className="text-[9px] text-slate-455 leading-normal italic mt-1 select-none">
-                    * Menampilkan {gpsScans.length} dari {scans.length} pohon dengan metadata GPS EXIF.
-                  </p>
-                )}
+                  )}
+                </div>
               </div>
+            </div>
 
               {/* Card 5: Orders-style Tree Scans Table */}
               <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
@@ -1234,10 +1808,10 @@ export default function PlotDetailPage() {
                 </div>
 
                 {/* Table Layout */}
-                <div className="w-full overflow-x-auto">
+                <div className="w-full max-h-[380px] overflow-y-auto overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs text-slate-500">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none">
+                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
                         <th className="py-2.5 px-3">Pohon</th>
                         <th className="py-2.5 px-3">Klasifikasi Spesies</th>
                         <th className="py-2.5 px-3">Metrik Fisik</th>
@@ -1319,9 +1893,20 @@ export default function PlotDetailPage() {
                                 </td>
                                 
                                 <td className="py-3 px-3 text-right">
-                                  <span className="text-slate-455 hover:text-emerald-700 font-semibold transition-colors flex items-center justify-end gap-1 select-none">
-                                    Lihat 3D <span className="text-xs">&rarr;</span>
-                                  </span>
+                                  <div className="flex items-center justify-end gap-2">
+                                    {isOwner && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setTreeToRemove(scan.tree_code);
+                                        }}
+                                        title="Keluarkan dari plot"
+                                        className="p-1 rounded text-red-500 hover:text-red-750 hover:bg-red-50 transition-all font-bold cursor-pointer"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             </React.Fragment>
@@ -1337,6 +1922,55 @@ export default function PlotDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal Konfirmasi Hapus Pohon */}
+      {treeToRemove && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setTreeToRemove(null)}
+          />
+          
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-serif text-base text-[#191919] font-bold">Keluarkan Pohon</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">Tindakan ini akan menghapus pohon dari plot.</p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Apakah Anda yakin ingin mengeluarkan pohon <span className="font-bold text-slate-800">{treeToRemove}</span> dari plot ini?
+            </p>
+            
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => setTreeToRemove(null)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const code = treeToRemove;
+                  setTreeToRemove(null);
+                  await handleRemoveTree(code);
+                }}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-650 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+              >
+                Keluarkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Tambah Pohon */}
       {isAddTreeModalOpen && (
