@@ -148,7 +148,7 @@ export default function ExampleDashboard() {
 
       {/* ── Slide-in sidebar — scan list ──────────────────────── */}
       <div
-        className={`absolute top-[65px] right-0 bottom-0 z-20 w-72 bg-white border-l border-slate-100 flex flex-col transition-transform duration-300 ease-in-out pt-[12px] ${
+        className={`absolute top-[65px] right-0 bottom-0 z-20 w-full max-w-[300px] sm:w-80 bg-white border-l border-slate-100 flex flex-col transition-transform duration-300 ease-in-out pt-[12px] ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -219,31 +219,32 @@ export default function ExampleDashboard() {
         </div>
       </div>
 
-      {/* ── Carbon metrics — bottom-left overlay ──────────────── */}
+      {/* ── Carbon metrics — bottom-center overlay ──────────────── */}
       {currentScan && (
-        <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2">
-          {[
-            { label: "DBH", value: currentScan.dbh_cm.toFixed(1), unit: "cm" },
-            { label: "Height", value: currentScan.tinggi_m.toFixed(1), unit: "m" },
-            { label: "Biomass", value: currentScan.biomassa_kg.toFixed(1), unit: "kg" },
-            { label: "Carbon", value: currentScan.karbon_kg.toFixed(1), unit: "kg" },
-            { label: "CO₂e", value: currentScan.co2e_kg.toFixed(1), unit: "kg" },
-          ].map(({ label, value, unit }) => (
-            <div
-              key={label}
-              className="flex items-baseline gap-2 bg-white/90 backdrop-blur-md border border-slate-100 rounded-xl px-4 py-2.5 shadow-sm"
-            >
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 w-14">{label}</span>
-              <span className="font-serif text-xl text-[#191919] leading-none">{value}</span>
-              <span className="text-[10px] text-slate-400">{unit}</span>
-            </div>
-          ))}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-[92%] sm:w-auto">
+          <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto select-none">
+            {[
+              { label: "DBH", value: currentScan.dbh_cm.toFixed(1), unit: "cm" },
+              { label: "Height", value: currentScan.tinggi_m.toFixed(1), unit: "m" },
+              { label: "Biomass", value: currentScan.biomassa_kg.toFixed(1), unit: "kg" },
+              { label: "Carbon", value: currentScan.karbon_kg.toFixed(1), unit: "kg" },
+              { label: "CO₂e", value: currentScan.co2e_kg.toFixed(1), unit: "kg" },
+            ].map(({ label, value, unit }, idx) => (
+              <div key={label} className={`flex flex-col gap-0.5 ${idx > 0 ? "pl-4 sm:pl-6" : ""}`}>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
+                <div className="flex items-baseline">
+                  <span className="font-serif text-xl sm:text-2xl text-[#191919] leading-none">{value}</span>
+                  <span className="text-[10px] text-slate-450 font-medium ml-1">{unit}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {/* ── Pipeline status banner ─────────────────────────────── */}
       {pipelineStatus && pipelineStatus.stage !== "idle" && (
-        <div className="absolute bottom-6 right-6 z-20 max-w-xs bg-white border border-amber-200 rounded-2xl px-4 py-3 shadow-sm">
+        <div className="absolute bottom-24 right-6 z-20 max-w-xs bg-white border border-amber-200 rounded-2xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Reconstruction Active</span>
@@ -254,7 +255,7 @@ export default function ExampleDashboard() {
 
       {/* ── Error toast ───────────────────────────────────────── */}
       {error && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-white text-xs px-5 py-3 rounded-xl shadow-lg">
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-white text-xs px-5 py-3 rounded-xl shadow-lg">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="opacity-50 hover:opacity-100 transition">✕</button>
         </div>
