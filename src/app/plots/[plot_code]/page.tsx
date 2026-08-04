@@ -1100,7 +1100,7 @@ export default function PlotDetailPage() {
                           </div>
                         </>
                       ) : hasBounds && plotAreas.length > 1 ? (
-                        <div className="flex flex-col gap-1.5 w-full text-left mt-1.5 max-h-[140px] overflow-y-auto pr-1 select-none">
+                        <div data-lenis-prevent className="flex flex-col gap-1.5 w-full text-left mt-1.5 max-h-[140px] overflow-y-auto pr-1 select-none">
                           {areaStats.map((stat, idx) => {
                             const isActive = selectedAreaIndex === idx;
                             return (
@@ -1147,7 +1147,7 @@ export default function PlotDetailPage() {
               <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
                 <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Kontribusi per Spesies</h3>
                 
-                <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
+                <div data-lenis-prevent className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
                     <p className="text-xs text-slate-400 italic py-4 text-center">Spesies belum terklasifikasi</p>
                   ) : (
@@ -1807,7 +1807,7 @@ export default function PlotDetailPage() {
                 </div>
 
                 {/* Table Layout */}
-                <div className="w-full max-h-[380px] overflow-y-auto overflow-x-auto">
+                <div data-lenis-prevent className="w-full max-h-[380px] overflow-y-auto overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs text-slate-500">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
@@ -1993,7 +1993,7 @@ export default function PlotDetailPage() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-4 overflow-y-auto pr-1">
+            <div data-lenis-prevent className="flex flex-col gap-4 overflow-y-auto pr-1">
               <div 
                 className="border border-slate-200 rounded-lg p-4 hover:border-[#191919]/60 hover:bg-slate-50/50 transition-all cursor-pointer flex flex-col gap-1.5" 
                 onClick={handleStartNewScan}
@@ -2033,7 +2033,7 @@ export default function PlotDetailPage() {
                     <p className="text-[10px] text-red-650 bg-red-50 border border-red-100 px-3 py-1.5 rounded font-medium">{claimError}</p>
                   )}
 
-                  <div className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto pr-1">
+                  <div data-lenis-prevent className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto pr-1">
                     {unclaimedLoading ? (
                       <div className="text-center py-3 text-slate-400 text-[10px] font-semibold flex items-center justify-center gap-1.5">
                         <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />

@@ -1166,7 +1166,7 @@ export default function Reconstruct() {
           </div>
 
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          <div data-lenis-prevent className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
             {/* Search Form */}
             <div>
@@ -1537,7 +1537,7 @@ export default function Reconstruct() {
         {/* 2D Recalibration Modal */}
         {recalibModalOpen && currentScan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            <div data-lenis-prevent className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="font-serif text-xl text-[#191919] font-normal">Recalibrate Trunk Axis</h3>
