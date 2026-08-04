@@ -98,6 +98,8 @@ export default function Reconstruct() {
   const [pipelineStatus, setPipelineStatus] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // Counts consecutive polls where server is idle but DB has no result yet
+  const idlePollCountRef = useRef(0);
 
   // Result (Phase 4) states — mirrors original estimator/page.tsx exactly
   const [activeTreeCode, setActiveTreeCode] = useState("");
@@ -291,6 +293,7 @@ export default function Reconstruct() {
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (phase === "processing") {
+      idlePollCountRef.current = 0;
       const poll = async () => {
         try {
           const res = await fetch(`${BACKEND_URL}/status`);
@@ -311,7 +314,8 @@ export default function Reconstruct() {
               transitionPhase("upload");
               setLoading(false);
             } else if (data.stage === "idle" || (data.tree_code && data.tree_code !== calibrationCode)) {
-              // Bug 1 Fix: Check if tree_code already has a complete record in the database
+              // Bug fix: Check if DB already has a completed record (Modal finished
+              // while Render was restarting so fn.remote() never returned).
               try {
                 const historyRes = await fetch(`${BACKEND_URL}/history/${calibrationCode}`);
                 if (historyRes.ok) {
@@ -319,6 +323,7 @@ export default function Reconstruct() {
                   if (historyData.success && historyData.history && historyData.history.length > 0) {
                     const latestScan = historyData.history[0];
                     if (latestScan.scan_date) {
+                      idlePollCountRef.current = 0;
                       const code = calibrationCode;
                       setPhase("result");
                       setActiveTreeCode(code);
@@ -333,6 +338,19 @@ export default function Reconstruct() {
                 }
               } catch (historyErr) {
                 console.error("Error checking scan history during fallback:", historyErr);
+              }
+              // DB is still empty — the Modal job is still running (server restarted
+              // mid-job). Count idle polls; after ~2 minutes without a result, show
+              // an error and let the user retry rather than spinning forever.
+              idlePollCountRef.current += 1;
+              if (idlePollCountRef.current >= 40) {
+                // ~2 min of idle with no DB result → the job likely failed
+                idlePollCountRef.current = 0;
+                setError(
+                  "The server restarted during processing and did not recover within 2 minutes. " +
+                  "If the job completed, it will appear in the Gallery. Otherwise, please retry."
+                );
+                transitionPhase("upload");
               }
             }
           }
