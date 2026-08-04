@@ -256,7 +256,7 @@ export default function HistoryPage() {
                   </form>
 
                   {/* Segmented Filter Tabs */}
-                  <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200/50 rounded-xl self-start md:self-auto select-none">
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200/50 rounded-xl self-start md:self-auto select-none overflow-x-auto max-w-full flex-nowrap scrollbar-none shrink-0">
                     {[
                       { id: "all", label: `All Scans (${scans.length})` },
                       { id: "high-carbon", label: `High Carbon (${scans.filter(s => (s.co2e_kg || 0) >= 200).length})` },
@@ -265,7 +265,7 @@ export default function HistoryPage() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 ${
+                        className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap shrink-0 ${
                           activeTab === tab.id
                             ? "bg-white text-[#191919] shadow-sm font-semibold animate-fadeIn"
                             : "text-slate-500 hover:text-[#191919]"
