@@ -63,6 +63,65 @@ interface ScanRecord {
   claimed_by_user_id?: number | null;
 }
 
+const Stepper = ({
+  currentPhase,
+}: {
+  currentPhase: "upload" | "marking" | "processing" | "result";
+}) => {
+  const steps = [
+    { key: "upload", label: "Upload Walkthrough" },
+    { key: "marking", label: "Mark Trunk Axis" },
+    { key: "processing", label: "GPU Processing" },
+    { key: "result", label: "3D Analytics" },
+  ];
+  return (
+    <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
+      {steps.map((s, idx) => {
+        const isActive = s.key === currentPhase;
+        const isCompleted =
+          (currentPhase === "marking" && idx < 1) ||
+          (currentPhase === "processing" && idx < 2) ||
+          (currentPhase === "result" && idx < 3);
+        return (
+          <React.Fragment key={s.key}>
+            <div className="flex flex-col items-center gap-1.5 flex-1">
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                  isActive
+                    ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110"
+                    : isCompleted
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-white text-slate-400 border-slate-200"
+                }`}
+              >
+                {isCompleted ? "✓" : idx + 1}
+              </span>
+              <span
+                className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
+                  isActive
+                    ? "text-[#191919]"
+                    : isCompleted
+                    ? "text-emerald-700"
+                    : "text-slate-400"
+                }`}
+              >
+                {s.label}
+              </span>
+            </div>
+            {idx < steps.length - 1 && (
+              <div
+                className={`h-[1px] w-2 sm:w-8 transition-colors ${
+                  isCompleted ? "bg-emerald-200" : "bg-slate-200"
+                }`}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
 // ── Main Page Component ─────────────────────────────────────────────────────
 
 function ReconstructContent() {
@@ -73,6 +132,14 @@ function ReconstructContent() {
 
   // Phase management
   const [phase, setPhase] = useState<"upload" | "marking" | "processing" | "result">("upload");
+  const [frameTimestamp, setFrameTimestamp] = useState<number>(0);
+
+  // Keep a stable timestamp for frames when entering marking phase to prevent impure Date.now() calls during render
+  useEffect(() => {
+    if (phase === "marking") {
+      setFrameTimestamp(Date.now());
+    }
+  }, [phase]);
 
   // Upload form states
   const [activeTab, setActiveTab] = useState<"video" | "photos">("video");
@@ -765,66 +832,7 @@ function ReconstructContent() {
     }
   };
 
-  // ── Stepper Component ────────────────────────────────────────────────────
-
-  const Stepper = ({
-    currentPhase,
-  }: {
-    currentPhase: "upload" | "marking" | "processing" | "result";
-  }) => {
-    const steps = [
-      { key: "upload", label: "Upload Walkthrough" },
-      { key: "marking", label: "Mark Trunk Axis" },
-      { key: "processing", label: "GPU Processing" },
-      { key: "result", label: "3D Analytics" },
-    ];
-    return (
-      <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
-        {steps.map((s, idx) => {
-          const isActive = s.key === currentPhase;
-          const isCompleted =
-            (currentPhase === "marking" && idx < 1) ||
-            (currentPhase === "processing" && idx < 2) ||
-            (currentPhase === "result" && idx < 3);
-          return (
-            <React.Fragment key={s.key}>
-              <div className="flex flex-col items-center gap-1.5 flex-1">
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                    isActive
-                      ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110"
-                      : isCompleted
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-white text-slate-400 border-slate-200"
-                  }`}
-                >
-                  {isCompleted ? "✓" : idx + 1}
-                </span>
-                <span
-                  className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
-                    isActive
-                      ? "text-[#191919]"
-                      : isCompleted
-                      ? "text-emerald-700"
-                      : "text-slate-400"
-                  }`}
-                >
-                  {s.label}
-                </span>
-              </div>
-              {idx < steps.length - 1 && (
-                <div
-                  className={`h-[1px] w-2 sm:w-8 transition-colors ${
-                    isCompleted ? "bg-emerald-200" : "bg-slate-200"
-                  }`}
-                />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  };
+  // ── Stepper Component moved outside ──────────────────────────────────────
 
   // ── Processing phase render ──────────────────────────────────────────────
 
@@ -2116,7 +2124,7 @@ function ReconstructContent() {
 
                   <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
                     <img
-                      src={`${BACKEND_URL}/frames/0000.jpg?t=${Date.now()}`}
+                      src={`${BACKEND_URL}/frames/0000.jpg?t=${frameTimestamp}`}
                       alt="Extracted Frame"
                       onLoad={(e) => {
                         setCalibrationImgSize({
