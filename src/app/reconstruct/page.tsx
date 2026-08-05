@@ -1653,7 +1653,7 @@ function ReconstructContent() {
 
             {/* Active Scan Warnings (Unified for Desktop & Mobile) */}
             {currentScan && (currentScan.scale_status !== "calibrated" ||
-              currentScan.quality_status === "low_points" ||
+              (currentScan.quality_status && currentScan.quality_status !== "ok" && currentScan.quality_status !== "failed") ||
               currentScan.height_used === "user_manual_height" ||
               currentScan.confidence_note?.includes("WARNING")) && (
               <div className="space-y-2 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">
@@ -1671,12 +1671,36 @@ function ReconstructContent() {
                     </div>
                   )}
 
-                  {currentScan.quality_status === "low_points" && (
-                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
-                      <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Kualitas Rendah</strong>
-                      Terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.
-                    </div>
-                  )}
+                  {currentScan.quality_status && currentScan.quality_status !== "ok" && currentScan.quality_status !== "failed" && (() => {
+                    const qualityStatusWarnings: Record<string, { title: string; desc: string }> = {
+                      low_points: {
+                        title: "Kualitas Rendah (Jumlah Titik)",
+                        desc: "Terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.",
+                      },
+                      high_fit_error: {
+                        title: "Kualitas Rendah (Fit Error Tinggi)",
+                        desc: "Error rata-rata fitting cylinder melebihi batas toleransi. Bentuk batang tidak sirkular sempurna.",
+                      },
+                      low_inlier_ratio: {
+                        title: "Kualitas Rendah (Inlier Ratio)",
+                        desc: "Rasio titik valid (inlier) terhadap noise di slice terlalu rendah (< 15%). Hasil fitting mungkin dipengaruhi oleh noise.",
+                      },
+                      invalid_orientation: {
+                        title: "Kualitas Rendah (Orientasi Tidak Valid)",
+                        desc: "Sumbu silinder menyimpang jauh dari sumbu pertumbuhan pohon, atau dideteksi sebagai permukaan tanah/rumput datar.",
+                      },
+                    };
+                    const warning = qualityStatusWarnings[currentScan.quality_status];
+                    if (!warning) return null;
+                    return (
+                      <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
+                        <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">
+                          ⚠️ {warning.title}
+                        </strong>
+                        {warning.desc}
+                      </div>
+                    );
+                  })()}
 
                   {currentScan.height_used === "user_manual_height" && (
                     <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
