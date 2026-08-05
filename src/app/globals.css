@@ -400,7 +400,32 @@ html.lenis body {
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 2px;
+  gap: 6px;
 }
+
+.vora-card-delete-btn {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.45rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  background-color: transparent;
+  transition: all var(--duration-fast) var(--ease-out-smooth);
+}
+
+.vora-card-delete-btn:hover {
+  background-color: #fef2f2;
+  border-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.vora-card-delete-btn:active {
+  transform: scale(0.95);
+}
+
 
 

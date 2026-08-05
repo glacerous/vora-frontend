@@ -110,6 +110,30 @@ export default function MyPlotsPage() {
     fetchData();
   }, [user]);
 
+  const handleDeleteScan = async (treeCode: string) => {
+    if (!window.confirm(`Are you sure you want to delete tree ${treeCode} and all its reconstruction data? This action cannot be undone.`)) {
+      return;
+    }
+    
+    setError(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/scans/${encodeURIComponent(treeCode)}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || "Failed to delete tree scan.");
+      }
+      
+      // Remove the deleted scan from state
+      setScans(prev => prev.filter(s => s.tree_code !== treeCode));
+    } catch (err: any) {
+      setError(err.message || "Failed to delete tree scan.");
+    }
+  };
+
   const getSpeciesName = (scan: ScanRecord) => {
     if (!scan.species_predictions) return null;
     let preds = scan.species_predictions;
@@ -295,6 +319,26 @@ export default function MyPlotsPage() {
                           >
                             View
                           </Link>
+                          <button
+                            onClick={() => handleDeleteScan(record.tree_code)}
+                            className="vora-card-delete-btn"
+                            title="Delete tree scan"
+                          >
+                            <svg 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              className="w-4 h-4"
+                            >
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                          </button>
                         </div>
                       </footer>
                     </div>
