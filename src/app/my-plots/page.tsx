@@ -81,25 +81,21 @@ export default function MyPlotsPage() {
     setDataLoading(true);
     setError(null);
     try {
-      // Fetch plots
-      const plotsRes = await fetch(`${BACKEND_URL}/users/${user.id}/plots`, { credentials: "include" });
-      let plotsData: Plot[] = [];
-      if (plotsRes.ok) {
-        const pJson = await plotsRes.json();
-        plotsData = pJson.plots || [];
-        setPlots(plotsData);
-      } else {
-        throw new Error("Failed to fetch plots.");
-      }
+      const [plotsRes, scansRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/users/${user.id}/plots`, { credentials: "include" }),
+        fetch(`${BACKEND_URL}/users/${user.id}/scans`, { credentials: "include" })
+      ]);
 
-      // Fetch user's individual scans
-      const scansRes = await fetch(`${BACKEND_URL}/users/${user.id}/scans`, { credentials: "include" });
-      if (scansRes.ok) {
-        const sJson = await scansRes.json();
-        setScans(sJson.scans || []);
-      } else {
-        throw new Error("Failed to fetch tree records.");
-      }
+      if (!plotsRes.ok) throw new Error("Failed to fetch plots.");
+      if (!scansRes.ok) throw new Error("Failed to fetch tree records.");
+
+      const [pJson, sJson] = await Promise.all([
+        plotsRes.json(),
+        scansRes.json()
+      ]);
+
+      setPlots(pJson.plots || []);
+      setScans(sJson.scans || []);
     } catch (err: any) {
       setError(err.message || "A connection error occurred");
     } finally {
@@ -256,7 +252,7 @@ export default function MyPlotsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center animate-fadeIn">
                 {scans.map((record) => {
                   const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                   return (
@@ -370,7 +366,7 @@ export default function MyPlotsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
                 {plots.map((plot) => (
                   <div
                     key={plot.id}
