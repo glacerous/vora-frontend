@@ -19,6 +19,11 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const handleFillDemo = () => {
+    setUsername("juri_demo");
+    setPassword("demo123");
+  };
+
   // If already logged in, redirect directly.
   useEffect(() => {
     if (user) {
@@ -128,9 +133,31 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+        <div className="mt-6 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl text-xs flex flex-col gap-2 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-semibold text-slate-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>Akun Demo Juri</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleFillDemo}
+              className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold transition-colors hover:underline cursor-pointer select-none"
+            >
+              Isi otomatis
+            </button>
+          </div>
+          <div className="grid grid-cols-[60px_1fr] gap-x-2 gap-y-1 font-mono text-[11px]">
+            <span className="text-slate-400">User:</span>
+            <span className="text-slate-700 select-all">juri_demo</span>
+            <span className="text-slate-400">Pass:</span>
+            <span className="text-slate-700 select-all">demo123</span>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-slate-100 text-center">
           <p className="text-xs text-slate-500">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-[#191919] hover:underline font-semibold">
               Sign Up
             </Link>
