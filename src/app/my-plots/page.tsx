@@ -88,7 +88,7 @@ export default function MyPlotsPage() {
         plotsData = pJson.plots || [];
         setPlots(plotsData);
       } else {
-        throw new Error("Gagal mengambil data plot.");
+        throw new Error("Failed to fetch plots.");
       }
 
       // Fetch user's individual scans
@@ -97,10 +97,10 @@ export default function MyPlotsPage() {
         const sJson = await scansRes.json();
         setScans(sJson.scans || []);
       } else {
-        throw new Error("Gagal mengambil data rekaman pohon.");
+        throw new Error("Failed to fetch tree records.");
       }
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan koneksi");
+      setError(err.message || "A connection error occurred");
     } finally {
       setDataLoading(false);
     }
@@ -144,7 +144,7 @@ export default function MyPlotsPage() {
     return (
       <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
         <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Memuat data dashboard...</p>
+        <p className="text-sm text-slate-500 font-medium">Loading dashboard data...</p>
       </main>
     );
   }
@@ -165,7 +165,7 @@ export default function MyPlotsPage() {
                 Dashboard
               </h1>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Selamat datang kembali, <span className="text-emerald-700 font-semibold">{user?.display_name || user?.username}</span>
+                Welcome back, <span className="text-emerald-700 font-semibold">{user?.display_name || user?.username}</span>
               </p>
             </div>
 
@@ -174,7 +174,7 @@ export default function MyPlotsPage() {
                 href="/plots/create"
                 className="bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-4 py-2.5 shadow-sm transition-all"
               >
-                + Buat Plot Baru
+                + Create New Plot
               </Link>
             </div>
           </header>
@@ -196,7 +196,7 @@ export default function MyPlotsPage() {
                   : "border-transparent text-slate-400 hover:text-slate-700"
               }`}
             >
-              Pohon Saya ({scans.length})
+              My Trees ({scans.length})
             </button>
             <button
               onClick={() => setActiveTab("plots")}
@@ -206,11 +206,11 @@ export default function MyPlotsPage() {
                   : "border-transparent text-slate-400 hover:text-slate-700"
               }`}
             >
-              Plot Saya ({plots.length})
+              My Plots ({plots.length})
             </button>
           </div>
 
-          {/* TAB 1: Pohon Saya */}
+          {/* TAB 1: My Trees */}
           {activeTab === "trees" && (
             scans.length === 0 ? (
               <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
@@ -219,15 +219,15 @@ export default function MyPlotsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-slate-800 mb-2">Belum ada Rekaman Pohon</h2>
+                <h2 className="text-base font-semibold text-slate-800 mb-2">No Tree Records Yet</h2>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-6">
-                  Rekam pohon baru secara mandiri menggunakan modul reconstruct kami untuk memvisualisasikan data biomassa.
+                  Record a new tree using our reconstruct module to visualize biomass data.
                 </p>
                 <Link
                   href="/reconstruct"
                   className="inline-block bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
-                  Mulai Scan Pohon
+                  Start Tree Scan
                 </Link>
               </div>
             ) : (
@@ -304,7 +304,7 @@ export default function MyPlotsPage() {
             )
           )}
 
-          {/* TAB 2: Plot Saya */}
+          {/* TAB 2: My Plots */}
           {activeTab === "plots" && (
             plots.length === 0 ? (
               <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
@@ -313,15 +313,15 @@ export default function MyPlotsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-slate-800 mb-2">Belum ada Plot Hutan</h2>
+                <h2 className="text-base font-semibold text-slate-800 mb-2">No Forest Plots Yet</h2>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-6">
-                  Buat plot baru untuk mengagregasikan koordinat sebaran, DBH rata-rata, dan total estimasi target karbon.
+                  Create a new plot to aggregate spread coordinates, average DBH, and total estimated carbon target.
                 </p>
                 <Link
                   href="/plots/create"
                   className="inline-block bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
-                  Mulai Buat Plot Pertama
+                  Create Your First Plot
                 </Link>
               </div>
             ) : (
@@ -354,7 +354,7 @@ export default function MyPlotsPage() {
                       </h3>
 
                       <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">
-                        {plot.description || "Tidak ada deskripsi lokasi."}
+                        {plot.description || "No location description."}
                       </p>
                     </div>
 
@@ -387,7 +387,7 @@ export default function MyPlotsPage() {
                         </div>
 
                         <div className="flex flex-col text-[10px] text-slate-455 leading-tight">
-                          <span>Pohon: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
+                          <span>Trees: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
                           <span className="mt-0.5">CO₂e: <span className="font-bold text-slate-800">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
@@ -396,7 +396,7 @@ export default function MyPlotsPage() {
                         href={`/plots/${plot.plot_code}`}
                         className="text-xs text-emerald-650 font-bold hover:text-emerald-700 flex items-center gap-1 transition-colors"
                       >
-                        Detail Plot &rarr;
+                        Plot Details &rarr;
                       </Link>
                     </div>
                   </div>

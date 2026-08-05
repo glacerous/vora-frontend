@@ -53,12 +53,12 @@ export default function CreatePlotPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Gagal membuat plot");
+        throw new Error(data.detail || "Failed to create plot");
       }
 
       router.push(`/plots/${data.plot_code}`);
     } catch (err: any) {
-      setError(err.message || "Gagal membuat plot");
+      setError(err.message || "Failed to create plot");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ export default function CreatePlotPage() {
           {/* Back Link */}
           <div className="mb-8">
             <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
-              ← Kembali ke Dashboard
+              ← Back to Dashboard
             </Link>
           </div>
 
@@ -84,10 +84,10 @@ export default function CreatePlotPage() {
           <div className="bg-white border border-slate-200/85 rounded-3xl p-8 shadow-sm">
             <div className="mb-8">
               <h1 className="text-xl font-semibold tracking-tight text-[#191919]">
-                Buat Plot Hutan Baru
+                Create New Forest Plot
               </h1>
               <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                Tentukan area pengelompokan pohon Anda untuk agregasi data biomassa karbon yang akurat
+                Define your tree grouping area for accurate carbon biomass data aggregation.
               </p>
             </div>
 
@@ -101,26 +101,26 @@ export default function CreatePlotPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  Nama Plot
+                  Plot Name
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Misal: Plot Mangrove A1"
+                  placeholder="e.g. Mangrove Plot A1"
                   className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  Deskripsi
+                  Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tulis detail mengenai lokasi atau karakteristik plot pohon ini..."
+                  placeholder="Write details about the location or characteristics of this tree plot..."
                   rows={3}
                   className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full resize-none"
                 />
@@ -128,7 +128,7 @@ export default function CreatePlotPage() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  Privasi Plot
+                  Plot Privacy
                 </label>
                 <div className="grid grid-cols-2 gap-4 mt-1">
                   <button
@@ -141,7 +141,7 @@ export default function CreatePlotPage() {
                     }`}
                   >
                     <span className="text-xs font-semibold">Private</span>
-                    <span className="text-[9px] text-center leading-normal opacity-85">Hanya bisa diakses oleh Anda</span>
+                    <span className="text-[9px] text-center leading-normal opacity-85">Only accessible by you</span>
                   </button>
 
                   <button
@@ -154,21 +154,21 @@ export default function CreatePlotPage() {
                     }`}
                   >
                     <span className="text-xs font-semibold">Public</span>
-                    <span className="text-[9px] text-center leading-normal opacity-85">Bisa dilihat oleh juri/publik</span>
+                    <span className="text-[9px] text-center leading-normal opacity-85">Visible to judges/the public</span>
                   </button>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  Target Estimasi CO₂e (kg) (Opsional)
+                  Target CO₂e Estimation (kg) (Optional)
                 </label>
                 <input
                   type="number"
                   step="any"
                   value={targetCo2e}
                   onChange={(e) => setTargetCo2e(e.target.value)}
-                  placeholder="Misal: 5000"
+                  placeholder="e.g. 5000"
                   className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
                 />
               </div>
@@ -176,7 +176,7 @@ export default function CreatePlotPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                    GPS Centroid Lat (Opsional)
+                    GPS Centroid Lat (Optional)
                   </label>
                   <input
                     type="number"
@@ -190,7 +190,7 @@ export default function CreatePlotPage() {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                    GPS Centroid Lon (Opsional)
+                    GPS Centroid Lon (Optional)
                   </label>
                   <input
                     type="number"
@@ -211,7 +211,7 @@ export default function CreatePlotPage() {
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  "Simpan & Buat Plot"
+                  "Save & Create Plot"
                 )}
               </button>
             </form>
