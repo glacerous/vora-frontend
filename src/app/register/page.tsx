@@ -31,7 +31,7 @@ export default function RegisterPage() {
     setSuccess(false);
 
     if (password !== confirmPassword) {
-      setError("Konfirmasi kata sandi tidak cocok");
+      setError("Confirm password does not match");
       return;
     }
 
@@ -52,7 +52,7 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Gagal melakukan registrasi");
+        throw new Error(data.detail || "Failed to register");
       }
 
       setSuccess(true);
@@ -60,7 +60,7 @@ export default function RegisterPage() {
         router.push("/login");
       }, 2000);
     } catch (err: any) {
-      setError(err.message || "Gagal membuat akun");
+      setError(err.message || "Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -79,10 +79,10 @@ export default function RegisterPage() {
             Vora.
           </Link>
           <h1 className="text-xl font-semibold tracking-tight text-[#191919]">
-            Daftar Akun Baru
+            Register New Account
           </h1>
           <p className="text-xs text-[#191919]/60 mt-1.5 leading-relaxed">
-            Mulai memetakan biomass pohon dan berkontribusi terhadap pelestarian hutan karbon
+            Start mapping tree biomass and contribute to forest carbon preservation.
           </p>
         </div>
 
@@ -96,7 +96,7 @@ export default function RegisterPage() {
         {success && (
           <div className="bg-emerald-50 border border-emerald-150 text-emerald-700 text-xs rounded-xl p-3 mb-6 flex items-center gap-2.5 animate-fadeIn">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-            <p className="leading-snug">Registrasi berhasil! Mengalihkan ke halaman masuk...</p>
+            <p className="leading-snug">Registration successful! Redirecting to login...</p>
           </div>
         )}
 
@@ -110,27 +110,27 @@ export default function RegisterPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Masukkan username"
+              placeholder="Enter username"
               className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
             />
           </div>
 
           <div className="flex flex-col gap-2.5">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-              Nama Tampilan
+              Display Name
             </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Nama lengkap atau panggilan"
+              placeholder="Full name or nickname"
               className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
             />
           </div>
 
           <div className="flex flex-col gap-2.5">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-              Kata Sandi
+              Password
             </label>
             <input
               type="password"
@@ -144,14 +144,14 @@ export default function RegisterPage() {
 
           <div className="flex flex-col gap-2.5">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-              Ulangi Kata Sandi
+              Confirm Password
             </label>
             <input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Ketik kembali kata sandi"
+              placeholder="Retype password"
               className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
             />
           </div>
@@ -164,16 +164,16 @@ export default function RegisterPage() {
             {loading ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              "Daftar Akun"
+              "Register Account"
             )}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-slate-100 text-center">
           <p className="text-xs text-slate-500">
-            Sudah memiliki akun?{" "}
+            Already have an account?{" "}
             <Link href="/login" className="text-[#191919] hover:underline font-semibold">
-              Masuk
+              Login
             </Link>
           </p>
         </div>

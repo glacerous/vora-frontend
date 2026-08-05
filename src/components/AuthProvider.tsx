@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push("/login");
       router.refresh();
     } catch (err) {
-      console.error("Gagal logout:", err);
+      console.error("Failed to log out:", err);
     }
   };
 

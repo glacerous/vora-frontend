@@ -43,14 +43,14 @@ function LoginForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Username atau password salah");
+        throw new Error(data.detail || "Invalid username or password");
       }
 
       // Successful login - refresh global user context
       await refreshUser();
       router.push(redirectPath);
     } catch (err: any) {
-      setError(err.message || "Gagal masuk ke akun");
+      setError(err.message || "Failed to log in");
     } finally {
       setLoading(false);
     }
@@ -69,10 +69,10 @@ function LoginForm() {
             Vora.
           </Link>
           <h1 className="text-xl font-semibold tracking-tight text-[#191919]">
-            Masuk ke Portal Vora
+            Sign In to Vora Portal
           </h1>
           <p className="text-xs text-[#191919]/60 mt-1.5 leading-relaxed">
-            Kelola plot hutan karbon Anda dan pantau data biomass secara akurat
+            Manage your forest carbon plots and monitor biomass data accurately.
           </p>
         </div>
 
@@ -93,14 +93,14 @@ function LoginForm() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Masukkan username"
+              placeholder="Enter username"
               className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-              Kata Sandi
+              Password
             </label>
             <input
               type="password"
@@ -120,16 +120,16 @@ function LoginForm() {
             {loading ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              "Masuk ke Akun"
+              "Sign In"
             )}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-slate-100 text-center">
           <p className="text-xs text-slate-500">
-            Belum memiliki akun?{" "}
+            Don't have an account?{" "}
             <Link href="/register" className="text-[#191919] hover:underline font-semibold">
-              Daftar Baru
+              Sign Up
             </Link>
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function LoginPage() {
     <Suspense fallback={
       <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
         <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Memuat halaman masuk...</p>
+        <p className="text-sm text-slate-500 font-medium">Loading sign in page...</p>
       </main>
     }>
       <LoginForm />
