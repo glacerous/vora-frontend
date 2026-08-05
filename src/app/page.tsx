@@ -140,7 +140,7 @@ export default function Home() {
                 </Link>
 
                 <Link
-                  href="/estimator"
+                  href="/reconstruct"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
                   <div className="text-sm text-[#191919] flex items-center">
@@ -212,7 +212,7 @@ export default function Home() {
           <p>© 2026 Vora. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/" className="hover:text-white transition">Home</Link>
-            <Link href="/estimator" className="hover:text-white transition">Estimator</Link>
+            <Link href="/reconstruct" className="hover:text-white transition">Estimator</Link>
             <Link href="/example" className="hover:text-white transition">Example</Link>
             <a href="#privacy" className="hover:text-white transition">Privacy Policy</a>
             <a href="#terms" className="hover:text-white transition">Terms of Service</a>
