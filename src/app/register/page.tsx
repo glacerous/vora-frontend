@@ -88,7 +88,7 @@ export default function RegisterPage() {
 
         {error && (
           <div className="bg-red-50 border border-red-150 text-red-700 text-xs rounded-xl p-3 mb-6 flex items-center gap-2.5 animate-fadeIn">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-650 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
             <p className="leading-snug">{error}</p>
           </div>
         )}

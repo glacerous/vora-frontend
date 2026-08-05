@@ -1962,7 +1962,7 @@ export default function PlotDetailPage() {
                   setTreeToRemove(null);
                   await handleRemoveTree(code);
                 }}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-650 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
               >
                 Keluarkan
               </button>
