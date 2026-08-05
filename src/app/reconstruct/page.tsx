@@ -177,6 +177,18 @@ function ReconstructContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+  const [renderViewer, setRenderViewer] = useState(false);
+
+  useEffect(() => {
+    if (phase === "result") {
+      const timer = setTimeout(() => {
+        setRenderViewer(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setRenderViewer(false);
+    }
+  }, [phase]);
 
   // States for optional authentication and plot claiming
   const { user: currentUser } = useAuth();
@@ -992,7 +1004,7 @@ function ReconstructContent() {
           
           {/* 3D Viewer Frame Container (Left/Top Side) */}
           <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative border-b lg:border-b-0 border-slate-100 bg-white shrink-0">
-          {currentScan ? (
+          {currentScan && renderViewer ? (
             <iframe
               src={`${BACKEND_URL}/viewer.html?v=11&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
               allow="xr-spatial-tracking; autoplay; fullscreen"
@@ -1001,11 +1013,11 @@ function ReconstructContent() {
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-slate-50/50">
-              {loading ? (
+              {loading || (currentScan && !renderViewer) ? (
                 <>
                   <UiverseLoader />
                   <p className="text-xs text-slate-400 font-medium animate-pulse">
-                    Loading scan data…
+                    Loading 3D analytics canvas…
                   </p>
                 </>
               ) : (
