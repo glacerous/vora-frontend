@@ -19,11 +19,6 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleFillDemo = () => {
-    setUsername("juri_demo");
-    setPassword("demo123");
-  };
-
   // If already logged in, redirect directly.
   useEffect(() => {
     if (user) {
@@ -135,17 +130,9 @@ function LoginForm() {
 
         <div className="mt-6 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl text-xs flex flex-col gap-2 relative">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-700">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span>Akun Demo Juri</span>
+            <div className="font-semibold text-slate-700">
+              Akun Demo Juri
             </div>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold transition-colors hover:underline cursor-pointer select-none"
-            >
-              Isi otomatis
-            </button>
           </div>
           <div className="grid grid-cols-[60px_1fr] gap-x-2 gap-y-1 font-mono text-[11px]">
             <span className="text-slate-400">User:</span>
