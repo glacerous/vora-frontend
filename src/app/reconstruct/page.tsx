@@ -154,8 +154,7 @@ function ReconstructContent() {
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [removeBackground, setRemoveBackground] = useState(false);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+
   const isCancelledRef = React.useRef(false);
 
   // Marking (Phase 2) states
@@ -692,8 +691,8 @@ function ReconstructContent() {
         body: JSON.stringify({
           tree_code: code,
           remove_background: removeBackground,
-          gps_lat: latitude ? parseFloat(latitude) : null,
-          gps_lon: longitude ? parseFloat(longitude) : null,
+          gps_lat: null,
+          gps_lon: null,
           p1,
           p2,
           width,
@@ -1984,36 +1983,7 @@ function ReconstructContent() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        Latitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={latitude}
-                        onChange={(e) => setLatitude(e.target.value)}
-                        placeholder="e.g. -6.2000"
-                        className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        Longitude <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={longitude}
-                        onChange={(e) => setLongitude(e.target.value)}
-                        placeholder="e.g. 106.8000"
-                        className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
+
                   
                   <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mt-2 hover:bg-slate-100/50 transition">
                     <input
