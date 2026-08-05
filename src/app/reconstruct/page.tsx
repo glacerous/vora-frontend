@@ -206,7 +206,7 @@ function ReconstructContent() {
           }
         }
       } catch (err) {
-        console.error("Gagal mengambil plot user:", err);
+        console.error("Failed to fetch user plots:", err);
       }
     };
 
@@ -535,7 +535,7 @@ function ReconstructContent() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Gagal mengklaim scan");
+        throw new Error(data.detail || "Failed to claim scan");
       }
 
       setClaimSuccess(true);
@@ -548,7 +548,7 @@ function ReconstructContent() {
         };
       });
     } catch (err: any) {
-      setClaimError(err.message || "Gagal mengklaim scan");
+      setClaimError(err.message || "Failed to claim scan");
     } finally {
       setClaiming(false);
     }
@@ -1111,15 +1111,15 @@ function ReconstructContent() {
             {currentUser && (
               <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex flex-col gap-0.5 w-full sm:w-auto">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Status Plot & Klaim</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Plot & Claim Status</span>
                   <div className="text-xs text-[#191919] font-medium mt-0.5">
                     {currentScan.claimed_by_user_id ? (
                       <span className="text-emerald-600 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        ✓ Terklaim ke Plot Anda
+                        ✓ Claimed to Your Plot
                       </span>
                     ) : (
-                      <span>Belum diklaim ke plot mana pun</span>
+                      <span>Not claimed to any plot yet</span>
                     )}
                   </div>
                 </div>
@@ -1143,16 +1143,16 @@ function ReconstructContent() {
                       disabled={claiming}
                       className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl px-4 py-2 transition-all cursor-pointer whitespace-nowrap"
                     >
-                      {claiming ? "Mengklaim..." : "Klaim ke Plot"}
+                      {claiming ? "Claiming..." : "Claim to Plot"}
                     </button>
                   </div>
                 )}
 
                 {!currentScan.claimed_by_user_id && userPlots.length === 0 && (
                   <div className="text-xs text-slate-400 italic">
-                    Belum memiliki plot.{" "}
+                    You don't have any plots yet.{" "}
                     <Link href="/plots/create" className="text-emerald-600 font-bold hover:underline">
-                      Buat Plot Baru
+                      Create New Plot
                     </Link>
                   </div>
                 )}
@@ -1162,9 +1162,9 @@ function ReconstructContent() {
             {/* Prompt to log in for guest users */}
             {!currentUser && !currentScan.claimed_by_user_id && (
               <div className="bg-[#161920]/95 backdrop-blur-xl border border-slate-800 text-slate-300 text-xs rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between gap-4">
-                <span>Ingin menyimpan hasil scan ini ke plot Anda?</span>
+                <span>Want to save this scan result to your plot?</span>
                 <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
-                  Masuk Akun & Klaim
+                  Log In & Claim
                 </Link>
               </div>
             )}
@@ -1259,15 +1259,15 @@ function ReconstructContent() {
                 {currentUser && (
                   <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Status Plot & Klaim</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Plot & Claim Status</span>
                       <div className="text-xs text-[#191919] font-medium mt-0.5">
                         {currentScan.claimed_by_user_id ? (
                           <span className="text-emerald-600 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            ✓ Terklaim ke Plot Anda
+                            ✓ Claimed to Your Plot
                           </span>
                         ) : (
-                          <span>Belum diklaim ke plot mana pun</span>
+                          <span>Not claimed to any plot yet</span>
                         )}
                       </div>
                     </div>
@@ -1289,7 +1289,7 @@ function ReconstructContent() {
                           disabled={claiming}
                           className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl py-2 transition-all cursor-pointer text-center w-full"
                         >
-                          {claiming ? "Mengklaim..." : "Klaim ke Plot"}
+                          {claiming ? "Claiming..." : "Claim to Plot"}
                         </button>
                       </div>
                     )}
@@ -1299,9 +1299,9 @@ function ReconstructContent() {
                 {/* Mobile Login Prompt */}
                 {!currentUser && !currentScan.claimed_by_user_id && (
                   <div className="bg-[#161920] border border-slate-800 text-slate-350 text-xs rounded-2xl p-4 flex justify-between items-center gap-4">
-                    <span>Ingin menyimpan hasil scan ini ke plot Anda?</span>
+                    <span>Want to save this scan result to your plot?</span>
                     <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
-                      Masuk Akun & Klaim
+                      Log In & Claim
                     </Link>
                   </div>
                 )}
@@ -1666,27 +1666,27 @@ function ReconstructContent() {
                   {currentScan.scale_status !== "calibrated" && (
                     <div className="text-[11px] text-red-750 bg-red-50 border border-red-200 rounded-xl p-2.5 leading-relaxed">
                       <strong className="block text-red-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">⚠️ Uncalibrated Scale</strong>
-                      Angka DBH/karbon memakai unit PLY default dan TIDAK DAPAT DIANDALKAN. Lakukan kalibrasi skala (calibrate_scale.py / auto-pose).
+                      DBH/carbon values use default PLY units and are UNRELIABLE. Perform scale calibration (calibrate_scale.py / auto-pose).
                     </div>
                   )}
 
                   {currentScan.quality_status && currentScan.quality_status !== "ok" && currentScan.quality_status !== "failed" && (() => {
                     const qualityStatusWarnings: Record<string, { title: string; desc: string }> = {
                       low_points: {
-                        title: "Kualitas Rendah (Jumlah Titik)",
-                        desc: "Terlalu sedikit titik pada slice DBH. Hasil berisiko tidak akurat.",
+                        title: "Low Quality (Point Count)",
+                        desc: "Too few points on the DBH slice. Results may be inaccurate.",
                       },
                       high_fit_error: {
-                        title: "Kualitas Rendah (Fit Error Tinggi)",
-                        desc: "Error rata-rata fitting cylinder melebihi batas toleransi. Bentuk batang tidak sirkular sempurna.",
+                        title: "Low Quality (High Fit Error)",
+                        desc: "Average cylinder fitting error exceeds tolerance. Trunk shape is not perfectly circular.",
                       },
                       low_inlier_ratio: {
-                        title: "Kualitas Rendah (Inlier Ratio)",
-                        desc: "Rasio titik valid (inlier) terhadap noise di slice terlalu rendah (< 15%). Hasil fitting mungkin dipengaruhi oleh noise.",
+                        title: "Low Quality (Inlier Ratio)",
+                        desc: "The ratio of valid points (inliers) to noise is too low (< 15%). Fitting results may be affected by noise.",
                       },
                       invalid_orientation: {
-                        title: "Kualitas Rendah (Orientasi Tidak Valid)",
-                        desc: "Sumbu silinder menyimpang jauh dari sumbu pertumbuhan pohon, atau dideteksi sebagai permukaan tanah/rumput datar.",
+                        title: "Low Quality (Invalid Orientation)",
+                        desc: "The cylinder axis deviates significantly from the tree growth axis, or is detected as flat ground/grass.",
                       },
                     };
                     const warning = qualityStatusWarnings[currentScan.quality_status];
@@ -1996,10 +1996,10 @@ function ReconstructContent() {
                     />
                     <div className="flex flex-col">
                       <label htmlFor="removeBackground" className="text-xs font-bold text-[#191919] cursor-pointer">
-                        Hapus Background (rembg)
+                        Remove Background (rembg)
                       </label>
                       <span className="text-[10px] text-slate-400 leading-normal">
-                        Rekomendasi. Mengisolasi pohon dan menghilangkan objek latar belakang agar visualisasi 3D bersih.
+                        Recommendation. Isolate the tree and remove background objects for a clean 3D visualization.
                       </span>
                     </div>
                   </div>
@@ -2270,7 +2270,7 @@ export default function Reconstruct() {
     <Suspense fallback={
       <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
         <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Memuat halaman scan...</p>
+        <p className="text-sm text-slate-500 font-medium">Loading scan page...</p>
       </main>
     }>
       <ReconstructContent />

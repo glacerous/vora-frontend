@@ -64,7 +64,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
 );
 
 export default function HistoryPage() {
-  const [galleryTab, setGalleryTab] = useState<"pohon" | "plot">("pohon");
+  const [galleryTab, setGalleryTab] = useState<"tree" | "plot">("tree");
   
   // Scans tab states
   const [scans, setScans] = useState<ScanRecord[]>([]);
@@ -123,11 +123,11 @@ export default function HistoryPage() {
     setError(null);
     try {
       const res = await fetch(`${BACKEND_URL}/plots`, { cache: 'no-store' });
-      if (!res.ok) throw new Error("Gagal mengambil data plot publik.");
+      if (!res.ok) throw new Error("Failed to fetch public plots.");
       const data = await res.json();
       setPlots(data.plots || []);
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan koneksi");
+      setError(err.message || "A connection error occurred");
     } finally {
       setPlotsLoading(false);
     }
@@ -180,21 +180,21 @@ export default function HistoryPage() {
               Scan Gallery
             </h1>
             <p className="text-sm text-[#191919]/60 max-w-2xl leading-relaxed">
-              Temukan data scan 3D pohon publik serta plot hutan yang dipetakan oleh komunitas Vora.
+              Discover public 3D tree scans and forest plots mapped by the Vora community.
             </p>
           </div>
 
           {/* Gallery Mode Tabs */}
           <div className="flex border-b border-slate-200/60 mb-8 select-none">
             <button
-              onClick={() => setGalleryTab("pohon")}
+              onClick={() => setGalleryTab("tree")}
               className={`pb-3.5 px-6 text-xs uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
-                galleryTab === "pohon"
+                galleryTab === "tree"
                   ? "border-emerald-600 text-emerald-700"
                   : "border-transparent text-slate-400 hover:text-slate-700"
               }`}
             >
-              Pohon Publik
+              Public Trees
             </button>
             <button
               onClick={() => setGalleryTab("plot")}
@@ -204,7 +204,7 @@ export default function HistoryPage() {
                   : "border-transparent text-slate-400 hover:text-slate-700"
               }`}
             >
-              Plot Publik
+              Public Plots
             </button>
           </div>
 
@@ -215,8 +215,8 @@ export default function HistoryPage() {
             </div>
           )}
 
-          {/* TAB 1: Pohon Publik */}
-          {galleryTab === "pohon" && (
+          {/* TAB 1: Public Trees */}
+          {galleryTab === "tree" && (
             scans.length > 0 ? (
               <div>
                 {/* Toolbar: Search input + Segmented Filter Tabs */}
@@ -390,7 +390,7 @@ export default function HistoryPage() {
             )
           )}
 
-          {/* TAB 2: Plot Publik */}
+          {/* TAB 2: Public Plots */}
           {galleryTab === "plot" && (
             plotsLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
@@ -421,7 +421,7 @@ export default function HistoryPage() {
                       </h3>
 
                       <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">
-                        {plot.description || "Tidak ada deskripsi lokasi."}
+                        {plot.description || "No location description."}
                       </p>
                     </div>
 
@@ -453,7 +453,7 @@ export default function HistoryPage() {
                         </div>
 
                         <div className="flex flex-col text-[10px] text-slate-455 leading-tight">
-                          <span>Pohon: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
+                          <span>Trees: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
                           <span className="mt-0.5">CO₂e: <span className="font-bold text-slate-800">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
@@ -462,7 +462,7 @@ export default function HistoryPage() {
                         href={`/plots/${plot.plot_code}`}
                         className="text-xs text-emerald-650 font-bold hover:text-emerald-700 flex items-center gap-1 transition-colors"
                       >
-                        Detail Plot &rarr;
+                        Plot Details &rarr;
                       </Link>
                     </div>
                   </div>
@@ -477,7 +477,7 @@ export default function HistoryPage() {
           )}
 
           {/* Center Loading Spinner for first page scans */}
-          {loading && scans.length === 0 && galleryTab === "pohon" && (
+          {loading && scans.length === 0 && galleryTab === "tree" && (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
               <UiverseLoader />
               <p className="text-xs text-slate-455 font-medium">Loading gallery scans…</p>
