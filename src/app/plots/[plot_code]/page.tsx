@@ -14,7 +14,7 @@ const PlotMap = dynamic(() => import("@/components/PlotMap"), {
   loading: () => (
     <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center min-h-[250px]">
       <span className="w-6 h-6 border-2 border-[#191919] border-t-transparent rounded-full animate-spin mr-2" />
-      <p className="text-xs text-slate-500 font-medium">Memuat peta satelit...</p>
+      <p className="text-xs text-slate-500 font-medium">Loading satellite map...</p>
     </div>
   ),
 });
@@ -244,7 +244,7 @@ export default function PlotDetailPage() {
         } else if (plotRes.status === 404) {
           throw new Error("Plot tidak ditemukan.");
         } else {
-          throw new Error("Gagal mengambil detail plot.");
+          throw new Error("Failed to fetch plot details.");
         }
       }
 
@@ -253,7 +253,7 @@ export default function PlotDetailPage() {
       setScans(data.scans || []);
       setAggregation(data.aggregation);
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan koneksi");
+      setError(err.message || "A connection error occurred");
     } finally {
       setLoading(false);
     }
@@ -655,7 +655,7 @@ export default function PlotDetailPage() {
         });
 
         if (!res.ok) {
-          throw new Error("Gagal menyimpan tata letak baru.");
+          throw new Error("Failed to save new layout.");
         }
 
         setIsLayoutDirty(false);
@@ -687,7 +687,7 @@ export default function PlotDetailPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Gagal mengeluarkan pohon dari plot.");
+        throw new Error(errorData.detail || "Failed to remove tree from plot.");
       }
 
       // If success, remove from gridPositions and scans locally
@@ -703,7 +703,7 @@ export default function PlotDetailPage() {
       // Mark layout as dirty so it auto-saves the updated gridPositions (excluding the removed node)
       setIsLayoutDirty(true);
     } catch (err: any) {
-      alert(err.message || "Gagal mengeluarkan pohon.");
+      alert(err.message || "Failed to remove tree.");
     } finally {
       setActionLoading(false);
     }
@@ -723,7 +723,7 @@ export default function PlotDetailPage() {
         setUnclaimedScans(unclaimed);
       }
     } catch (err) {
-      console.error("Gagal mengambil data scan lama:", err);
+      console.error("Failed to fetch old scan data:", err);
     } finally {
       setUnclaimedLoading(false);
     }
@@ -755,13 +755,13 @@ export default function PlotDetailPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Gagal mengubah detail plot.");
+        throw new Error(errorData.detail || "Failed to update plot details.");
       }
 
       setPlot((prev) => prev ? { ...prev, name: editName, description: editDescription, privacy: editPrivacy } : null);
       setIsEditPlotModalOpen(false);
     } catch (err: any) {
-      alert(err.message || "Gagal mengubah detail plot.");
+      alert(err.message || "Failed to update plot details.");
     } finally {
       setActionLoading(false);
     }
@@ -787,14 +787,14 @@ export default function PlotDetailPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || "Gagal menghubungkan scan ke plot");
+        throw new Error(data.detail || "Failed to link scan to plot");
       }
 
       await fetchPlotDetails();
       setIsAddTreeModalOpen(false);
       setSearchQuery("");
     } catch (err: any) {
-      setClaimError(err.message || "Gagal menghubungkan scan");
+      setClaimError(err.message || "Failed to link scan");
     } finally {
       setClaimLoading(null);
     }
@@ -854,7 +854,7 @@ export default function PlotDetailPage() {
               Dashboard
             </Link>
             <Link href="/login" className="border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs rounded-lg px-4 py-2 transition-all">
-              Masuk
+              Login
             </Link>
           </div>
         </div>
@@ -971,7 +971,7 @@ export default function PlotDetailPage() {
           {/* Top toolbar matching dashboard reference */}
           <div className="flex justify-between items-center select-none pb-2 border-b border-slate-200/40">
             <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
-              ← Kembali ke Dashboard
+              ← Back to Dashboard
             </Link>
 
             <div className="flex items-center gap-3">
@@ -1002,7 +1002,7 @@ export default function PlotDetailPage() {
                     onClick={() => setIsAddTreeModalOpen(true)}
                     className="px-3 py-1.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="text-xs font-bold leading-none">+</span> Tambah Pohon
+                    <span className="text-xs font-bold leading-none">+</span> Add Tree
                   </button>
                 </div>
               )}
@@ -1012,7 +1012,7 @@ export default function PlotDetailPage() {
           {/* Main Layout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start mt-2">
             
-            {/* KOLOM KIRI (col-span-4): Plot Profile, Stats, progress circular, dan diagram spesies */}
+            {/* LEFT COLUMN (col-span-4): Plot Profile, Stats, progress circular, and species diagram */}
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
               
               {/* Card 1: Plot Profile & Carbon Target Gauge (Unified Left Dashboard Header) */}
@@ -1020,7 +1020,7 @@ export default function PlotDetailPage() {
                 <div className="w-full border-b border-slate-100 pb-3.5 mb-4 flex flex-col gap-1 text-left select-none">
                   <span className="text-[9px] font-mono text-emerald-750 font-bold block mb-0.5">{plot?.plot_code}</span>
                   <h1 className="text-lg font-bold tracking-tight text-slate-800 font-serif leading-tight">{plot?.name}</h1>
-                  <p className="text-[10px] text-slate-500 leading-normal line-clamp-3 mt-1.5">{plot?.description || "Tidak ada deskripsi lokasi."}</p>
+                  <p className="text-[10px] text-slate-500 leading-normal line-clamp-3 mt-1.5">{plot?.description || "No location description."}</p>
                   <span className="text-[9px] text-slate-400 mt-2 block font-medium">
                     Oleh <span className="text-slate-600 font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
@@ -1028,7 +1028,7 @@ export default function PlotDetailPage() {
 
                 {plot?.target_co2e_kg && plot.target_co2e_kg > 0 ? (
                   <>
-                    <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest self-start mb-1 select-none">Progres Target Karbon</h3>
+                    <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest self-start mb-1 select-none">Carbon Target Progress</h3>
                     
                     {/* Curved SVG Gauge */}
                     <div className="relative flex flex-col items-center justify-center py-3 select-none">
@@ -1075,7 +1075,7 @@ export default function PlotDetailPage() {
                       </h2>
                       <div className="mt-2 flex justify-center gap-1.5">
                         <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
-                          Pohon: {scans.length}
+                          Trees: {scans.length}
                         </span>
                         {aggregation && (
                           <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
@@ -1086,7 +1086,7 @@ export default function PlotDetailPage() {
                     </div>
 
                     <div className="pl-2 flex flex-col items-center justify-center min-h-[64px] w-full">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Kepadatan Karbon</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Carbon Density</span>
                       {hasBounds && plotAreas.length === 1 ? (
                         <>
                           <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
@@ -1124,7 +1124,7 @@ export default function PlotDetailPage() {
                         </div>
                       ) : (
                         <p className="text-[9px] text-slate-450 font-medium italic text-center leading-normal max-w-[150px] mt-1">
-                          Gambar area plot untuk melihat kepadatan karbon per hektar
+                          Draw plot area to view carbon density per hectare
                         </p>
                       )}
                     </div>
@@ -1136,7 +1136,7 @@ export default function PlotDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <span>
-                        {treesOutsideCount} pohon berada di luar area yang ditandai, tidak termasuk dalam perhitungan kepadatan
+                        {treesOutsideCount} trees are outside the marked area, excluded from density calculation
                       </span>
                     </div>
                   )}
@@ -1145,11 +1145,11 @@ export default function PlotDetailPage() {
 
               {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
               <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Kontribusi per Spesies</h3>
+                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Contribution per Species</h3>
                 
                 <div data-lenis-prevent className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-4 text-center">Spesies belum terklasifikasi</p>
+                    <p className="text-xs text-slate-400 italic py-4 text-center">Species not classified yet</p>
                   ) : (
                     speciesList.map((spec, idx) => {
                       const specScans = scans.filter(s => getSpeciesName(s)?.trim().toLowerCase() === spec);
@@ -1162,7 +1162,7 @@ export default function PlotDetailPage() {
                             <div className="flex items-center gap-1.5 truncate max-w-[80%]">
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.bg.split(' ')[0]}`} />
                               <span className="italic truncate">{spec}</span>
-                              <span className="text-[9px] text-slate-400 font-normal shrink-0">({specScans.length} pohon)</span>
+                              <span className="text-[9px] text-slate-400 font-normal shrink-0">({specScans.length} trees)</span>
                             </div>
                             <span className="font-bold text-slate-800 shrink-0">{specPct.toFixed(0)}%</span>
                           </div>
@@ -1208,7 +1208,7 @@ export default function PlotDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 text-[10px] text-slate-400 font-medium italic select-none text-center">
-                    Butuh minimal 5 pohon untuk melihat sebaran DBH
+                    Requires at least 5 trees to view DBH distribution
                   </div>
                 )}
               </section>
@@ -1225,12 +1225,12 @@ export default function PlotDetailPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">
-                      {spatialMode === "grid" ? "Peta Spasial Grid Hutan" : "Peta Sebaran GPS Satelit"}
+                      {spatialMode === "grid" ? "Forest Spatial Grid Map" : "GPS Satellite Distribution Map"}
                     </h3>
                     <p className="text-[11px] text-slate-450 mt-0.5">
                       {spatialMode === "grid" 
-                        ? "Geser node 48x48px (2x2 sel) untuk memposisikan letak pohon sebenarnya" 
-                        : "Menampilkan sebaran geografis koordinat GPS asli pohon di peta"}
+                        ? "Drag 48x48px nodes (2x2 cells) to position the actual tree location" 
+                        : "Displays the geographical distribution of actual tree GPS coordinates on the map"}
                     </p>
                   </div>
 
@@ -1290,7 +1290,7 @@ export default function PlotDetailPage() {
                         </svg>
                       </button>
                       <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                        Peta GPS
+                        GPS Map
                       </div>
                     </div>
 
@@ -1552,7 +1552,7 @@ export default function PlotDetailPage() {
                                           setEditingAreaIndex(index);
                                         }
                                       }}
-                                      title="Klik untuk ubah nama"
+                                      title="Click to change name"
                                       className="cursor-pointer hover:underline"
                                     >
                                       {area.name || `Area ${index + 1}`}
@@ -1753,7 +1753,7 @@ export default function PlotDetailPage() {
                       {gpsScans.length < scans.length && (
                         <div className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-100 text-[10px] font-semibold text-amber-800 rounded-lg select-none">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          <span>Menampilkan {gpsScans.length} dari {scans.length} pohon — sisanya tidak memiliki data GPS</span>
+                          <span>Showing {gpsScans.length} of {scans.length} trees — the rest do not have GPS data</span>
                         </div>
                       )}
                       <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-slate-200 rounded-lg overflow-hidden relative">
@@ -1773,7 +1773,7 @@ export default function PlotDetailPage() {
               <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest select-none">Daftar Rekaman Pohon ({filteredScans.length})</h3>
+                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest select-none">Tree Records List ({filteredScans.length})</h3>
                   </div>
                   
                   {/* Tab Filters */}
@@ -1810,10 +1810,10 @@ export default function PlotDetailPage() {
                   <table className="w-full border-collapse text-left text-xs text-slate-500">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
-                        <th className="py-2.5 px-3">Pohon</th>
-                        <th className="py-2.5 px-3">Klasifikasi Spesies</th>
+                        <th className="py-2.5 px-3">Tree</th>
+                        <th className="py-2.5 px-3">Species Classification</th>
                         <th className="py-2.5 px-3">Metrik Fisik</th>
-                        <th className="py-2.5 px-3 text-right">Biomassa</th>
+                        <th className="py-2.5 px-3 text-right">Biomass</th>
                         <th className="py-2.5 px-3 text-right">CO₂e</th>
                         <th className="py-2.5 px-3"></th>
                       </tr>
@@ -1822,7 +1822,7 @@ export default function PlotDetailPage() {
                       {filteredScans.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="py-8 text-center italic text-slate-400">
-                            Belum ada rekaman pohon untuk kriteria ini.
+                            No tree records found for this criteria.
                           </td>
                         </tr>
                       ) : (
@@ -1922,7 +1922,7 @@ export default function PlotDetailPage() {
         </div>
       </main>
 
-      {/* Modal Konfirmasi Hapus Pohon */}
+      {/* Modal Confirm Delete Tree */}
       {treeToRemove && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
@@ -1938,13 +1938,13 @@ export default function PlotDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-serif text-base text-[#191919] font-bold">Keluarkan Pohon</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5">Tindakan ini akan menghapus pohon dari plot.</p>
+                <h3 className="font-serif text-base text-[#191919] font-bold">Remove Tree</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">This action will remove the tree from the plot.</p>
               </div>
             </div>
             
             <p className="text-xs text-slate-600 leading-relaxed">
-              Apakah Anda yakin ingin mengeluarkan pohon <span className="font-bold text-slate-800">{treeToRemove}</span> dari plot ini?
+              Are you sure you want to remove tree <span className="font-bold text-slate-800">{treeToRemove}</span> from this plot?
             </p>
             
             <div className="flex justify-end gap-2 mt-2">
@@ -1953,7 +1953,7 @@ export default function PlotDetailPage() {
                 onClick={() => setTreeToRemove(null)}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
               >
-                Batal
+                Cancel
               </button>
               <button
                 type="button"
@@ -1971,7 +1971,7 @@ export default function PlotDetailPage() {
         </div>
       )}
 
-      {/* Modal Tambah Pohon */}
+      {/* Modal Add Tree */}
       {isAddTreeModalOpen && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
@@ -1982,8 +1982,8 @@ export default function PlotDetailPage() {
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-lg max-h-[85vh] flex flex-col gap-5 animate-fadeIn">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#191919] font-normal">Tambah Pohon ke Plot</h3>
-                <p className="text-xs text-slate-500 mt-1">Pilih metode untuk menambahkan rekaman biomassa pohon.</p>
+                <h3 className="font-serif text-lg text-[#191919] font-normal">Add Tree to Plot</h3>
+                <p className="text-xs text-slate-500 mt-1">Select a method to add tree biomass records.</p>
               </div>
               <button 
                 onClick={() => setIsAddTreeModalOpen(false)} 
@@ -2000,10 +2000,10 @@ export default function PlotDetailPage() {
               >
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base leading-none">+</span>
-                  <span className="font-semibold text-xs text-[#191919]">Mulai Scan Baru</span>
+                  <span className="font-semibold text-xs text-[#191919]">Start New Scan</span>
                 </div>
                 <p className="text-[11px] text-slate-500 leading-relaxed ml-8">
-                  Rekam video/foto pohon baru dengan kamera Anda secara langsung.
+                  Record video/photos of a new tree directly with your camera.
                 </p>
               </div>
 
@@ -2017,13 +2017,13 @@ export default function PlotDetailPage() {
                   <span className="font-semibold text-xs text-[#191919]">Hubungkan Scan Lama</span>
                 </div>
                 <p className="text-[11px] text-slate-500 leading-relaxed ml-8">
-                  Pilih hasil rekaman pohon sebelumnya yang belum terasosiasikan dengan plot mana pun.
+                  Select a previous tree recording not yet associated with any plot.
                 </p>
                 
                 <div className="ml-8 border-t border-slate-100 pt-3 flex flex-col gap-2.5">
                   <input
                     type="text"
-                    placeholder="Cari kode pohon (misal: POHON-1234)..."
+                    placeholder="Search tree code (e.g. POHON-1234)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-lg px-3 py-1.5 text-xs text-[#191919] placeholder-slate-455 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
@@ -2037,11 +2037,11 @@ export default function PlotDetailPage() {
                     {unclaimedLoading ? (
                       <div className="text-center py-3 text-slate-400 text-[10px] font-semibold flex items-center justify-center gap-1.5">
                         <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                        Memuat data scan...
+                        Loading scan data...
                       </div>
                     ) : unclaimedScans.length === 0 ? (
                       <div className="text-center py-3 text-slate-400 text-[10px] italic">
-                        Tidak ada scan unclaimed yang tersedia.
+                        No unclaimed scans available.
                       </div>
                     ) : (
                       unclaimedScans
@@ -2087,8 +2087,8 @@ export default function PlotDetailPage() {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#191919] font-normal">Edit Informasi Plot</h3>
-                <p className="text-xs text-slate-500 mt-1">Ubah nama, deskripsi, dan privasi dari plot ini.</p>
+                <h3 className="font-serif text-lg text-[#191919] font-normal">Edit Plot Info</h3>
+                <p className="text-xs text-slate-500 mt-1">Change the name, description, and privacy of this plot.</p>
               </div>
               <button 
                 type="button"
@@ -2101,7 +2101,7 @@ export default function PlotDetailPage() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Nama Plot</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Plot Name</label>
                 <input
                   type="text"
                   required
@@ -2112,7 +2112,7 @@ export default function PlotDetailPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Deskripsi</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Description</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -2122,7 +2122,7 @@ export default function PlotDetailPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Privasi Plot</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Plot Privacy</label>
                 <div className="grid grid-cols-2 gap-3 mt-0.5">
                   <button
                     type="button"
@@ -2134,7 +2134,7 @@ export default function PlotDetailPage() {
                     }`}
                   >
                     <span className="text-xs font-semibold">Private</span>
-                    <span className="text-[9px] text-center opacity-85 leading-none">Hanya pemilik</span>
+                    <span className="text-[9px] text-center opacity-85 leading-none">Only the owner</span>
                   </button>
 
                   <button
@@ -2147,7 +2147,7 @@ export default function PlotDetailPage() {
                     }`}
                   >
                     <span className="text-xs font-semibold">Public</span>
-                    <span className="text-[9px] text-center opacity-85 leading-none">Terbuka untuk semua</span>
+                    <span className="text-[9px] text-center opacity-85 leading-none">Open to everyone</span>
                   </button>
                 </div>
               </div>
@@ -2159,7 +2159,7 @@ export default function PlotDetailPage() {
                 onClick={() => setIsEditPlotModalOpen(false)}
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
               >
-                Batal
+                Cancel
               </button>
               <button
                 type="submit"
@@ -2167,7 +2167,7 @@ export default function PlotDetailPage() {
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#191919] hover:bg-[#191919]/90 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
               >
                 {actionLoading && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />}
-                Simpan Perubahan
+                Save Changes
               </button>
             </div>
           </form>
