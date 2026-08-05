@@ -15,6 +15,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isWakingUp: boolean;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -24,13 +25,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isWakingUp, setIsWakingUp] = useState(false);
   const router = useRouter();
 
   const fetchUser = async () => {
+    // Detect if backend is cold starting by triggering a wakeup warning after 1.5 seconds of delay
+    const wakeupTimer = setTimeout(() => {
+      setIsWakingUp(true);
+    }, 1500);
+
     try {
       const res = await fetch(`${BACKEND_URL}/auth/me`, {
         credentials: "include",
       });
+      clearTimeout(wakeupTimer);
+      setIsWakingUp(false);
+
       if (res.ok) {
         const data = await res.json();
         setUser(data);
@@ -42,6 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
       }
     } catch (err) {
+      clearTimeout(wakeupTimer);
+      setIsWakingUp(false);
       setUser(null);
     } finally {
       setLoading(false);
@@ -49,6 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Fire-and-forget background fetch to /ping to wake up Render instance as early as possible
+    fetch(`${BACKEND_URL}/ping`).catch(() => {});
+    
     fetchUser();
   }, []);
 
@@ -69,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, refreshUser: fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, isWakingUp, logout, refreshUser: fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

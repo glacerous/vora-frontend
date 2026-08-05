@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ScanRecord {
   id: number;
@@ -64,6 +65,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
 );
 
 export default function HistoryPage() {
+  const { isWakingUp } = useAuth();
   const [galleryTab, setGalleryTab] = useState<"tree" | "plot">("tree");
   
   // Scans tab states
@@ -399,6 +401,11 @@ export default function HistoryPage() {
               <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
                 <UiverseLoader />
                 <p className="text-xs text-slate-450 font-medium">Loading public plots…</p>
+                {isWakingUp && (
+                  <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
+                    ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.
+                  </p>
+                )}
               </div>
             ) : plots.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
@@ -484,6 +491,11 @@ export default function HistoryPage() {
             <div className="flex flex-col items-center justify-center py-20 text-center gap-6 animate-fadeIn">
               <UiverseLoader />
               <p className="text-xs text-slate-455 font-medium">Loading gallery scans…</p>
+              {isWakingUp && (
+                <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
+                  ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.
+                </p>
+              )}
             </div>
           )}
 

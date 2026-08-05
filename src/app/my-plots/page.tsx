@@ -59,7 +59,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
 
 export default function MyPlotsPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isWakingUp } = useAuth();
   
   const [activeTab, setActiveTab] = useState<"trees" | "plots">("trees");
   const [plots, setPlots] = useState<Plot[]>([]);
@@ -163,9 +163,14 @@ export default function MyPlotsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
+      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans p-6 text-center select-none">
         <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm text-slate-500 font-medium">Loading dashboard data...</p>
+        {isWakingUp && (
+          <p className="text-xs text-amber-600 mt-3 max-w-xs animate-pulse leading-relaxed">
+            ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds on first visit.
+          </p>
+        )}
       </main>
     );
   }
