@@ -57,8 +57,8 @@ function LoginForm() {
       // Successful login - refresh global user context
       await refreshUser();
       router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || "Failed to log in");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to log in");
     } finally {
       setLoading(false);
     }
