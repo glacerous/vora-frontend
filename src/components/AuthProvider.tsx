@@ -34,8 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        // Set frontend-domain cookie so that Next.js middleware knows the user is authenticated
+        document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
       } else {
         setUser(null);
+        // Clear frontend-domain cookie if session is invalid
+        document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
       }
     } catch (err) {
       setUser(null);
@@ -55,6 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
       });
       setUser(null);
+      // Clear frontend-domain cookie
+      document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
       router.push("/login");
       router.refresh();
     } catch (err) {

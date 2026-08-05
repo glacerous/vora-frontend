@@ -46,6 +46,9 @@ function LoginForm() {
         throw new Error(data.detail || "Invalid username or password");
       }
 
+      // Set frontend-domain cookie immediately to allow server-side middleware to let navigation through
+      document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+
       // Successful login - refresh global user context
       await refreshUser();
       router.push(redirectPath);
