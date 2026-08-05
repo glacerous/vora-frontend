@@ -218,7 +218,7 @@ export default function HistoryPage() {
           {/* TAB 1: Public Trees */}
           {galleryTab === "tree" && (
             scans.length > 0 ? (
-              <div>
+              <div className="animate-fadeIn">
                 {/* Toolbar: Search input + Segmented Filter Tabs */}
                 <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   
@@ -284,9 +284,12 @@ export default function HistoryPage() {
                       {filteredScans.map((record, idx) => {
                         const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                         return (
-                          <Reveal
+                          <div
                             key={`${record.id}-${idx}`}
-                            delay={(idx % 6) * 0.06}
+                            className="animate-fadeIn w-full flex justify-center"
+                            style={{
+                              animationDelay: `${(idx % 6) * 0.05}s`,
+                            }}
                           >
                             <div className="vora-card">
                               <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
@@ -351,7 +354,7 @@ export default function HistoryPage() {
                                 </div>
                               </footer>
                             </div>
-                          </Reveal>
+                          </div>
                         );
                       })}
                     </div>
@@ -478,7 +481,7 @@ export default function HistoryPage() {
 
           {/* Center Loading Spinner for first page scans */}
           {loading && scans.length === 0 && galleryTab === "tree" && (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-6 animate-fadeIn">
               <UiverseLoader />
               <p className="text-xs text-slate-455 font-medium">Loading gallery scans…</p>
             </div>
