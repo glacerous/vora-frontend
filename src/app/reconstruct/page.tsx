@@ -153,7 +153,7 @@ function ReconstructContent() {
   const [error, setError] = useState<string | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [removeBackground, setRemoveBackground] = useState(true);
+  const [removeBackground, setRemoveBackground] = useState(false);
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const isCancelledRef = React.useRef(false);
