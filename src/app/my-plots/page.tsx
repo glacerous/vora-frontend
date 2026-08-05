@@ -64,6 +64,7 @@ export default function MyPlotsPage() {
   const [activeTab, setActiveTab] = useState<"trees" | "plots">("trees");
   const [plots, setPlots] = useState<Plot[]>([]);
   const [scans, setScans] = useState<ScanRecord[]>([]);
+  const [treeToDelete, setTreeToDelete] = useState<string | null>(null);
   
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,11 +111,11 @@ export default function MyPlotsPage() {
     fetchData();
   }, [user]);
 
-  const handleDeleteScan = async (treeCode: string) => {
-    if (!window.confirm(`Are you sure you want to delete tree ${treeCode} and all its reconstruction data? This action cannot be undone.`)) {
-      return;
-    }
-    
+  const handleDeleteScan = (treeCode: string) => {
+    setTreeToDelete(treeCode);
+  };
+
+  const executeDeleteScan = async (treeCode: string) => {
     setError(null);
     try {
       const res = await fetch(`${BACKEND_URL}/scans/${encodeURIComponent(treeCode)}`, {
@@ -451,6 +452,55 @@ export default function MyPlotsPage() {
 
         </div>
       </main>
+
+      {/* Modal Confirm Delete Tree */}
+      {treeToDelete && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setTreeToDelete(null)}
+          />
+          
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-serif text-base text-[#191919] font-bold">Delete Tree</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">This action cannot be undone.</p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              Are you sure you want to delete tree <span className="font-bold text-slate-800">{treeToDelete}</span> and all of its reconstruction data?
+            </p>
+            
+            <div className="flex justify-end gap-2 mt-2 font-sans">
+              <button
+                type="button"
+                onClick={() => setTreeToDelete(null)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const code = treeToDelete;
+                  setTreeToDelete(null);
+                  await executeDeleteScan(code);
+                }}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-650 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
