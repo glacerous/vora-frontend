@@ -142,12 +142,10 @@ function ReconstructContent() {
   }, [phase]);
 
   // Upload form states
-  const [activeTab, setActiveTab] = useState<"video" | "photos">("video");
   const [treeCode, setTreeCode] = useState("");
   const [frames, setFrames] = useState(60);
   const [blurThresh, setBlurThresh] = useState(80);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [progressMsg, setProgressMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -373,7 +371,6 @@ function ReconstructContent() {
       setError(null);
       setProgressMsg("");
       setVideoFile(null);
-      setPhotoFiles(null);
       setTreeCode("");
       setCurrentScan(null);
       setHistory([]);
@@ -653,13 +650,6 @@ function ReconstructContent() {
     }
   };
 
-  const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      setPhotoFiles(e.target.files);
-      setError(null);
-    }
-  };
-
   const handleCopy = async () => {
     if (!submittedCode) return;
     try {
@@ -763,71 +753,56 @@ function ReconstructContent() {
     const selectedCode =
       treeCode.trim() || `POHON-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    if (activeTab === "video" && !videoFile) {
+    if (!videoFile) {
       setError("Please select a video file.");
-      return;
-    }
-    if (activeTab === "photos" && !photoFiles?.length) {
-      setError("Please select at least one photo.");
       return;
     }
 
     setLoading(true);
     try {
-      if (activeTab === "video" && videoFile) {
-        setProgressMsg("Uploading video…");
-        const fd = new FormData();
-        fd.append("video", videoFile);
-        fd.append("frames", frames.toString());
-        fd.append("blur_thresh", blurThresh.toString());
-        const r = await fetch(`${BACKEND_URL}/upload_video`, {
-          method: "POST",
-          body: fd,
-        });
-        if (!r.ok) {
-          const d = await r.json();
-          throw new Error(d?.detail || "Video upload failed");
+      setProgressMsg("Uploading video…");
+      const fd = new FormData();
+      fd.append("video", videoFile);
+      fd.append("frames", frames.toString());
+      fd.append("blur_thresh", blurThresh.toString());
+      const r = await fetch(`${BACKEND_URL}/upload_video`, {
+        method: "POST",
+        body: fd,
+      });
+      if (!r.ok) {
+        const d = await r.json();
+        throw new Error(d?.detail || "Video upload failed");
+      }
+
+      let isExtracted = false;
+      let attempts = 0;
+      const maxAttempts = 300;
+      const pollInterval = 1500;
+
+      setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
+
+      while (!isExtracted) {
+        if (attempts >= maxAttempts) {
+          throw new Error(
+            "Frame extraction took too long. Please try a shorter video walkthrough."
+          );
         }
+        if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        attempts++;
+        if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
 
-        let isExtracted = false;
-        let attempts = 0;
-        const maxAttempts = 300;
-        const pollInterval = 1500;
+        const statusRes = await fetch(`${BACKEND_URL}/status`);
+        if (!statusRes.ok) continue;
 
-        setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
-
-        while (!isExtracted) {
-          if (attempts >= maxAttempts) {
-            throw new Error(
-              "Frame extraction took too long. Please try a shorter video walkthrough."
-            );
-          }
-          if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
-          await new Promise((resolve) => setTimeout(resolve, pollInterval));
-          attempts++;
-          if (isCancelledRef.current) throw new Error("Reconstruction cancelled.");
-
-          const statusRes = await fetch(`${BACKEND_URL}/status`);
-          if (!statusRes.ok) continue;
-
-          const statusData = await statusRes.json();
-          if (statusData.stage === "error") {
-            throw new Error(statusData.error || "Frame extraction failed on the server.");
-          }
-          if (statusData.stage === "extracted") {
-            isExtracted = true;
-          } else if (statusData.stage === "extracting") {
-            setProgressMsg(`Extracting frames: ${statusData.message}`);
-          }
+        const statusData = await statusRes.json();
+        if (statusData.stage === "error") {
+          throw new Error(statusData.error || "Frame extraction failed on the server.");
         }
-      } else if (activeTab === "photos" && photoFiles) {
-        setProgressMsg(`Uploading ${photoFiles.length} photos…`);
-        const fd = new FormData();
-        for (let i = 0; i < photoFiles.length; i++) fd.append("photos", photoFiles[i]);
-        const r = await fetch(`${BACKEND_URL}/use_photos`, { method: "POST", body: fd });
-        if (!r.ok) {
-          const d = await r.json();
-          throw new Error(d?.detail || "Photos upload failed");
+        if (statusData.stage === "extracted") {
+          isExtracted = true;
+        } else if (statusData.stage === "extracting") {
+          setProgressMsg(`Extracting frames: ${statusData.message}`);
         }
       }
 
@@ -1740,7 +1715,6 @@ function ReconstructContent() {
                 setError(null);
                 setProgressMsg("");
                 setVideoFile(null);
-                setPhotoFiles(null);
                 setTreeCode("");
                 setCurrentScan(null);
                 setHistory([]);
@@ -1958,28 +1932,11 @@ function ReconstructContent() {
                   New reconstruction
                 </h1>
                 <p className="text-xs text-[#191919]/50 leading-relaxed font-medium">
-                  Upload a video walkthrough or photo set to start the 3D pipeline.
+                  Upload a video walkthrough to start the 3D pipeline.
                 </p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-                <div className="flex gap-1 mb-7 bg-slate-100 rounded-xl p-1">
-                  {(["video", "photos"] as const).map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => { setActiveTab(tab); setError(null); }}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
-                        activeTab === tab
-                          ? "bg-white text-[#191919] shadow-sm border border-slate-200"
-                          : "text-slate-500 hover:text-slate-700"
-                      }`}
-                    >
-                      {tab === "video" ? "Video" : "Photos"}
-                    </button>
-                  ))}
-                </div>
-
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -2016,65 +1973,41 @@ function ReconstructContent() {
                     </div>
                   </div>
 
-                  {activeTab === "video" && (
-                    <>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Video file</label>
-                        <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
-                          <input
-                            type="file"
-                            accept=".mp4,.mov,.avi,.webm,.mkv"
-                            onChange={handleVideoChange}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            disabled={loading}
-                          />
-                          <p className="text-sm font-medium text-slate-600">
-                            {videoFile ? videoFile.name : "Click or drag to upload"}
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            <span>Frames</span><span className="text-[#191919]">{frames}</span>
-                          </div>
-                          <input type="range" min="10" max="100" step="5" value={frames}
-                            onChange={(e) => setFrames(+e.target.value)}
-                            className="w-full accent-slate-900" disabled={loading} />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            <span>Blur filter</span><span className="text-[#191919]">{blurThresh}</span>
-                          </div>
-                          <input type="range" min="10" max="200" step="10" value={blurThresh}
-                            onChange={(e) => setBlurThresh(+e.target.value)}
-                            className="w-full accent-slate-900" disabled={loading} />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {activeTab === "photos" && (
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Photo files</label>
-                      <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={handlePhotosChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          disabled={loading}
-                        />
-                        <p className="text-sm font-medium text-slate-600">
-                          {photoFiles ? `${photoFiles.length} photos selected` : "Click or drag to upload"}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">Select multiple images covering all angles</p>
-                      </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Video file</label>
+                    <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
+                      <input
+                        type="file"
+                        accept=".mp4,.mov,.avi,.webm,.mkv"
+                        onChange={handleVideoChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={loading}
+                      />
+                      <p className="text-sm font-medium text-slate-600">
+                        {videoFile ? videoFile.name : "Click or drag to upload"}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <span>Frames</span><span className="text-[#191919]">{frames}</span>
+                      </div>
+                      <input type="range" min="10" max="100" step="5" value={frames}
+                        onChange={(e) => setFrames(+e.target.value)}
+                        className="w-full accent-slate-900" disabled={loading} />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <span>Blur filter</span><span className="text-[#191919]">{blurThresh}</span>
+                      </div>
+                      <input type="range" min="10" max="200" step="10" value={blurThresh}
+                        onChange={(e) => setBlurThresh(+e.target.value)}
+                        className="w-full accent-slate-900" disabled={loading} />
+                    </div>
+                  </div>
 
                   {loading && (
                     <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
