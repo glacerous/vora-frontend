@@ -760,22 +760,43 @@ function ReconstructContent() {
 
     setLoading(true);
     try {
-      setProgressMsg("Uploading video…");
-      const fd = new FormData();
-      fd.append("video", videoFile);
-      fd.append("frames", frames.toString());
-      fd.append("blur_thresh", blurThresh.toString());
+      // --- Step 1: Get a presigned R2 PUT URL (no bytes to Render) ---
+      setProgressMsg("Preparing upload…");
+      const contentType = videoFile.type || "video/mp4";
+      const uploadUrlRes = await fetch(
+        `${BACKEND_URL}/video_upload_url?filename=${encodeURIComponent(videoFile.name)}&content_type=${encodeURIComponent(contentType)}`
+      );
+      if (!uploadUrlRes.ok) {
+        const d = await uploadUrlRes.json();
+        throw new Error(d?.detail || "Failed to get upload URL from server");
+      }
+      const { url: presignedUrl, key: r2Key } = await uploadUrlRes.json();
+
+      // --- Step 2: PUT video directly to R2 (zero Render bandwidth) ---
+      setProgressMsg(`Uploading video directly to cloud storage…`);
       const uploadStartTime = Date.now();
+      const putRes = await fetch(presignedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": contentType },
+        body: videoFile,
+      });
+      if (!putRes.ok) {
+        throw new Error(`Direct R2 upload failed (HTTP ${putRes.status}). Check CORS config on R2 bucket.`);
+      }
+
+      // --- Step 3: Notify Render of the R2 key (tiny JSON, no video bytes) ---
+      setProgressMsg("Upload complete. Starting frame extraction on Modal…");
       const r = await fetch(`${BACKEND_URL}/upload_video`, {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "X-Upload-Start-Time": uploadStartTime.toString(),
         },
-        body: fd,
+        body: JSON.stringify({ r2_key: r2Key, frames, blur_thresh: blurThresh }),
       });
       if (!r.ok) {
         const d = await r.json();
-        throw new Error(d?.detail || "Video upload failed");
+        throw new Error(d?.detail || "Video processing trigger failed");
       }
 
       let isExtracted = false;
@@ -783,7 +804,7 @@ function ReconstructContent() {
       const maxAttempts = 300;
       const pollInterval = 1500;
 
-      setProgressMsg("Uploading complete. Waiting for server to start frame extraction…");
+      setProgressMsg("Video uploaded to R2. Waiting for frame extraction to start…");
 
       while (!isExtracted) {
         if (attempts >= maxAttempts) {
