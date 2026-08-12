@@ -94,6 +94,7 @@ export default function PlotDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
 
   // State for custom delete confirmation modal
   const [treeToRemove, setTreeToRemove] = useState<string | null>(null);
@@ -800,6 +801,11 @@ export default function PlotDetailPage() {
     }
   };
 
+  const handleExportData = (format: "csv" | "xlsx") => {
+    if (!plot) return;
+    window.open(`${BACKEND_URL}/plots/${plot.plot_code}/export?format=${format}`, "_blank");
+  };
+
   // Helper functions for species predictions
   const getSpeciesName = (scan: Scan) => {
     if (!scan.species_predictions) return null;
@@ -935,6 +941,44 @@ export default function PlotDetailPage() {
 
   // Species-based colors
   const speciesList = Array.from(uniqueSpecies);
+
+  // Calculate Shannon-Wiener Biodiversity Index (H')
+  // Formula: H' = -sum(pi * ln(pi))
+  let shannonIndex = 0.0;
+  if (scans.length > 0) {
+    const speciesCounts: Record<string, number> = {};
+    let unidentifiedCount = 0;
+    scans.forEach(s => {
+      const name = getSpeciesName(s);
+      if (name) {
+        const cleanName = name.trim().toLowerCase();
+        speciesCounts[cleanName] = (speciesCounts[cleanName] || 0) + 1;
+      } else {
+        unidentifiedCount++;
+      }
+    });
+    
+    let sum = 0.0;
+    Object.values(speciesCounts).forEach(count => {
+      const p_i = count / scans.length;
+      sum += p_i * Math.log(p_i);
+    });
+    if (unidentifiedCount > 0) {
+      const p_u = unidentifiedCount / scans.length;
+      sum += p_u * Math.log(p_u);
+    }
+    shannonIndex = -sum;
+  }
+
+  let diversityLevel = "Low Diversity";
+  let diversityDesc = "This plot has low species diversity, meaning it is dominated by one or a few species.";
+  if (shannonIndex >= 1.5 && shannonIndex <= 3.0) {
+    diversityLevel = "Medium Diversity";
+    diversityDesc = "This plot has moderate species diversity, indicating a healthy mix of species.";
+  } else if (shannonIndex > 3.0) {
+    diversityLevel = "High Diversity";
+    diversityDesc = "This plot has high species diversity, reflecting a highly resilient ecological structure.";
+  }
   const colorPalettes = [
     { bg: "bg-emerald-600 hover:bg-emerald-500", text: "text-emerald-700", border: "border-emerald-250", lightBg: "bg-emerald-50/50" },
     { bg: "bg-sky-600 hover:bg-sky-500", text: "text-sky-700", border: "border-sky-250", lightBg: "bg-sky-50/50" },
@@ -996,6 +1040,55 @@ export default function PlotDetailPage() {
                 )}
               </div>
               
+              {/* Download Carbon Data button dropdown */}
+              <div className="relative inline-block text-left select-none shrink-0">
+                <button
+                  onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-semibold text-[10px] rounded-lg shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <svg className="w-3.5 h-3.5 text-slate-505" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  <span>Download Carbon Data</span>
+                </button>
+                {exportDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setExportDropdownOpen(false)} 
+                    />
+                    <div className="absolute right-0 mt-1.5 w-52 rounded-xl bg-white border border-slate-200/80 shadow-lg py-1.5 z-50 animate-fadeIn text-xs">
+                      <div className="px-3 py-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">
+                        Format
+                      </div>
+                      <button
+                        onClick={() => {
+                          setExportDropdownOpen(false);
+                          handleExportData("csv");
+                        }}
+                        className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <span className="font-semibold text-emerald-600 font-mono text-[10px] w-6">CSV</span>
+                        <span>Comma Separated</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setExportDropdownOpen(false);
+                          handleExportData("xlsx");
+                        }}
+                        className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <span className="font-semibold text-emerald-600 font-mono text-[10px] w-6">XLSX</span>
+                        <span>Excel Spreadsheet</span>
+                      </button>
+                      <div className="border-t border-slate-100 mt-1 px-3 py-2 text-[9px] text-slate-400 leading-relaxed font-medium">
+                        Structured data suitable as a supporting attachment when registering a carbon project in SRN PPI or for carbon credit documentation.
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {isOwner && (
                 <div className="flex items-center gap-1.5 shrink-0 select-none">
                   <button
@@ -1145,9 +1238,31 @@ export default function PlotDetailPage() {
 
               {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
               <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Contribution per Species</h3>
+                <div className="flex justify-between items-center select-none border-b border-slate-100 pb-2">
+                  <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest">Species Distribution & Biodiversity</h3>
+                </div>
+
+                {/* Shannon-Wiener Biodiversity Index Display */}
+                <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex flex-col gap-1.5 select-none">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shannon-Wiener Index (H')</span>
+                    <span className="font-serif text-base font-bold text-slate-900">{shannonIndex.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${shannonIndex < 1.5 ? "bg-amber-505" : shannonIndex <= 3.0 ? "bg-emerald-500" : "bg-sky-550"}`} />
+                    <span className="text-xs font-bold text-slate-700">{diversityLevel}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-550 leading-relaxed font-medium">
+                    {diversityDesc}
+                  </p>
+                  <div className="border-t border-slate-200/50 mt-1 pt-1.5 text-[9px] text-slate-450 leading-relaxed italic font-medium">
+                    Note: Higher biodiversity forests are generally associated with premium pricing in voluntary carbon markets due to ecological resilience and environmental co-benefits.
+                  </div>
+                </div>
+
+                <h4 className="font-bold text-[9px] text-slate-400 uppercase tracking-widest mt-1 select-none">Contribution per Species</h4>
                 
-                <div data-lenis-prevent className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
+                <div data-lenis-prevent className="flex flex-col gap-3 max-h-[160px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
                     <p className="text-xs text-slate-400 italic py-4 text-center">Species not classified yet</p>
                   ) : (
