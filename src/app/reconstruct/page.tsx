@@ -765,8 +765,12 @@ function ReconstructContent() {
       fd.append("video", videoFile);
       fd.append("frames", frames.toString());
       fd.append("blur_thresh", blurThresh.toString());
+      const uploadStartTime = Date.now();
       const r = await fetch(`${BACKEND_URL}/upload_video`, {
         method: "POST",
+        headers: {
+          "X-Upload-Start-Time": uploadStartTime.toString(),
+        },
         body: fd,
       });
       if (!r.ok) {
