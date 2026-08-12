@@ -75,12 +75,12 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8 md:mt-10 w-full sm:w-auto px-4 sm:px-0 max-w-[290px] sm:max-w-none">
-              <Link
+              <a
                 href="/reconstruct"
                 className="px-6 sm:px-8 py-3.5 bg-[#191919] text-white text-sm font-semibold rounded-xl hover:bg-[#191919]/90 transition-all duration-205 shadow-md text-center"
               >
                 Start Analyzing
-              </Link>
+              </a>
               <Link
                 href="/example"
                 className="px-6 sm:px-8 py-3.5 bg-[#F4F3F3] hover:bg-[#eaeaea] text-[#191919] text-sm font-semibold rounded-xl transition-all duration-205 shadow-sm border border-slate-200 text-center"
@@ -115,7 +115,7 @@ export default function Home() {
               {/* Row 2 — 3 interactive rows */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-4">
                 
-                <Link
+                <a
                   href="/reconstruct"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
@@ -125,7 +125,7 @@ export default function Home() {
                     <span className="font-medium">Reconstruct</span>
                   </div>
                   <ArrowRight />
-                </Link>
+                </a>
 
                 <Link
                   href="/example"
@@ -139,7 +139,7 @@ export default function Home() {
                   <ArrowRight />
                 </Link>
 
-                <Link
+                <a
                   href="/reconstruct"
                   className="group bg-[#F4F3F3] hover:bg-[#eaeaea] transition-all duration-200 cursor-pointer px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center rounded-xl"
                 >
@@ -149,7 +149,7 @@ export default function Home() {
                     <span className="font-medium">Verify</span>
                   </div>
                   <ArrowRight />
-                </Link>
+                </a>
 
               </div>
 
