@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -68,8 +69,8 @@ function LoginForm() {
       {/* Main card */}
       <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-8 shadow-sm relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-2xl font-bold tracking-tight text-[#191919] mb-2">
-            Vora.
+          <Link href="/" className="inline-block mb-2">
+            <Image src="/logo-wordmark.png" alt="Vora" width={200} height={100} className="h-14 w-auto mx-auto" />
           </Link>
           <h1 className="text-xl font-semibold tracking-tight text-[#191919]">
             Sign In to Vora Portal
