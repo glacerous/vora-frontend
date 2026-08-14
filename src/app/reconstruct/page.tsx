@@ -579,10 +579,18 @@ function ReconstructContent() {
         (clickedPoints[1].y / clickedPoints[1].dispHeight) * H_org,
       ];
 
+      let frame_idx: number | undefined = undefined;
+      if (currentScan.thumbnail_url) {
+        const match = currentScan.thumbnail_url.match(/_(\d+)\.(jpg|jpeg|png)$/i);
+        if (match) {
+          frame_idx = parseInt(match[1], 10);
+        }
+      }
+
       const res = await fetch(`${BACKEND_URL}/scan/${currentScan.id}/recalculate`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ p1: p1_org, p2: p2_org, width: W_org, height: H_org }),
+        body: JSON.stringify({ p1: p1_org, p2: p2_org, width: W_org, height: H_org, frame_idx }),
       });
 
       const data = await res.json();
