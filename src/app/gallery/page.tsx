@@ -287,74 +287,62 @@ export default function HistoryPage() {
                         const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                         return (
                           <div
-                            key={`${record.id}-${idx}`}
-                            className="animate-fadeIn w-full flex justify-center"
-                            style={{
-                              animationDelay: `${(idx % 6) * 0.05}s`,
-                            }}
+                            key={record.tree_code}
+                            className="bg-white border border-[#e7e5e4] hover:border-[#292524] rounded-2xl p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group w-full"
                           >
-                            <div className="vora-card">
-                              <section className="vora-card-hero relative overflow-hidden bg-[#fef4e2]">
-                                {record.thumbnail_url ? (
-                                  <img
-                                    src={record.thumbnail_url}
-                                    alt={`Thumbnail for ${record.tree_code}`}
-                                    loading="lazy"
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                  />
-                                ) : (
-                                  <div className="absolute inset-0 flex items-center justify-center text-amber-500/10 bg-[#fef4e2]">
-                                    <TreeIcon className="w-16 h-16" />
-                                  </div>
-                                )}
+                            {/* Image Container */}
+                            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-[#fafaf9] mb-3">
+                              {record.thumbnail_url ? (
+                                <img
+                                  src={record.thumbnail_url}
+                                  alt={`Thumbnail for ${record.tree_code}`}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[#79716b]/30 bg-[#fafaf9]">
+                                  <TreeIcon className="w-12 h-12" />
+                                </div>
+                              )}
 
-                                {record.thumbnail_url && (
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-0" />
-                                )}
+                              {/* Top ID Tag */}
+                              <div className="absolute top-2.5 left-2.5 z-10">
+                                <span className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md border border-white/10 text-white font-mono text-[10px] font-medium">
+                                  #{record.id}
+                                </span>
+                              </div>
 
-                                <header className="vora-card-hero-header relative z-10 w-full">
-                                  <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
-                                    record.thumbnail_url 
-                                      ? "bg-black/30 border-white/10 text-white" 
-                                      : "bg-white/40 border-[#e7e5e4] text-[#79716b]"
-                                  }`}>
-                                    #{record.id}
-                                  </span>
-                                </header>
-
-                                <p className={`vora-card-job-title relative z-10 tracking-tight font-sans font-extrabold ${
-                                  record.thumbnail_url 
-                                    ? "text-white" 
-                                    : "text-[#141417]"
-                                }`}>
+                              {/* Bottom Gradient & Clean Mono Tree Code */}
+                              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10">
+                                <span className="font-mono text-xs font-semibold text-white tracking-wider block drop-shadow-sm">
                                   {record.tree_code}
-                                </p>
-                              </section>
+                                </span>
+                              </div>
+                            </div>
 
-                              <footer className="vora-card-footer">
-                                <div className="vora-card-job-summary flex flex-col items-start">
-                                  <div className="card__job text-base font-extrabold text-[#141417] leading-none mb-1">
-                                    {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
-                                  </div>
-                                  {isInvalid ? (
-                                    <span className="text-[10px] text-rose-500 font-semibold font-sans">
-                                      Invalid scan
-                                    </span>
-                                  ) : (
-                                    <div className="text-[10px] text-[#79716b] font-semibold font-sans">
-                                      {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
-                                    </div>
-                                  )}
+                            {/* Card Footer: Typography & Actions */}
+                            <div className="flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">
+                              <div className="flex flex-col">
+                                <div className="font-serif text-base font-normal text-[#292524] leading-tight">
+                                  {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
                                 </div>
-                                <div className="vora-card-view-save select-none">
-                                  <Link
-                                    href={`/reconstruct?code=${encodeURIComponent(record.tree_code)}&phase=result`}
-                                    className="vora-card-btn"
-                                  >
-                                    View
-                                  </Link>
-                                </div>
-                              </footer>
+                                {isInvalid ? (
+                                  <span className="text-[10px] text-rose-500 font-semibold mt-0.5 font-sans">
+                                    Invalid scan
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] font-mono text-[#79716b] mt-0.5">
+                                    {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} · {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
+                                  </span>
+                                )}
+                              </div>
+
+                              <Link
+                                href={`/reconstruct?code=${encodeURIComponent(record.tree_code)}&phase=result`}
+                                className="px-3.5 py-1.5 bg-[#292524] hover:bg-[#616c39] text-white text-xs font-semibold rounded-lg transition-colors duration-200 select-none shrink-0"
+                              >
+                                View
+                              </Link>
                             </div>
                           </div>
                         );
