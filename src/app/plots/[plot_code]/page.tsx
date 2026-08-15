@@ -839,7 +839,7 @@ export default function PlotDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
-        <Loader size={60} className="mb-4" />
+        <Loader size={110} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Mengambil informasi detail plot...</p>
       </main>
     );

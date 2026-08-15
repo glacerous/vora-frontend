@@ -36,7 +36,7 @@ interface Plot {
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 const PAGE_LIMIT = 12;
 
-const UiverseLoader = () => <Loader size={54} />;
+const UiverseLoader = () => <Loader size={90} />;
 
 const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
   <svg 

@@ -11,7 +11,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrend
 
 // ── Shared sub-components ───────────────────────────────────────────────────
 
-const UiverseLoader = () => <Loader size={54} />;
+const UiverseLoader = () => <Loader size={90} />;
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -2351,7 +2351,7 @@ export default function Reconstruct() {
   return (
     <Suspense fallback={
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
-        <Loader size={60} className="mb-4" />
+        <Loader size={110} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Loading scan page...</p>
       </main>
     }>
