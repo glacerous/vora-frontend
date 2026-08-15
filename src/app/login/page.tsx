@@ -23,9 +23,9 @@ function LoginForm() {
   // If already logged in, redirect directly.
   useEffect(() => {
     if (user) {
-      router.push(redirectPath);
+      window.location.href = redirectPath;
     }
-  }, [user, redirectPath, router]);
+  }, [user, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ function LoginForm() {
       document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
 
       await refreshUser();
-      router.push(redirectPath);
+      window.location.href = redirectPath;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : (language === "id" ? "Gagal masuk" : "Failed to log in"));
     } finally {

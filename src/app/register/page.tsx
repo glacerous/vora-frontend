@@ -46,7 +46,7 @@ export default function RegisterPage() {
       document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
 
       await refreshUser();
-      router.push("/my-plots");
+      window.location.href = "/my-plots";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : (language === "id" ? "Terjadi kesalahan" : "An error occurred"));
     } finally {
