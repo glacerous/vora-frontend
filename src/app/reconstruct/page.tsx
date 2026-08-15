@@ -1427,32 +1427,7 @@ function ReconstructContent() {
               </div>
             )}
 
-            {/* Search Form */}
-            <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] mb-2">
-                Search Tree Code
-              </h3>
-              <form onSubmit={handleSearch} className="flex items-center w-full">
-                <div className="relative w-full flex items-center shadow-sm rounded-xl bg-[#fafaf9] border border-[#e7e5e4] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#292524]/10 focus-within:border-[#292524] transition-all">
-                  <input
-                    type="text"
-                    value={treeCode}
-                    onChange={(e) => setTreeCode(e.target.value)}
-                    placeholder="Enter code (e.g. POHON-6144)…"
-                    className="w-full pl-9 pr-16 py-2.5 bg-transparent focus:outline-none text-xs font-semibold text-[#292524] placeholder:text-[#79716b]"
-                  />
-                  <svg className="w-3.5 h-3.5 text-[#79716b] absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <button
-                    type="submit"
-                    className="absolute right-1.5 px-3 py-1 bg-[#292524] text-white text-[10px] font-semibold rounded-lg hover:bg-[#292524]/90 transition-colors duration-200"
-                  >
-                    Search
-                  </button>
-                </div>
-              </form>
-            </div>
+            
 
             {/* Species Classification */}
             {currentScan && (
