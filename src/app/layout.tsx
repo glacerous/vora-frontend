@@ -29,7 +29,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vora — Measure Forest Carbon",
+  title: "Vora - Measure Forest Carbon",
   description: "3D Gaussian Splatting and carbon metrics estimation for environmental conservation.",
 };
 
