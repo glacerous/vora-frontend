@@ -14,7 +14,7 @@ const PlotMap = dynamic(() => import("@/components/PlotMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex items-center justify-center min-h-[250px]">
-      <Loader size={130} className="mr-2" />
+      <Loader size={96} className="mr-2" />
       <p className="text-xs text-[#79716b] font-medium">Loading satellite map...</p>
     </div>
   ),
@@ -839,7 +839,7 @@ export default function PlotDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
-        <Loader size={130} className="mb-4" />
+        <Loader size={96} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Mengambil informasi detail plot...</p>
       </main>
     );
