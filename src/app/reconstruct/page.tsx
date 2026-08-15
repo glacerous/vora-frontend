@@ -389,7 +389,7 @@ function ReconstructContent() {
       idlePollCountRef.current = 0;
       const poll = async () => {
         try {
-          const res = await fetch(`${BACKEND_URL}/status`);
+          const res = await fetch(`${BACKEND_URL}/status/${encodeURIComponent(calibrationCode)}`);
           if (res.ok) {
             const data = await res.json();
             setPipelineStatus(data);

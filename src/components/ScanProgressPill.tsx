@@ -75,21 +75,19 @@ export default function ScanProgressPill() {
         <div className="flex items-center gap-1.5 pl-2 border-l border-white/10">
           {isRunning && (
             <button
-              onClick={() => router.push("/reconstruct")}
+              onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}&phase=processing`)}
               className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
               View
             </button>
           )}
           {isDone && (
-            <a
-              href={`/viewer?code=${scan.treeCode}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl transition shadow-sm"
+            <button
+              onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}`)}
+              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
               Open 3D
-            </a>
+            </button>
           )}
           {(isErr || isDone) && (
             <button

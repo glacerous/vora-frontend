@@ -149,7 +149,7 @@ export function ScanProgressProvider({ children }: { children: React.ReactNode }
 
   const cancelActiveScan = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://glacerous-3dtest.hf.space";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
       const code = scan.treeCode;
       await fetch(`${apiUrl}/cancel`, {
         method: "POST",
@@ -173,7 +173,7 @@ export function ScanProgressProvider({ children }: { children: React.ReactNode }
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://glacerous-3dtest.hf.space";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
     const poll = async () => {
       try {
@@ -193,17 +193,15 @@ export function ScanProgressProvider({ children }: { children: React.ReactNode }
           return;
         }
 
-        const res = await fetch(`${apiUrl}/status/${scan.treeCode}`, { cache: "no-store" });
+        if (!scan.treeCode) return;
+        const res = await fetch(`${apiUrl}/status/${encodeURIComponent(scan.treeCode)}`, { cache: "no-store" });
         if (!res.ok) {
-          // Fallback to generic status
-          const fallbackRes = await fetch(`${apiUrl}/status`, { cache: "no-store" });
-          if (!fallbackRes.ok) return;
-          const data = await fallbackRes.json();
-          processStatusData(data, elapsed);
           return;
         }
         const data = await res.json();
-        processStatusData(data, elapsed);
+        if (data && (data.tree_code === scan.treeCode || !data.tree_code)) {
+          processStatusData(data, elapsed);
+        }
       } catch (e) {
         console.warn("Status polling error:", e);
       }
@@ -212,14 +210,19 @@ export function ScanProgressProvider({ children }: { children: React.ReactNode }
     const processStatusData = (data: any, elapsed: number) => {
       const serverStage = data.stage || "idle";
       const serverMsg = data.message || "";
-      const isDone = serverStage === "done";
-      const isErr = serverStage === "error" || !!data.error;
+      const isDone = serverStage === "done" && data.tree_code === scan.treeCode;
+      const isErr = (serverStage === "error" || !!data.error) && data.tree_code === scan.treeCode;
 
       if (isDone) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("vora_active_scan_code");
           localStorage.removeItem("vora_active_scan_started");
         }
+      }
+
+      // If server returns idle but this scan was active and not done, keep reconstructing
+      if (serverStage === "idle" && !isDone && !isErr && (scan.stage === "reconstructing" || scan.stage === "extracting")) {
+        return;
       }
 
       setScan((prev) => ({
