@@ -2352,7 +2352,7 @@ export default function Reconstruct() {
     <Suspense fallback={
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
         <Loader size={130} className="mb-4" />
-        <p className="text-sm text-[#79716b] font-medium">Loading scan page...</p>
+        
       </main>
     }>
       <ReconstructContent />

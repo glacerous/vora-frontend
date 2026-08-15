@@ -166,7 +166,7 @@ export default function MyPlotsPage() {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans p-6 text-center select-none">
         <Loader size={130} className="mb-4" />
-        <p className="text-sm text-[#79716b] font-medium">Loading dashboard data...</p>
+        
         {isWakingUp && (
           <p className="text-xs text-amber-600 mt-3 max-w-xs animate-pulse leading-relaxed">
             ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds on first visit.

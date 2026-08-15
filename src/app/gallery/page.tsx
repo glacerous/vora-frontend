@@ -382,7 +382,7 @@ export default function HistoryPage() {
             plotsLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
                 <UiverseLoader />
-                <p className="text-xs text-[#79716b] font-medium">Loading public plots…</p>
+                
                 {isWakingUp && (
                   <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
                     ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.
@@ -472,7 +472,7 @@ export default function HistoryPage() {
           {loading && scans.length === 0 && galleryTab === "tree" && (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-6 animate-fadeIn">
               <UiverseLoader />
-              <p className="text-xs text-[#79716b] font-medium">Loading gallery scans…</p>
+              
               {isWakingUp && (
                 <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
                   ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.
