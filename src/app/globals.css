@@ -92,7 +92,7 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* From Uiverse.io by AatreyuShau - Organic Chaotic Liquid Vora Green */ 
+/* From Uiverse.io by AatreyuShau - Big Organic Liquid Vora Green */ 
 .metaball-loader .joint {
   fill: #616c39;
 }
@@ -149,18 +149,18 @@ html.lenis body {
 }
 
 @keyframes metaball-orbit1 {
-  0% { transform: rotate(-90deg) scale(0.52); }
-  25% { transform: rotate(180deg) scale(0.57); }
-  50% { transform: rotate(90deg) scale(0.48); }
-  75% { transform: rotate(-270deg) scale(0.54); }
-  100% { transform: rotate(-90deg) scale(0.52); }
+  0% { transform: rotate(-90deg) scale(0.8); }
+  25% { transform: rotate(180deg) scale(0.88); }
+  50% { transform: rotate(90deg) scale(0.76); }
+  75% { transform: rotate(-270deg) scale(0.84); }
+  100% { transform: rotate(-90deg) scale(0.8); }
 }
 
 @keyframes metaball-orbit2 {
-  0% { transform: rotate(90deg) scale(-0.48); }
-  33% { transform: rotate(-160deg) scale(-0.53); }
-  66% { transform: rotate(240deg) scale(-0.44); }
-  100% { transform: rotate(90deg) scale(-0.48); }
+  0% { transform: rotate(90deg) scale(-0.76); }
+  33% { transform: rotate(-160deg) scale(-0.84); }
+  66% { transform: rotate(240deg) scale(-0.72); }
+  100% { transform: rotate(90deg) scale(-0.76); }
 }
 
 @keyframes metaball-flow1 {
@@ -186,15 +186,15 @@ html.lenis body {
 }
 
 @keyframes metaball-sat1 {
-  0% { transform: rotate(0deg) translate(80px, -40px); }
-  50% { transform: rotate(180deg) translate(-60px, 70px); }
-  100% { transform: rotate(360deg) translate(80px, -40px); }
+  0% { transform: rotate(0deg) translate(95px, -50px); }
+  50% { transform: rotate(180deg) translate(-75px, 85px); }
+  100% { transform: rotate(360deg) translate(95px, -50px); }
 }
 
 @keyframes metaball-sat2 {
-  0% { transform: rotate(360deg) translate(-70px, -50px); }
-  50% { transform: rotate(180deg) translate(75px, 30px); }
-  100% { transform: rotate(0deg) translate(-70px, -50px); }
+  0% { transform: rotate(360deg) translate(-85px, -60px); }
+  50% { transform: rotate(180deg) translate(90px, 40px); }
+  100% { transform: rotate(0deg) translate(-85px, -60px); }
 }
 
 .metaball-loader .arm1 {
