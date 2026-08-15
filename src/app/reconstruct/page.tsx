@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useScanProgress } from "@/components/ScanProgressProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -126,6 +127,8 @@ const Stepper = ({
 
 function ReconstructContent() {
   const router = useRouter();
+  const { startTrackingScan, resetScan: resetGlobalScan } = useScanProgress();
+  const [frameLoadError, setFrameLoadError] = useState(false);
   const searchParams = useSearchParams();
   const codeParam = searchParams.get("code");
   const phaseParam = searchParams.get("phase") as typeof phase | null;
@@ -653,8 +656,46 @@ function ReconstructContent() {
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
-      setVideoFile(e.target.files[0]);
+      const file = e.target.files[0];
       setError(null);
+
+      // 1. File size check (<150MB)
+      if (file.size > 150 * 1024 * 1024) {
+        setError(`Video exceeds 150MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please record a shorter 15–30s clip or compress the video.`);
+        setVideoFile(null);
+        return;
+      }
+
+      // 2. Video duration & decoding pre-check
+      try {
+        const videoEl = document.createElement("video");
+        videoEl.preload = "metadata";
+        const objUrl = URL.createObjectURL(file);
+        videoEl.src = objUrl;
+
+        videoEl.onloadedmetadata = () => {
+          URL.revokeObjectURL(objUrl);
+          const dur = videoEl.duration;
+          if (dur > 60) {
+            setError(`Video duration is ${Math.round(dur)}s (max 60s allowed). Please record a 15–30s orbit.`);
+            setVideoFile(null);
+          } else if (dur <= 0 || isNaN(dur)) {
+            setError("Unable to read video duration. The video file may be blank or corrupted.");
+            setVideoFile(null);
+          } else {
+            setVideoFile(file);
+            setError(null);
+          }
+        };
+
+        videoEl.onerror = () => {
+          URL.revokeObjectURL(objUrl);
+          setError("Failed to decode video. Please ensure the file is a standard MP4 or MOV video.");
+          setVideoFile(null);
+        };
+      } catch {
+        setVideoFile(file);
+      }
     }
   };
 
@@ -721,6 +762,7 @@ function ReconstructContent() {
       setCalibrationCode(finalCode);
       setActiveTreeCode(finalCode);
       setLoading(false);
+      startTrackingScan(finalCode, "reconstructing");
       transitionPhase("processing", finalCode);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -773,6 +815,7 @@ function ReconstructContent() {
     setSubmittedCode(null);
     const selectedCode =
       treeCode.trim() || `POHON-${Math.floor(1000 + Math.random() * 9000)}`;
+    startTrackingScan(selectedCode, "extracting");
 
     if (!videoFile) {
       setError("Please select a video file.");
@@ -916,6 +959,46 @@ function ReconstructContent() {
             </span>
           </div>
         </div>
+
+        {/* Hard Timeout Recovery Box (210s) */}
+        {elapsedTime > 210 && (
+          <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-amber-700">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-bold text-xs uppercase tracking-wider">Processing Hard Timeout (210s)</span>
+            </div>
+            <p className="text-xs text-amber-900 leading-relaxed font-medium">
+              This reconstruction is taking longer than 3.5 minutes. The GPU cluster may be experiencing a transient queue delay.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  transitionPhase("upload");
+                  setError(null);
+                }}
+                className="px-4 py-2 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition"
+              >
+                Retry Scan
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/gallery")}
+                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition"
+              >
+                Check Gallery
+              </button>
+              <a
+                href={`mailto:support@vora.app?subject=Scan%20Timeout%20${calibrationCode}&body=Scan%20${calibrationCode}%20timed%20out%20after%20${elapsedTime}s.`}
+                className="px-4 py-2 bg-transparent hover:bg-slate-100 text-slate-500 text-xs font-medium rounded-xl transition"
+              >
+                Report Issue
+              </a>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
           <div className="sm:col-span-5 flex flex-col gap-2">
