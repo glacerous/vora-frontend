@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Loader from "@/components/Loader";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import { useAuth } from "@/components/AuthProvider";
@@ -35,14 +36,7 @@ interface Plot {
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 const PAGE_LIMIT = 12;
 
-const UiverseLoader = () => (
-  <div className="newtons-cradle">
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-  </div>
-);
+const UiverseLoader = () => <Loader size={54} />;
 
 const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
   <svg 

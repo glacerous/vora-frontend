@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Loader from "@/components/Loader";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -13,7 +14,7 @@ const PlotMap = dynamic(() => import("@/components/PlotMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex items-center justify-center min-h-[250px]">
-      <span className="w-6 h-6 border-2 border-[#292524] border-t-transparent rounded-full animate-spin mr-2" />
+      <Loader size={28} className="mr-2" />
       <p className="text-xs text-[#79716b] font-medium">Loading satellite map...</p>
     </div>
   ),
@@ -838,7 +839,7 @@ export default function PlotDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
-        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <Loader size={60} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Mengambil informasi detail plot...</p>
       </main>
     );

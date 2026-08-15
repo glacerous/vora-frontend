@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
+import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
@@ -10,14 +11,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrend
 
 // ── Shared sub-components ───────────────────────────────────────────────────
 
-const UiverseLoader = () => (
-  <div className="newtons-cradle">
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-    <div className="newtons-cradle__dot"></div>
-  </div>
-);
+const UiverseLoader = () => <Loader size={54} />;
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -2357,7 +2351,7 @@ export default function Reconstruct() {
   return (
     <Suspense fallback={
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
-        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <Loader size={60} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Loading scan page...</p>
       </main>
     }>

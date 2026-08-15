@@ -92,76 +92,62 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* Newton's Cradle Loader - Vora Dark Theme */
-.newtons-cradle {
-  --uib-size: 50px;
-  --uib-speed: 1.2s;
-  --uib-color: #191919;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--uib-size);
-  height: var(--uib-size);
+/* From Uiverse.io by AatreyuShau - Vora Green Theme */ 
+.metaball-loader .segment {
+  stroke: rgba(0, 0, 0, 0);
+  stroke-width: 10;
+  stroke-linecap: round;
 }
 
-.newtons-cradle__dot {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  width: 25%;
-  transform-origin: center top;
+.metaball-loader .joint {
+  fill: #616c39;
+  stroke-width: 5px;
 }
 
-.newtons-cradle__dot::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 25%;
-  border-radius: 50%;
-  background-color: var(--uib-color);
+.metaball-loader #mir {
+  scale: -0.25;
 }
 
-.newtons-cradle__dot:first-child {
-  animation: swing var(--uib-speed) linear infinite;
+/* Animate first arm segment rotation */
+.metaball-loader .arm {
+  filter: url("#metaball");
+  scale: 0.25;
+  transform-origin: 250px 250px;
+  animation: metaball-rotate 31s ease-in-out infinite;
 }
 
-.newtons-cradle__dot:last-child {
-  animation: swing2 var(--uib-speed) linear infinite;
-}
-
-@keyframes swing {
+@keyframes metaball-rotate {
   0% {
-    transform: rotate(0deg);
-    animation-timing-function: ease-out;
+    transform: rotate(-90deg);
   }
-
   25% {
-    transform: rotate(70deg);
-    animation-timing-function: ease-in;
+    transform: rotate(360deg);
   }
-
   50% {
-    transform: rotate(0deg);
-    animation-timing-function: linear;
+    transform: rotate(90deg);
+  }
+  75% {
+    transform: rotate(-360deg);
+  }
+  100% {
+    transform: rotate(-90deg);
   }
 }
 
-@keyframes swing2 {
-  0% {
-    transform: rotate(0deg);
-    animation-timing-function: linear;
-  }
+/* Animate second arm segment relative to elbow */
+.metaball-loader .arm1 {
+  transform-origin: 300px 200px;
+  animation: metaball-rotate 23s ease-in-out infinite;
+}
 
-  50% {
-    transform: rotate(0deg);
-    animation-timing-function: ease-out;
-  }
+.metaball-loader .arm2 {
+  transform-origin: 400px 200px;
+  animation: metaball-rotate 17s ease-in-out infinite;
+}
 
-  75% {
-    transform: rotate(-70deg);
-  }
+.metaball-loader .arm3 {
+  transform-origin: 490px 200px;
+  animation: metaball-rotate 11s ease-in-out infinite;
 }
 
 /* Custom Search Bar - Whatsapp Style */

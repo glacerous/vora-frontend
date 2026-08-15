@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
@@ -164,7 +165,7 @@ export default function MyPlotsPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans p-6 text-center select-none">
-        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <Loader size={60} className="mb-4" />
         <p className="text-sm text-[#79716b] font-medium">Loading dashboard data...</p>
         {isWakingUp && (
           <p className="text-xs text-amber-600 mt-3 max-w-xs animate-pulse leading-relaxed">
