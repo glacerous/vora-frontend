@@ -111,7 +111,7 @@ export default function PlotMap({ scans, centroidLat, centroidLon }: PlotMapProp
   }, [scans, centroidLat, centroidLon]);
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner relative">
+    <div className="w-full h-full rounded-2xl overflow-hidden border border-[#e7e5e4] shadow-inner relative">
       <div ref={mapContainerRef} className="w-full h-full" style={{ minHeight: "350px" }} />
     </div>
   );

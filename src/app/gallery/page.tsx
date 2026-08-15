@@ -44,7 +44,7 @@ const UiverseLoader = () => (
   </div>
 );
 
-const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
+const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
   <svg 
     viewBox="0 0 24 24" 
     fill="none" 
@@ -170,30 +170,30 @@ export default function HistoryPage() {
   const validScans = scans.filter(s => s.dbh_cm);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 flex flex-col font-sans text-[#191919]">
+    <div className="min-h-screen bg-[#fafaf9]/60 flex flex-col font-sans text-[#292524]">
 
       {/* ── Main content area ────────────────────────────────────── */}
       <main className="flex-1 pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
 
           {/* Heading Section */}
-          <div className="mb-8 border-b border-slate-200/50 pb-6">
-            <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#191919] mb-2">
+          <div className="mb-8 border-b border-[#e7e5e4] pb-6">
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#292524] mb-2">
               Scan Gallery
             </h1>
-            <p className="text-sm text-[#191919]/60 max-w-2xl leading-relaxed">
+            <p className="text-sm text-[#292524]/60 max-w-2xl leading-relaxed">
               Discover public 3D tree scans and forest plots mapped by the Vora community.
             </p>
           </div>
 
           {/* Gallery Mode Tabs */}
-          <div className="flex border-b border-slate-200/60 mb-8 select-none">
+          <div className="flex border-b border-[#e7e5e4] mb-8 select-none">
             <button
               onClick={() => setGalleryTab("tree")}
               className={`pb-3.5 px-6 text-xs uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
                 galleryTab === "tree"
-                  ? "border-emerald-600 text-emerald-700"
-                  : "border-transparent text-slate-400 hover:text-slate-700"
+                  ? "border-[#616c39] text-[#616c39]"
+                  : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
               Public Trees
@@ -202,8 +202,8 @@ export default function HistoryPage() {
               onClick={() => setGalleryTab("plot")}
               className={`pb-3.5 px-6 text-xs uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
                 galleryTab === "plot"
-                  ? "border-emerald-600 text-emerald-700"
-                  : "border-transparent text-slate-400 hover:text-slate-700"
+                  ? "border-[#616c39] text-[#616c39]"
+                  : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
               Public Plots
@@ -258,7 +258,7 @@ export default function HistoryPage() {
                   </form>
 
                   {/* Segmented Filter Tabs */}
-                  <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200/50 rounded-xl self-start md:self-auto select-none overflow-x-auto max-w-full flex-nowrap scrollbar-none shrink-0">
+                  <div className="flex items-center gap-1 p-1 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl self-start md:self-auto select-none overflow-x-auto max-w-full flex-nowrap scrollbar-none shrink-0">
                     {[
                       { id: "all", label: `All Scans (${scans.length})` },
                       { id: "high-carbon", label: `High Carbon (${scans.filter(s => (s.co2e_kg || 0) >= 200).length})` },
@@ -269,8 +269,8 @@ export default function HistoryPage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 whitespace-nowrap shrink-0 ${
                           activeTab === tab.id
-                            ? "bg-white text-[#191919] shadow-sm font-semibold animate-fadeIn"
-                            : "text-slate-500 hover:text-[#191919]"
+                            ? "bg-white text-[#292524] shadow-sm font-semibold animate-fadeIn"
+                            : "text-[#79716b] hover:text-[#292524]"
                         }`}
                       >
                         {tab.label}
@@ -316,7 +316,7 @@ export default function HistoryPage() {
                                   <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
                                     record.thumbnail_url 
                                       ? "bg-black/30 border-white/10 text-white" 
-                                      : "bg-white/40 border-slate-200 text-slate-600"
+                                      : "bg-white/40 border-[#e7e5e4] text-[#79716b]"
                                   }`}>
                                     #{record.id}
                                   </span>
@@ -341,7 +341,7 @@ export default function HistoryPage() {
                                       Invalid scan
                                     </span>
                                   ) : (
-                                    <div className="text-[10px] text-slate-450 font-semibold font-sans">
+                                    <div className="text-[10px] text-[#79716b] font-semibold font-sans">
                                       {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
                                     </div>
                                   )}
@@ -367,10 +367,10 @@ export default function HistoryPage() {
                         <button
                           onClick={handleLoadMore}
                           disabled={loading}
-                          className="px-8 py-3 border border-slate-200 text-sm font-semibold rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-350 transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] select-none cursor-pointer"
+                          className="px-8 py-3 border border-[#e7e5e4] text-sm font-semibold rounded-2xl bg-white hover:bg-[#fafaf9] hover:border-[#a8a29e] transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] select-none cursor-pointer"
                         >
                           {loading && (
-                            <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3.5 h-3.5 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin" />
                           )}
                           Load more scans
                         </button>
@@ -378,18 +378,18 @@ export default function HistoryPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-20 text-center text-slate-350 gap-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                    <TreeIcon className="w-10 h-10 text-slate-300 mb-1" />
-                    <p className="text-sm font-semibold text-slate-455">No matching scans found</p>
-                    <p className="text-xs text-slate-350 max-w-xs mt-0.5">Try searching for a different tree code or adjust your query filter.</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm">
+                    <TreeIcon className="w-10 h-10 text-[#d6d3d1] mb-1" />
+                    <p className="text-sm font-semibold text-[#79716b]">No matching scans found</p>
+                    <p className="text-xs text-[#a8a29e] max-w-xs mt-0.5">Try searching for a different tree code or adjust your query filter.</p>
                   </div>
                 )}
               </div>
             ) : (
               !loading && (
-                <div className="flex flex-col items-center justify-center py-20 text-center text-slate-350 gap-2 bg-white rounded-2xl border border-slate-200 shadow-sm animate-fadeIn">
-                  <TreeIcon className="w-12 h-12 text-slate-300 mb-1" />
-                  <p className="text-sm font-semibold mt-2 text-slate-400">No scans found in the gallery</p>
+                <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm animate-fadeIn">
+                  <TreeIcon className="w-12 h-12 text-[#d6d3d1] mb-1" />
+                  <p className="text-sm font-semibold mt-2 text-[#79716b]">No scans found in the gallery</p>
                 </div>
               )
             )
@@ -400,7 +400,7 @@ export default function HistoryPage() {
             plotsLoading ? (
               <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
                 <UiverseLoader />
-                <p className="text-xs text-slate-450 font-medium">Loading public plots…</p>
+                <p className="text-xs text-[#79716b] font-medium">Loading public plots…</p>
                 {isWakingUp && (
                   <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
                     ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.
@@ -412,11 +412,11 @@ export default function HistoryPage() {
                 {plots.map((plot) => (
                   <div
                     key={plot.id}
-                    className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:border-slate-350 transition-all flex flex-col justify-between"
+                    className="bg-white border border-[#e7e5e4]/80 rounded-2xl p-6 shadow-sm hover:border-[#a8a29e] transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-4 select-none">
-                        <span className="text-[10px] font-mono tracking-wider bg-slate-100 text-slate-500 border border-slate-200/50 px-2 py-0.5 rounded font-bold">
+                        <span className="text-[10px] font-mono tracking-wider bg-[#fafaf9] text-[#79716b] border border-[#e7e5e4] px-2 py-0.5 rounded font-bold">
                           {plot.plot_code}
                         </span>
                         <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded border bg-sky-50 text-sky-700 border-sky-100">
@@ -424,53 +424,53 @@ export default function HistoryPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-base font-semibold text-slate-800 mb-2 hover:text-emerald-750 transition-colors font-serif">
+                      <h3 className="text-base font-semibold text-[#292524] mb-2 hover:text-[#616c39] transition-colors font-serif">
                         <Link href={`/plots/${plot.plot_code}`}>
                           {plot.name}
                         </Link>
                       </h3>
 
-                      <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">
+                      <p className="text-xs text-[#79716b] leading-relaxed mb-6 line-clamp-2">
                         {plot.description || "No location description."}
                       </p>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-100 flex justify-between items-center select-none font-sans">
+                    <div className="pt-4 border-t border-[#fafaf9] flex justify-between items-center select-none font-sans">
                       <div className="flex items-center gap-3">
                         <div className="flex -space-x-2.5 overflow-hidden">
                           {plot.thumbnails && plot.thumbnails.length > 0 ? (
                             plot.thumbnails.map((url, i) => (
                               <img
                                 key={i}
-                                className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-slate-200"
+                                className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-[#e7e5e4]"
                                 src={url}
                                 alt="Tree avatar"
                                 loading="lazy"
                               />
                             ))
                           ) : (
-                            <div className="inline-block h-7 w-7 rounded-full bg-slate-50 ring-2 ring-white border border-slate-200 flex items-center justify-center text-slate-400">
+                            <div className="inline-block h-7 w-7 rounded-full bg-[#fafaf9] ring-2 ring-white border border-[#e7e5e4] flex items-center justify-center text-[#79716b]">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                               </svg>
                             </div>
                           )}
                           {plot.scans_count > 3 && (
-                            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-slate-50 text-[9px] font-bold text-slate-550 border border-slate-200 ring-2 ring-white">
+                            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-[#fafaf9] text-[9px] font-bold text-[#79716b] border border-[#e7e5e4] ring-2 ring-white">
                               +{plot.scans_count - 3}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex flex-col text-[10px] text-slate-455 leading-tight">
-                          <span>Trees: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
-                          <span className="mt-0.5">CO₂e: <span className="font-bold text-slate-800">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
+                        <div className="flex flex-col text-[10px] text-[#79716b] leading-tight">
+                          <span>Trees: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
+                          <span className="mt-0.5">CO₂e: <span className="font-bold text-[#292524]">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
                       
                       <Link
                         href={`/plots/${plot.plot_code}`}
-                        className="text-xs text-emerald-650 font-bold hover:text-emerald-700 flex items-center gap-1 transition-colors"
+                        className="text-xs text-[#616c39] font-bold hover:text-[#616c39] flex items-center gap-1 transition-colors"
                       >
                         Plot Details &rarr;
                       </Link>
@@ -479,9 +479,9 @@ export default function HistoryPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center text-slate-350 gap-2 bg-white rounded-2xl border border-slate-200 shadow-sm animate-fadeIn">
-                <TreeIcon className="w-12 h-12 text-slate-300 mb-1" />
-                <p className="text-sm font-semibold mt-2 text-slate-400">No public plots found in the gallery</p>
+              <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm animate-fadeIn">
+                <TreeIcon className="w-12 h-12 text-[#d6d3d1] mb-1" />
+                <p className="text-sm font-semibold mt-2 text-[#79716b]">No public plots found in the gallery</p>
               </div>
             )
           )}
@@ -490,7 +490,7 @@ export default function HistoryPage() {
           {loading && scans.length === 0 && galleryTab === "tree" && (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-6 animate-fadeIn">
               <UiverseLoader />
-              <p className="text-xs text-slate-455 font-medium">Loading gallery scans…</p>
+              <p className="text-xs text-[#79716b] font-medium">Loading gallery scans…</p>
               {isWakingUp && (
                 <p className="text-xs text-amber-600 mt-1 max-w-xs animate-pulse leading-relaxed">
                   ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds.

@@ -24,22 +24,22 @@ export default function ScanProgressPill() {
       <div
         className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all ${
           isDone
-            ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-100 shadow-emerald-950/40"
+            ? "bg-[#1c1917]/95 border-[#616c39]/50 text-[#fafaf9] shadow-[0_20px_35px_rgba(0,0,0,0.35)]"
             : isErr
             ? "bg-red-950/90 border-red-500/40 text-red-100 shadow-red-950/40"
-            : "bg-[#111827]/90 border-emerald-500/30 text-white shadow-black/50"
+            : "bg-[#1c1917]/95 border-[#616c39]/40 text-[#fafaf9] shadow-[0_20px_35px_rgba(0,0,0,0.35)]"
         }`}
       >
         {/* State Icon Indicator */}
         <div className="relative flex items-center justify-center">
           {isRunning && (
             <div className="relative flex items-center justify-center w-8 h-8">
-              <div className="w-8 h-8 rounded-full border-2 border-emerald-500/20 border-t-emerald-400 animate-spin" />
-              <div className="absolute w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <div className="w-8 h-8 rounded-full border-2 border-[#616c39]/30 border-t-[#616c39] animate-spin" />
+              <div className="absolute w-2 h-2 bg-[#616c39] rounded-full animate-pulse" />
             </div>
           )}
           {isDone && (
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+            <div className="w-8 h-8 rounded-full bg-[#616c39]/20 border border-[#616c39]/40 flex items-center justify-center text-[#616c39]">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -57,7 +57,7 @@ export default function ScanProgressPill() {
         {/* Scan Details */}
         <div className="flex flex-col pr-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-semibold tracking-wider text-emerald-400">
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#616c39]">
               {scan.treeCode}
             </span>
             {isRunning && scan.elapsedSeconds > 0 && (
@@ -76,7 +76,7 @@ export default function ScanProgressPill() {
           {isRunning && (
             <button
               onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}&phase=processing`)}
-              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
+              className="px-3 py-1.5 bg-[#616c39] hover:bg-[#616c39] text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
               View
             </button>
@@ -84,7 +84,7 @@ export default function ScanProgressPill() {
           {isDone && (
             <button
               onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}`)}
-              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
+              className="px-3 py-1.5 bg-[#616c39] hover:bg-[#616c39] text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
               Open 3D
             </button>

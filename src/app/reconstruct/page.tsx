@@ -76,7 +76,7 @@ const Stepper = ({
     { key: "result", label: "3D Analytics" },
   ];
   return (
-    <div className="w-full max-w-lg mb-8 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
+    <div className="w-full max-w-lg mb-8 bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
       {steps.map((s, idx) => {
         const isActive = s.key === currentPhase;
         const isCompleted =
@@ -89,10 +89,10 @@ const Stepper = ({
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
                   isActive
-                    ? "bg-[#191919] text-white border-[#191919] ring-4 ring-slate-900/10 scale-110"
+                    ? "bg-[#292524] text-white border-[#292524] ring-4 ring-[#1c1917]/10 scale-110"
                     : isCompleted
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-white text-slate-400 border-slate-200"
+                    ? "bg-[#616c39]/10 text-[#616c39] border-[#616c39]/20"
+                    : "bg-white text-[#79716b] border-[#e7e5e4]"
                 }`}
               >
                 {isCompleted ? "✓" : idx + 1}
@@ -100,10 +100,10 @@ const Stepper = ({
               <span
                 className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-center transition-colors ${
                   isActive
-                    ? "text-[#191919]"
+                    ? "text-[#292524]"
                     : isCompleted
-                    ? "text-emerald-700"
-                    : "text-slate-400"
+                    ? "text-[#616c39]"
+                    : "text-[#79716b]"
                 }`}
               >
                 {s.label}
@@ -112,7 +112,7 @@ const Stepper = ({
             {idx < steps.length - 1 && (
               <div
                 className={`h-[1px] w-2 sm:w-8 transition-colors ${
-                  isCompleted ? "bg-emerald-200" : "bg-slate-200"
+                  isCompleted ? "bg-[#616c39]/30" : "bg-[#e7e5e4]"
                 }`}
               />
             )}
@@ -940,22 +940,22 @@ function ReconstructContent() {
       activeStageIndex = 5;
 
     return (
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
-        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+      <div className="bg-white border border-[#e7e5e4] rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
+        <div className="flex justify-between items-center pb-4 border-b border-[#fafaf9]">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39] bg-[#616c39]/10 px-2.5 py-1 rounded-full border border-[#616c39]/20">
               Active Pipeline
             </span>
-            <h3 className="font-serif text-xl text-[#191919] font-normal mt-2 tracking-tight">
+            <h3 className="font-serif text-xl text-[#292524] font-normal mt-2 tracking-tight">
               {calibrationCode}
             </h3>
           </div>
           <div className="text-right">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b] block">
               Elapsed Time
             </span>
             <span
-              className="text-4xl text-[#191919] tracking-wider leading-none"
+              className="text-4xl text-[#292524] tracking-wider leading-none"
               style={{ fontFamily: "var(--font-head)" }}
             >
               {formatElapsed(elapsedTime)}
@@ -982,20 +982,20 @@ function ReconstructContent() {
                   transitionPhase("upload");
                   setError(null);
                 }}
-                className="px-4 py-2 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition"
+                className="px-4 py-2 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition"
               >
                 Retry Scan
               </button>
               <button
                 type="button"
                 onClick={() => router.push("/gallery")}
-                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition"
+                className="px-4 py-2 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#292524] text-xs font-semibold rounded-xl transition"
               >
                 Check Gallery
               </button>
               <a
                 href={`mailto:support@vora.app?subject=Scan%20Timeout%20${calibrationCode}&body=Scan%20${calibrationCode}%20timed%20out%20after%20${elapsedTime}s.`}
-                className="px-4 py-2 bg-transparent hover:bg-slate-100 text-slate-500 text-xs font-medium rounded-xl transition"
+                className="px-4 py-2 bg-transparent hover:bg-[#fafaf9] text-[#79716b] text-xs font-medium rounded-xl transition"
               >
                 Report Issue
               </a>
@@ -1005,10 +1005,10 @@ function ReconstructContent() {
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
           <div className="sm:col-span-5 flex flex-col gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
               Processing Asset
             </span>
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-inner flex items-center justify-center">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-[#e7e5e4]/80 bg-[#1c1917] shadow-inner flex items-center justify-center">
               <img
                 src={`${BACKEND_URL}/frames/0000.jpg`}
                 alt="Processing asset frame"
@@ -1016,14 +1016,14 @@ function ReconstructContent() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-lg px-2 py-1 text-[10px] text-white font-medium border border-white/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] animate-pulse" />
                 <span>Live processing</span>
               </div>
             </div>
           </div>
 
           <div className="sm:col-span-7 flex flex-col gap-3">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
               Pipeline Stages
             </span>
             <div className="flex flex-col gap-3.5">
@@ -1035,10 +1035,10 @@ function ReconstructContent() {
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all ${
                         isDone
-                          ? "bg-emerald-500 border-emerald-500 text-white text-[10px]"
+                          ? "bg-[#4e572c] border-[#616c39] text-white text-[10px]"
                           : isCurrent
-                          ? "bg-white border-[#191919] ring-2 ring-[#191919]/10 animate-pulse"
-                          : "bg-white border-slate-200"
+                          ? "bg-white border-[#292524] ring-2 ring-[#292524]/10 animate-pulse"
+                          : "bg-white border-[#e7e5e4]"
                       }`}
                     >
                       {isDone ? (
@@ -1052,18 +1052,18 @@ function ReconstructContent() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       ) : isCurrent ? (
-                        <div className="w-2 h-2 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-2 h-2 border-2 border-[#292524] border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#d6d3d1]" />
                       )}
                     </span>
                     <span
                       className={`text-xs transition-colors ${
                         isDone
-                          ? "text-slate-400 line-through decoration-slate-300"
+                          ? "text-[#79716b] line-through decoration-[#d6d3d1]"
                           : isCurrent
-                          ? "text-[#191919] font-bold"
-                          : "text-slate-400"
+                          ? "text-[#292524] font-bold"
+                          : "text-[#79716b]"
                       }`}
                     >
                       {st.label}
@@ -1075,10 +1075,10 @@ function ReconstructContent() {
           </div>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex items-center gap-3.5 mt-2">
-          <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+        <div className="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 flex items-center gap-3.5 mt-2">
+          <div className="w-8 h-8 rounded-xl bg-white border border-[#e7e5e4] flex items-center justify-center shrink-0">
             <svg
-              className="w-4 h-4 text-slate-500"
+              className="w-4 h-4 text-[#79716b]"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
@@ -1091,7 +1091,7 @@ function ReconstructContent() {
               />
             </svg>
           </div>
-          <p className="text-[10px] text-slate-500 leading-normal">
+          <p className="text-[10px] text-[#79716b] leading-normal">
             Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization.
             Please keep this browser window open until analysis completes.
           </p>
@@ -1104,13 +1104,13 @@ function ReconstructContent() {
 
   if (phase === "result") {
     return (
-      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#191919] flex flex-col pt-[60px] lg:pt-[72px]">
+      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#292524] flex flex-col pt-[60px] lg:pt-[72px]">
 
         {/* Unified Dashboard layout: flex-col on mobile/tablet, flex-row on desktop */}
         <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
           
           {/* 3D Viewer Frame Container (Left/Top Side) */}
-          <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative border-b lg:border-b-0 border-slate-100 bg-white shrink-0">
+          <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative border-b lg:border-b-0 border-[#fafaf9] bg-white shrink-0">
           {currentScan && renderViewer ? (
             <iframe
               src={`${BACKEND_URL}/viewer.html?v=11&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
@@ -1119,20 +1119,20 @@ function ReconstructContent() {
               title="3D Tree Gaussian Splat Viewer"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-slate-50/50">
+            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[#fafaf9]/50">
               {loading || (currentScan && !renderViewer) ? (
                 <>
                   <UiverseLoader />
-                  <p className="text-xs text-slate-400 font-medium animate-pulse">
+                  <p className="text-xs text-[#79716b] font-medium animate-pulse">
                     Loading 3D analytics canvas…
                   </p>
                 </>
               ) : (
                 <div className="text-center">
-                  <p className="text-sm text-slate-400 font-medium tracking-wide mb-1">
+                  <p className="text-sm text-[#79716b] font-medium tracking-wide mb-1">
                     No scan loaded
                   </p>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-[#d6d3d1]">
                     Open the details drawer to search a tree code
                   </p>
                 </div>
@@ -1151,7 +1151,7 @@ function ReconstructContent() {
               pointerEvents: !currentScan || sceneLoaded ? "auto" : "none",
               transition: "opacity 0.5s ease 0.1s",
             }}
-            className="hidden lg:flex fixed top-[88px] right-6 z-35 p-3 bg-[#191919] text-white hover:bg-[#191919]/90 rounded-full transition-all duration-200 shadow-lg items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
+            className="hidden lg:flex fixed top-[88px] right-6 z-35 p-3 bg-[#292524] text-white hover:bg-[#292524]/90 rounded-full transition-all duration-200 shadow-lg items-center justify-center hover:scale-105 active:scale-95 animate-fadeIn"
             aria-label="Toggle Details Drawer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -1173,10 +1173,10 @@ function ReconstructContent() {
           >
 
 
-            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-slate-100 overflow-x-auto">
+            <div className="bg-white/95 backdrop-blur-xl border border-[#e7e5e4]/80 rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between sm:justify-start gap-4 sm:gap-6 divide-x divide-[#fafaf9] overflow-x-auto">
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-1">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">DBH</span>
                   {currentScan.confidence_note?.includes("WARNING") && (
                     <svg className="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <title>Warning: insufficient height</title>
@@ -1185,56 +1185,56 @@ function ReconstructContent() {
                   )}
                 </div>
                 <div className="flex items-baseline">
-                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
-                  <span className="text-[11px] text-slate-400 font-medium ml-1">cm</span>
+                  <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-[#79716b] font-medium ml-1">cm</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Height</span>
                 <div className="flex items-baseline">
-                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
-                  <span className="text-[11px] text-slate-400 font-medium ml-1">m</span>
+                  <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-[#79716b] font-medium ml-1">m</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Biomass</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Biomass</span>
                 <div className="flex items-baseline">
-                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
-                  <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                  <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-[#79716b] font-medium ml-1">kg</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Carbon</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">Carbon</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c]" />
                 </div>
                 <div className="flex items-baseline">
-                  <span className="font-serif text-2xl text-emerald-950 font-normal leading-none">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
-                  <span className="text-[11px] text-emerald-600/70 font-medium ml-1">kg</span>
+                  <span className="font-serif text-2xl text-[#1c1917] font-normal leading-none">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-[#616c39]/70 font-medium ml-1">kg</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CO₂e</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">CO₂e</span>
                 <div className="flex items-baseline">
-                  <span className="font-serif text-2xl text-[#191919] leading-none">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
-                  <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                  <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
+                  <span className="text-[11px] text-[#79716b] font-medium ml-1">kg</span>
                 </div>
               </div>
             </div>
 
             {/* Claim scan box for logged-in users */}
             {currentUser && (
-              <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="bg-white/95 backdrop-blur-xl border border-[#e7e5e4]/80 rounded-2xl shadow-xl px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex flex-col gap-0.5 w-full sm:w-auto">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Plot & Claim Status</span>
-                  <div className="text-xs text-[#191919] font-medium mt-0.5">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Plot & Claim Status</span>
+                  <div className="text-xs text-[#292524] font-medium mt-0.5">
                     {currentScan.claimed_by_user_id ? (
-                      <span className="text-emerald-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-[#616c39] flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c]" />
                         ✓ Claimed to Your Plot
                       </span>
                     ) : (
@@ -1248,7 +1248,7 @@ function ReconstructContent() {
                     <select
                       value={selectedPlotId}
                       onChange={(e) => setSelectedPlotId(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      className="bg-[#fafaf9] border border-[#e7e5e4] rounded-xl px-3 py-1.5 text-xs text-[#292524] focus:outline-none focus:ring-2 focus:ring-[#616c39]/10"
                     >
                       {userPlots.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -1260,7 +1260,7 @@ function ReconstructContent() {
                     <button
                       onClick={handleClaimScan}
                       disabled={claiming}
-                      className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl px-4 py-2 transition-all cursor-pointer whitespace-nowrap"
+                      className="bg-[#4e572c] hover:bg-[#616c39] text-[#1c1917] font-semibold text-xs rounded-xl px-4 py-2 transition-all cursor-pointer whitespace-nowrap"
                     >
                       {claiming ? "Claiming..." : "Claim to Plot"}
                     </button>
@@ -1268,9 +1268,9 @@ function ReconstructContent() {
                 )}
 
                 {!currentScan.claimed_by_user_id && userPlots.length === 0 && (
-                  <div className="text-xs text-slate-400 italic">
+                  <div className="text-xs text-[#79716b] italic">
                     You don't have any plots yet.{" "}
-                    <Link href="/plots/create" className="text-emerald-600 font-bold hover:underline">
+                    <Link href="/plots/create" className="text-[#616c39] font-bold hover:underline">
                       Create New Plot
                     </Link>
                   </div>
@@ -1280,9 +1280,9 @@ function ReconstructContent() {
 
             {/* Prompt to log in for guest users */}
             {!currentUser && !currentScan.claimed_by_user_id && (
-              <div className="bg-[#161920]/95 backdrop-blur-xl border border-slate-800 text-slate-300 text-xs rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between gap-4">
+              <div className="bg-[#161920]/95 backdrop-blur-xl border border-[#292524] text-[#d6d3d1] text-xs rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between gap-4">
                 <span>Want to save this scan result to your plot?</span>
-                <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
+                <Link href="/login?redirect=/reconstruct" className="text-[#616c39] font-bold hover:underline shrink-0">
                   Log In & Claim
                 </Link>
               </div>
@@ -1294,7 +1294,7 @@ function ReconstructContent() {
         {/* Sidebar Intelligence Drawer Wrapper (Responsive: Drawer on desktop, scrollable pane below viewer on mobile) */}
         <div
           className={`
-            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-40 lg:w-96 lg:pt-[72px] lg:border-l lg:border-slate-200/80 lg:shadow-2xl
+            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-40 lg:w-96 lg:pt-[72px] lg:border-l lg:border-[#e7e5e4]/80 lg:shadow-2xl
             lg:transition-transform lg:duration-300 lg:ease-in-out
             ${sidebarOpen ? "lg:translate-x-0" : "lg:translate-x-full"}
             w-full flex-1 bg-white flex flex-col overflow-y-auto lg:overflow-hidden shrink-0
@@ -1306,15 +1306,15 @@ function ReconstructContent() {
           }}
         >
           {/* Header */}
-          <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white">
+          <div className="px-6 pt-6 pb-4 border-b border-[#fafaf9] flex items-center justify-between bg-white">
             <div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-bold tracking-wider text-[#191919] uppercase">
+                <span className="w-2 h-2 rounded-full bg-[#4e572c]" />
+                <span className="text-xs font-bold tracking-wider text-[#292524] uppercase">
                   {activeTreeCode || "Search Tree"}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+              <p className="text-[11px] text-[#79716b] mt-0.5 font-medium">
                 {history.length > 0
                   ? `${history.length} scan record${history.length !== 1 ? "s" : ""} found`
                   : "No active scan"}
@@ -1322,7 +1322,7 @@ function ReconstructContent() {
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-xs transition"
+              className="w-8 h-8 rounded-full bg-[#fafaf9] text-[#79716b] hover:bg-[#e7e5e4] hover:text-[#292524] flex items-center justify-center text-xs transition"
             >
               ✕
             </button>
@@ -1336,53 +1336,53 @@ function ReconstructContent() {
               <div className="block lg:hidden space-y-4">
 
                 {/* 2x2 grid of metrics */}
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 grid grid-cols-2 gap-4">
+                <div className="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">DBH</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">DBH</span>
                     <div className="flex items-baseline">
-                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
-                      <span className="text-[10px] text-slate-400 font-medium ml-1">cm</span>
+                      <span className="font-serif text-xl text-[#292524] font-bold">{currentScan.dbh_cm?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-[#79716b] font-medium ml-1">cm</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Height</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Height</span>
                     <div className="flex items-baseline">
-                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
-                      <span className="text-[10px] text-slate-400 font-medium ml-1">m</span>
+                      <span className="font-serif text-xl text-[#292524] font-bold">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-[#79716b] font-medium ml-1">m</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 border-t border-slate-200/50 pt-2.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Biomass</span>
+                  <div className="flex flex-col gap-0.5 border-t border-[#e7e5e4] pt-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Biomass</span>
                     <div className="flex items-baseline">
-                      <span className="font-serif text-xl text-[#191919] font-bold">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
-                      <span className="text-[10px] text-slate-400 font-medium ml-1">kg</span>
+                      <span className="font-serif text-xl text-[#292524] font-bold">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-[#79716b] font-medium ml-1">kg</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 border-t border-slate-200/50 pt-2.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600">Carbon</span>
+                  <div className="flex flex-col gap-0.5 border-t border-[#e7e5e4] pt-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">Carbon</span>
                     <div className="flex items-baseline">
-                      <span className="font-serif text-xl text-emerald-950 font-bold">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
-                      <span className="text-[10px] text-emerald-600/70 font-medium ml-1">kg</span>
+                      <span className="font-serif text-xl text-[#1c1917] font-bold">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[10px] text-[#616c39]/70 font-medium ml-1">kg</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 col-span-2 border-t border-slate-200/50 pt-3">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">CO₂ Equivalent (CO₂e)</span>
+                  <div className="flex flex-col gap-0.5 col-span-2 border-t border-[#e7e5e4] pt-3">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">CO₂ Equivalent (CO₂e)</span>
                     <div className="flex items-baseline">
-                      <span className="font-serif text-2xl text-[#191919] font-extrabold">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
-                      <span className="text-[11px] text-slate-400 font-medium ml-1">kg</span>
+                      <span className="font-serif text-2xl text-[#292524] font-extrabold">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
+                      <span className="text-[11px] text-[#79716b] font-medium ml-1">kg</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Mobile Claim Plot Box */}
                 {currentUser && (
-                  <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-3">
+                  <div className="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 flex flex-col gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Plot & Claim Status</span>
-                      <div className="text-xs text-[#191919] font-medium mt-0.5">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Plot & Claim Status</span>
+                      <div className="text-xs text-[#292524] font-medium mt-0.5">
                         {currentScan.claimed_by_user_id ? (
-                          <span className="text-emerald-600 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[#616c39] flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c]" />
                             ✓ Claimed to Your Plot
                           </span>
                         ) : (
@@ -1395,7 +1395,7 @@ function ReconstructContent() {
                         <select
                           value={selectedPlotId}
                           onChange={(e) => setSelectedPlotId(e.target.value)}
-                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none w-full"
+                          className="bg-white border border-[#e7e5e4] rounded-xl px-3 py-2 text-xs text-[#292524] focus:outline-none w-full"
                         >
                           {userPlots.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -1406,7 +1406,7 @@ function ReconstructContent() {
                         <button
                           onClick={handleClaimScan}
                           disabled={claiming}
-                          className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-xs rounded-xl py-2 transition-all cursor-pointer text-center w-full"
+                          className="bg-[#4e572c] hover:bg-[#616c39] text-[#1c1917] font-semibold text-xs rounded-xl py-2 transition-all cursor-pointer text-center w-full"
                         >
                           {claiming ? "Claiming..." : "Claim to Plot"}
                         </button>
@@ -1417,9 +1417,9 @@ function ReconstructContent() {
 
                 {/* Mobile Login Prompt */}
                 {!currentUser && !currentScan.claimed_by_user_id && (
-                  <div className="bg-[#161920] border border-slate-800 text-slate-350 text-xs rounded-2xl p-4 flex justify-between items-center gap-4">
+                  <div className="bg-[#161920] border border-[#292524] text-[#a8a29e] text-xs rounded-2xl p-4 flex justify-between items-center gap-4">
                     <span>Want to save this scan result to your plot?</span>
-                    <Link href="/login?redirect=/reconstruct" className="text-emerald-400 font-bold hover:underline shrink-0">
+                    <Link href="/login?redirect=/reconstruct" className="text-[#616c39] font-bold hover:underline shrink-0">
                       Log In & Claim
                     </Link>
                   </div>
@@ -1429,24 +1429,24 @@ function ReconstructContent() {
 
             {/* Search Form */}
             <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] mb-2">
                 Search Tree Code
               </h3>
               <form onSubmit={handleSearch} className="flex items-center w-full">
-                <div className="relative w-full flex items-center shadow-sm rounded-xl bg-slate-50 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#191919]/10 focus-within:border-[#191919] transition-all">
+                <div className="relative w-full flex items-center shadow-sm rounded-xl bg-[#fafaf9] border border-[#e7e5e4] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#292524]/10 focus-within:border-[#292524] transition-all">
                   <input
                     type="text"
                     value={treeCode}
                     onChange={(e) => setTreeCode(e.target.value)}
                     placeholder="Enter code (e.g. POHON-6144)…"
-                    className="w-full pl-9 pr-16 py-2.5 bg-transparent focus:outline-none text-xs font-semibold text-[#191919] placeholder:text-slate-400"
+                    className="w-full pl-9 pr-16 py-2.5 bg-transparent focus:outline-none text-xs font-semibold text-[#292524] placeholder:text-[#79716b]"
                   />
-                  <svg className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-[#79716b] absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <button
                     type="submit"
-                    className="absolute right-1.5 px-3 py-1 bg-[#191919] text-white text-[10px] font-semibold rounded-lg hover:bg-[#191919]/90 transition-colors duration-200"
+                    className="absolute right-1.5 px-3 py-1 bg-[#292524] text-white text-[10px] font-semibold rounded-lg hover:bg-[#292524]/90 transition-colors duration-200"
                   >
                     Search
                   </button>
@@ -1458,10 +1458,10 @@ function ReconstructContent() {
             {currentScan && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b]">
                     Species Classification
                   </h3>
-                  <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-semibold text-[#79716b] bg-[#fafaf9] px-2 py-0.5 rounded-full">
                     Pl@ntNet AI
                   </span>
                 </div>
@@ -1469,31 +1469,31 @@ function ReconstructContent() {
                 {predictions && predictions.length > 0 ? (
                   <div className="space-y-3">
                     {predictions[0] && (
-                      <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-slate-50 border border-emerald-100 relative overflow-hidden">
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-[#616c39]/10/80 to-[#fafaf9] border border-[#616c39]/20 relative overflow-hidden">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block mb-0.5">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#616c39] block mb-0.5">
                               Top Specimen Match
                             </span>
-                            <h4 className="text-sm font-semibold text-[#191919] italic font-serif">
+                            <h4 className="text-sm font-semibold text-[#292524] italic font-serif">
                               {predictions[0]?.scientific_name ?? "Unknown"}
                             </h4>
                             {predictions[0]?.common_name && (
-                              <p className="text-xs text-slate-500 font-medium capitalize mt-0.5">
+                              <p className="text-xs text-[#79716b] font-medium capitalize mt-0.5">
                                 {predictions[0]?.common_name}
                               </p>
                             )}
                           </div>
                           <div className="flex flex-col items-end">
-                            <span className="text-sm font-bold text-emerald-700 font-serif">
+                            <span className="text-sm font-bold text-[#616c39] font-serif">
                               {(predictions[0]?.confidence ?? 0).toFixed(1)}%
                             </span>
-                            <span className="text-[9px] text-emerald-600/70 font-medium">Confidence</span>
+                            <span className="text-[9px] text-[#616c39]/70 font-medium">Confidence</span>
                           </div>
                         </div>
-                        <div className="w-full h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-3">
+                        <div className="w-full h-1.5 bg-[#616c39]/15 rounded-full overflow-hidden mt-3">
                           <div
-                            className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                            className="h-full bg-[#4e572c] rounded-full transition-all duration-700"
                             style={{ width: `${predictions[0]?.confidence ?? 0}%` }}
                           />
                         </div>
@@ -1502,23 +1502,23 @@ function ReconstructContent() {
 
                     {predictions.length > 1 && (
                       <div className="space-y-2 pt-1">
-                        <span className="text-[10px] font-medium text-slate-400 block px-1">
+                        <span className="text-[10px] font-medium text-[#79716b] block px-1">
                           Other Probable Candidates
                         </span>
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-[#fafaf9]">
                           {predictions.slice(1).map((pred, idx) => (
-                            <div key={idx} className="py-2 px-1 flex items-center justify-between hover:bg-slate-50/50 rounded-lg transition-colors">
+                            <div key={idx} className="py-2 px-1 flex items-center justify-between hover:bg-[#fafaf9]/50 rounded-lg transition-colors">
                               <div>
-                                <span className="text-xs font-medium text-[#191919] italic block">
+                                <span className="text-xs font-medium text-[#292524] italic block">
                                   {pred.scientific_name}
                                 </span>
                                 {pred.common_name && (
-                                  <span className="text-[10px] text-slate-400 capitalize block">
+                                  <span className="text-[10px] text-[#79716b] capitalize block">
                                     {pred.common_name}
                                   </span>
                                 )}
                               </div>
-                              <span className="text-xs font-medium text-slate-400">
+                              <span className="text-xs font-medium text-[#79716b]">
                                 {(pred.confidence ?? 0).toFixed(1)}%
                               </span>
                             </div>
@@ -1528,8 +1528,8 @@ function ReconstructContent() {
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-2xl bg-slate-50/60 border border-slate-100 text-center">
-                    <span className="text-xs text-slate-400">Species classification unavailable for this scan</span>
+                  <div className="p-4 rounded-2xl bg-[#fafaf9]/60 border border-[#fafaf9] text-center">
+                    <span className="text-xs text-[#79716b]">Species classification unavailable for this scan</span>
                   </div>
                 )}
               </div>
@@ -1537,54 +1537,54 @@ function ReconstructContent() {
 
             {/* How This Was Calculated */}
             {currentScan && (
-              <div className="border border-slate-200/80 rounded-2xl bg-slate-50/40 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div className="border border-[#e7e5e4]/80 rounded-2xl bg-[#fafaf9]/40 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                 <button
                   onClick={() => setCalcOpen(!calcOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100/80 text-left transition-all duration-200"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-[#fafaf9] hover:bg-[#fafaf9]/80 text-left transition-all duration-200"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 7h.01M15 11h.01M15 7h.01M12 14h.01M9 11h.01M18 20V4a1 1 0 00-1-1H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1z" />
                     </svg>
                     How this was calculated
                   </span>
-                  <span className="text-slate-400 text-[10px] font-bold">{calcOpen ? "▲" : "▼"}</span>
+                  <span className="text-[#79716b] text-[10px] font-bold">{calcOpen ? "▲" : "▼"}</span>
                 </button>
 
                 {calcOpen && (
-                  <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-slate-200/50 bg-white font-sans divide-y divide-slate-100">
+                  <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-[#e7e5e4] bg-white font-sans divide-y divide-[#fafaf9]">
                     <div className="space-y-1.5">
-                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
-                      <div className="grid grid-cols-2 gap-2 text-slate-600 font-medium">
-                        <div>Diameter (DBH): <span className="font-semibold text-[#191919]">{currentScan.dbh_cm?.toFixed(1) ?? "-"} cm</span></div>
-                        <div>Tree Height: <span className="font-semibold text-[#191919]">{currentScan.tinggi_m?.toFixed(1) ?? "-"} m</span></div>
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
+                      <div className="grid grid-cols-2 gap-2 text-[#79716b] font-medium">
+                        <div>Diameter (DBH): <span className="font-semibold text-[#292524]">{currentScan.dbh_cm?.toFixed(1) ?? "-"} cm</span></div>
+                        <div>Tree Height: <span className="font-semibold text-[#292524]">{currentScan.tinggi_m?.toFixed(1) ?? "-"} m</span></div>
                       </div>
                     </div>
 
                     <div className="pt-3 space-y-1.5">
-                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
-                      <div className="space-y-1 text-slate-600 font-medium">
-                        <div>Species Matched: <span className="font-semibold text-[#191919] italic">
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
+                      <div className="space-y-1 text-[#79716b] font-medium">
+                        <div>Species Matched: <span className="font-semibold text-[#292524] italic">
                           {predictions?.[0]
                             ? `${predictions[0].scientific_name ?? "Unknown"} (${(predictions[0].confidence ?? 0).toFixed(1)}%)`
                             : "None (Generic Fallback)"}
                         </span></div>
-                        <div>Wood Density (ρ): <span className="font-semibold text-[#191919]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
-                        <div>Source: <span className="font-semibold text-[#191919] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
+                        <div>Wood Density (ρ): <span className="font-semibold text-[#292524]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
+                        <div>Source: <span className="font-semibold text-[#292524] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
                       </div>
                     </div>
 
                     <div className="pt-3 space-y-1.5">
-                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">3. Climate & Allometric Formula</p>
-                      <div className="space-y-1 text-slate-600 font-medium">
-                        <div>GPS Coordinates: <span className="font-semibold text-[#191919]">
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">3. Climate & Allometric Formula</p>
+                      <div className="space-y-1 text-[#79716b] font-medium">
+                        <div>GPS Coordinates: <span className="font-semibold text-[#292524]">
                           {currentScan.gps_lat != null && currentScan.gps_lon != null
                             ? `${currentScan.gps_lat.toFixed(4)}, ${currentScan.gps_lon.toFixed(4)}`
                             : "Not Available"}
                         </span></div>
-                        <div>Climate Zone (Köppen): <span className="font-semibold text-[#191919]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
-                        <div>Formula Used: <span className="font-semibold text-emerald-800">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
-                        <div>Height Usage: <span className="font-semibold text-[#191919]">
+                        <div>Climate Zone (Köppen): <span className="font-semibold text-[#292524]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
+                        <div>Formula Used: <span className="font-semibold text-[#4e572c]">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
+                        <div>Height Usage: <span className="font-semibold text-[#292524]">
                           {currentScan.height_used === "full_height"
                             ? `Full tree height (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`
                             : currentScan.height_used === "user_manual_height"
@@ -1597,36 +1597,36 @@ function ReconstructContent() {
                         {currentScan.height_used === "dbh_only_fallback" && currentScan.height_fallback_reason && (
                           <div className="text-[10px] text-amber-700/80">Alasan: {currentScan.height_fallback_reason}</div>
                         )}
-                        <div>Root-to-Shoot Ratio: <span className="font-semibold text-[#191919]">{currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"}</span></div>
-                        <div>Scale Status: <span className={`font-semibold ${currentScan.scale_status === "calibrated" ? "text-emerald-700" : "text-red-600"}`}>{currentScan.scale_status === "calibrated" ? "Calibrated" : "Uncalibrated"}</span>{currentScan.scale_factor_used != null && currentScan.scale_factor_used !== 1.0 ? ` (×${currentScan.scale_factor_used?.toFixed(4)})` : ""}</div>
+                        <div>Root-to-Shoot Ratio: <span className="font-semibold text-[#292524]">{currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"}</span></div>
+                        <div>Scale Status: <span className={`font-semibold ${currentScan.scale_status === "calibrated" ? "text-[#616c39]" : "text-red-600"}`}>{currentScan.scale_status === "calibrated" ? "Calibrated" : "Uncalibrated"}</span>{currentScan.scale_factor_used != null && currentScan.scale_factor_used !== 1.0 ? ` (×${currentScan.scale_factor_used?.toFixed(4)})` : ""}</div>
                       </div>
                     </div>
 
                     <div className="pt-3 space-y-2">
-                      <p className="font-semibold text-slate-700 uppercase text-[9px] tracking-wide">4. Calculation Steps</p>
-                      <div className="space-y-1.5 text-slate-600 font-medium font-sans">
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">4. Calculation Steps</p>
+                      <div className="space-y-1.5 text-[#79716b] font-medium font-sans">
                         <div className="flex justify-between">
                           <span>Above-Ground Biomass (AGB):</span>
-                          <span className="font-semibold text-[#191919]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
+                          <span className="font-semibold text-[#292524]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Below-Ground Biomass (BGB):</span>
-                          <span className="font-semibold text-[#191919]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(AGB × {currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"})</span></span>
+                          <span className="font-semibold text-[#292524]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#79716b] font-normal">(AGB × {currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"})</span></span>
                         </div>
-                        <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5 font-bold">
-                          <span className="text-[#191919]">Total Dry Biomass:</span>
-                          <span className="text-[#191919]">{currentScan.biomassa_kg?.toFixed(1) ?? "-"} kg</span>
+                        <div className="flex justify-between border-t border-dashed border-[#fafaf9] pt-1.5 font-bold">
+                          <span className="text-[#292524]">Total Dry Biomass:</span>
+                          <span className="text-[#292524]">{currentScan.biomassa_kg?.toFixed(1) ?? "-"} kg</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Stored Carbon Stock:</span>
-                          <span className="font-semibold text-emerald-800">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-emerald-600/70 font-normal">(Biomass × 0.47)</span></span>
+                          <span className="font-semibold text-[#4e572c]">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#616c39]/70 font-normal">(Biomass × 0.47)</span></span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-100 pt-1.5 font-bold text-emerald-950">
+                        <div className="flex justify-between border-t border-[#fafaf9] pt-1.5 font-bold text-[#1c1917]">
                           <span>CO₂ Equivalent (CO₂e):</span>
-                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-slate-400 font-normal">(Carbon × 3.67)</span></span>
+                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#79716b] font-normal">(Carbon × 3.67)</span></span>
                         </div>
                         {currentScan.co2e_low_kg != null && currentScan.co2e_high_kg != null && (
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-[10px] text-[#79716b]">
                             Rentang ±{currentScan.co2e_uncertainty_pct?.toFixed(0) ?? "10"}%: {currentScan.co2e_low_kg.toFixed(1)} – {currentScan.co2e_high_kg.toFixed(1)} kg
                           </div>
                         )}
@@ -1649,7 +1649,7 @@ function ReconstructContent() {
                           iframe.contentWindow.postMessage({ type: "save_3d_edit" }, "*");
                         }
                       }}
-                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#616c39] hover:bg-[#4e572c] text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
                     >
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -1664,7 +1664,7 @@ function ReconstructContent() {
                           iframe.contentWindow.postMessage({ type: "cancel_3d_edit" }, "*");
                         }
                       }}
-                      className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
                     >
                       Cancel Edit
                     </button>
@@ -1679,9 +1679,9 @@ function ReconstructContent() {
                         setRecalibImgLoading(true);
                         setRecalibModalOpen(true);
                       }}
-                      className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#616c39]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
                       </svg>
                       Recalibrate Trunk (2D Photo)
@@ -1695,16 +1695,16 @@ function ReconstructContent() {
                           iframe.contentWindow.postMessage({ type: "start_3d_edit" }, "*");
                         }
                       }}
-                      className="hidden md:flex w-full py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition items-center justify-center gap-2"
+                      className="hidden md:flex w-full py-3 bg-[#fafaf9] border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#292524] text-xs font-semibold rounded-xl transition items-center justify-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                       Edit 3D Alignment (Manual)
                     </button>
                     {/* On Mobile: Show touchscreen limitation message */}
-                    <div className="flex md:hidden w-full text-center py-2.5 px-3 bg-slate-50 border border-slate-200/60 rounded-xl justify-center items-center">
-                      <span className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                    <div className="flex md:hidden w-full text-center py-2.5 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl justify-center items-center">
+                      <span className="text-[10px] text-[#79716b] font-medium leading-relaxed">
                         Fitur Edit 3D Alignment memerlukan layar lebih besar (Tablet/Desktop)
                       </span>
                     </div>
@@ -1716,9 +1716,9 @@ function ReconstructContent() {
                           window.open(`${BACKEND_URL}/scans/${currentScan.tree_code}/certificate`, "_blank");
                         }
                       }}
-                      className="w-full py-3 bg-emerald-50 border border-emerald-250 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                      className="w-full py-3 bg-[#616c39]/10 border border-[#616c39]/30 hover:bg-[#616c39]/15 text-[#4e572c] text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#616c39]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                       </svg>
                       Download Carbon Certificate
@@ -1731,7 +1731,7 @@ function ReconstructContent() {
             {/* Scan History Timeline */}
             {history.length > 0 && (
               <div>
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] mb-3">
                   Scan History Timeline
                 </h3>
 
@@ -1740,7 +1740,7 @@ function ReconstructContent() {
                     <UiverseLoader />
                   </div>
                 ) : (
-                  <div className="relative pl-4 border-l border-slate-200 space-y-4">
+                  <div className="relative pl-4 border-l border-[#e7e5e4] space-y-4">
                     {history.map((record) => {
                       const isActive = currentScan?.id === record.id;
                       return (
@@ -1748,31 +1748,31 @@ function ReconstructContent() {
                           <span
                             className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border-2 bg-white transition-all ${
                               isActive
-                                ? "border-[#191919] ring-4 ring-[#191919]/10 bg-[#191919]"
-                                : "border-slate-300 group-hover:border-slate-400"
+                                ? "border-[#292524] ring-4 ring-[#292524]/10 bg-[#292524]"
+                                : "border-[#e7e5e4] group-hover:border-[#a8a29e]"
                             }`}
                           />
                           <button
                             onClick={() => setCurrentScan(record)}
                             className={`w-full text-left p-3 rounded-xl transition-all ${
                               isActive
-                                ? "bg-[#191919] text-white shadow-md"
-                                : "hover:bg-slate-50 text-slate-700"
+                                ? "bg-[#292524] text-white shadow-md"
+                                : "hover:bg-[#fafaf9] text-[#292524]"
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-semibold uppercase tracking-tight">
                                 {record.tree_code}
                               </span>
-                              <span className={`text-[10px] font-medium ${isActive ? "text-white/60" : "text-slate-400"}`}>
+                              <span className={`text-[10px] font-medium ${isActive ? "text-white/60" : "text-[#79716b]"}`}>
                                 #{record.id}
                               </span>
                             </div>
                             <div className="flex items-center justify-between mt-1">
-                              <span className={`text-[10px] ${isActive ? "text-white/70" : "text-slate-400"}`}>
+                              <span className={`text-[10px] ${isActive ? "text-white/70" : "text-[#79716b]"}`}>
                                 {formatDate(record.scan_date)}
                               </span>
-                              <span className={`text-[10px] font-serif ${isActive ? "text-emerald-300" : "text-slate-500"}`}>
+                              <span className={`text-[10px] font-serif ${isActive ? "text-[#8a9952]" : "text-[#79716b]"}`}>
                                 {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm` : "Raw"}
                               </span>
                             </div>
@@ -1790,10 +1790,10 @@ function ReconstructContent() {
               (currentScan.quality_status && currentScan.quality_status !== "ok" && currentScan.quality_status !== "failed") ||
               currentScan.height_used === "user_manual_height" ||
               currentScan.confidence_note?.includes("WARNING")) && (
-              <div className="space-y-2 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">
+              <div className="space-y-2 bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b]">
                     Scan Alerts & Warnings
                   </h3>
                 </div>
@@ -1855,7 +1855,7 @@ function ReconstructContent() {
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+          <div className="p-4 border-t border-[#fafaf9] bg-[#fafaf9]/50">
             <button
               onClick={() => {
                 transitionPhase("upload");
@@ -1868,7 +1868,7 @@ function ReconstructContent() {
                 setHistory([]);
                 setActiveTreeCode("");
               }}
-              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#191919] text-white text-xs font-medium rounded-xl hover:bg-[#191919]/90 transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#292524] text-white text-xs font-medium rounded-xl hover:bg-[#292524]/90 transition-all shadow-sm"
             >
               <span>+ Upload New Scan</span>
             </button>
@@ -1878,7 +1878,7 @@ function ReconstructContent() {
 
         {/* Error toast */}
         {error && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#191919] text-[#ffffff] text-xs px-5 py-3 rounded-xl shadow-lg">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#292524] text-[#ffffff] text-xs px-5 py-3 rounded-xl shadow-lg">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="opacity-50 hover:opacity-100 transition">✕</button>
           </div>
@@ -1888,14 +1888,14 @@ function ReconstructContent() {
         {recalibModalOpen && currentScan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
             <div data-lenis-prevent className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between border-b border-[#fafaf9] pb-4">
                 <div>
-                  <h3 className="font-serif text-xl text-[#191919] font-normal">Recalibrate Trunk Axis</h3>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">Click two points on the 2D image to set the trunk direction.</p>
+                  <h3 className="font-serif text-xl text-[#292524] font-normal">Recalibrate Trunk Axis</h3>
+                  <p className="text-xs text-[#79716b] mt-1 font-medium">Click two points on the 2D image to set the trunk direction.</p>
                 </div>
                 <button
                   onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
-                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-[#191919] flex items-center justify-center text-xs transition"
+                  className="w-8 h-8 rounded-full bg-[#fafaf9] text-[#79716b] hover:bg-[#e7e5e4] hover:text-[#292524] flex items-center justify-center text-xs transition"
                 >
                   ✕
                 </button>
@@ -1909,20 +1909,20 @@ function ReconstructContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
                 <div className="flex flex-col gap-2">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  <div className="text-xs font-semibold text-[#79716b] uppercase tracking-wider mb-1">
                     {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
                     {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
                     {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
                   </div>
 
                   <div
-                    className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none min-h-[220px]"
+                    className="relative border border-[#e7e5e4] rounded-2xl overflow-hidden bg-[#0c0a09] flex items-center justify-center select-none min-h-[220px]"
                     style={{ maxHeight: "50vh" }}
                   >
                     {recalibImgLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-10 gap-2">
-                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[11px] text-slate-400 font-medium">Loading high-res frame…</span>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0c0a09]/80 z-10 gap-2">
+                        <div className="w-6 h-6 border-2 border-[#616c39] border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[11px] text-[#79716b] font-medium">Loading high-res frame…</span>
                       </div>
                     )}
                     <img
@@ -1977,9 +1977,9 @@ function ReconstructContent() {
                 </div>
 
                 {/* VISUAL GUIDE CARD */}
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 h-fit">
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Trunk Click Guide</h4>
-                  <div className="flex justify-center py-2 bg-white rounded-xl border border-slate-100">
+                <div className="bg-[#fafaf9] border border-[#fafaf9] rounded-2xl p-4 flex flex-col gap-3 h-fit">
+                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">Trunk Click Guide</h4>
+                  <div className="flex justify-center py-2 bg-white rounded-xl border border-[#fafaf9]">
                     <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
                       {/* Ground */}
                       <path d="M10 135C40 135 80 135 110 135" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round"/>
@@ -2015,13 +2015,13 @@ function ReconstructContent() {
                       <path d="M50 115C35 115 30 115 25 115" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" strokeLinecap="round" />
                     </svg>
                   </div>
-                  <ul className="text-[11px] text-slate-500 space-y-2 leading-normal">
+                  <ul className="text-[11px] text-[#79716b] space-y-2 leading-normal">
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span className="text-[#616c39] font-bold shrink-0">✓</span>
                       <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span className="text-[#616c39] font-bold shrink-0">✓</span>
                       <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -2032,12 +2032,12 @@ function ReconstructContent() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
+              <div className="flex items-center justify-between border-t border-[#fafaf9] pt-4 mt-2">
                 <button
                   type="button"
                   onClick={() => { setClickedPoints([]); setMousePos(null); setRecalibError(null); }}
                   disabled={clickedPoints.length === 0 || recalibLoading}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Reset Points
                 </button>
@@ -2047,7 +2047,7 @@ function ReconstructContent() {
                     type="button"
                     onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
                     disabled={recalibLoading}
-                    className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-[#191919] text-xs font-semibold rounded-xl transition"
+                    className="px-5 py-2.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#292524] text-xs font-semibold rounded-xl transition"
                   >
                     Cancel
                   </button>
@@ -2055,7 +2055,7 @@ function ReconstructContent() {
                     type="button"
                     onClick={handleRecalibrate}
                     disabled={clickedPoints.length < 2 || recalibLoading}
-                    className="px-6 py-2.5 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2.5 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {recalibLoading ? (
                       <>
@@ -2078,7 +2078,7 @@ function ReconstructContent() {
   // ── Phase 1, 2, 3 — Scrollable form layout ──────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans text-[#191919]">
+    <div className="min-h-screen bg-[#fafaf9]/50 flex flex-col font-sans text-[#292524]">
 
 
       <main className="flex-1 flex flex-col items-center justify-center pt-28 pb-20 px-4">
@@ -2095,51 +2095,51 @@ function ReconstructContent() {
                 <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
                   New reconstruction
                 </h1>
-                <p className="text-xs text-[#191919]/50 leading-relaxed font-medium">
+                <p className="text-xs text-[#292524]/50 leading-relaxed font-medium">
                   Upload a video walkthrough to start the 3D pipeline.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+              <div className="bg-white border border-[#e7e5e4] rounded-3xl p-6 sm:p-8 shadow-sm">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Tree identifier <span className="normal-case tracking-normal font-normal text-slate-300">(optional)</span>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
+                      Tree identifier <span className="normal-case tracking-normal font-normal text-[#d6d3d1]">(optional)</span>
                     </label>
                     <input
                       type="text"
                       value={treeCode}
                       onChange={(e) => setTreeCode(e.target.value)}
                       placeholder="e.g. POHON-0042"
-                      className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-400 text-sm font-medium transition"
+                      className="px-4 py-2.5 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] focus:outline-none focus:border-[#a8a29e] text-sm font-medium transition"
                       disabled={loading}
                     />
                   </div>
 
 
                   
-                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mt-2 hover:bg-slate-100/50 transition">
+                  <div className="flex items-center gap-3 bg-[#fafaf9] border border-[#e7e5e4]/80 rounded-2xl p-4 mt-2 hover:bg-[#fafaf9]/50 transition">
                     <input
                       type="checkbox"
                       id="removeBackground"
                       checked={removeBackground}
                       onChange={(e) => setRemoveBackground(e.target.checked)}
-                      className="w-4 h-4 accent-slate-900 cursor-pointer rounded border-slate-300"
+                      className="w-4 h-4 accent-[#1c1917] cursor-pointer rounded border-[#e7e5e4]"
                       disabled={loading}
                     />
                     <div className="flex flex-col">
-                      <label htmlFor="removeBackground" className="text-xs font-bold text-[#191919] cursor-pointer">
+                      <label htmlFor="removeBackground" className="text-xs font-bold text-[#292524] cursor-pointer">
                         Remove Background (rembg)
                       </label>
-                      <span className="text-[10px] text-slate-400 leading-normal">
+                      <span className="text-[10px] text-[#79716b] leading-normal">
                         Recommendation. Isolate the tree and remove background objects for a clean 3D visualization.
                       </span>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Video file</label>
-                    <div className="relative border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-2xl p-8 text-center cursor-pointer transition">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">Video file</label>
+                    <div className="relative border-2 border-dashed border-[#e7e5e4] hover:border-[#a8a29e] rounded-2xl p-8 text-center cursor-pointer transition">
                       <input
                         type="file"
                         accept=".mp4,.mov,.avi,.webm,.mkv"
@@ -2147,37 +2147,37 @@ function ReconstructContent() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         disabled={loading}
                       />
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm font-medium text-[#79716b]">
                         {videoFile ? videoFile.name : "Click or drag to upload"}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
+                      <p className="text-xs text-[#79716b] mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        <span>Frames</span><span className="text-[#191919]">{frames}</span>
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
+                        <span>Frames</span><span className="text-[#292524]">{frames}</span>
                       </div>
                       <input type="range" min="10" max="100" step="5" value={frames}
                         onChange={(e) => setFrames(+e.target.value)}
-                        className="w-full accent-slate-900" disabled={loading} />
+                        className="w-full accent-[#1c1917]" disabled={loading} />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        <span>Blur filter</span><span className="text-[#191919]">{blurThresh}</span>
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
+                        <span>Blur filter</span><span className="text-[#292524]">{blurThresh}</span>
                       </div>
                       <input type="range" min="10" max="200" step="10" value={blurThresh}
                         onChange={(e) => setBlurThresh(+e.target.value)}
-                        className="w-full accent-slate-900" disabled={loading} />
+                        className="w-full accent-[#1c1917]" disabled={loading} />
                     </div>
                   </div>
 
                   {loading && (
-                    <div className="flex flex-col gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div className="flex flex-col gap-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
-                        <p className="text-xs text-slate-600">{progressMsg}</p>
+                        <div className="w-4 h-4 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin shrink-0" />
+                        <p className="text-xs text-[#79716b]">{progressMsg}</p>
                       </div>
                       <button
                         type="button"
@@ -2196,7 +2196,7 @@ function ReconstructContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-sm font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1"
+                    className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-sm font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1"
                   >
                     {loading ? "Processing Upload..." : "Upload & Reconstruct"}
                   </button>
@@ -2207,10 +2207,10 @@ function ReconstructContent() {
 
           {/* ── Phase 2: Trunk Marking ── */}
           {phase === "marking" && (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
+            <div className="bg-white border border-[#e7e5e4] rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
               <div>
-                <h3 className="font-serif text-xl text-[#191919] font-normal">Mark Trunk Axis (Recommended)</h3>
-                <p className="text-xs text-slate-400 mt-1.5 font-medium leading-relaxed">
+                <h3 className="font-serif text-xl text-[#292524] font-normal">Mark Trunk Axis (Recommended)</h3>
+                <p className="text-xs text-[#79716b] mt-1.5 font-medium leading-relaxed">
                   Click two points on the extracted first frame image:<br />
                   1. The <b>BASE/ROOT</b> of the trunk (Green marker).<br />
                   2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
@@ -2219,13 +2219,13 @@ function ReconstructContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
                 <div className="flex flex-col gap-2">
-                  <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                  <div className="text-[10px] font-bold text-[#616c39] uppercase tracking-wider mb-1">
                     {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
                     {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
                     {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
                   </div>
 
-                  <div className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
+                  <div className="relative border border-[#e7e5e4] rounded-2xl overflow-hidden bg-[#0c0a09] flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
                     <img
                       src={`${BACKEND_URL}/frames/0000.jpg?t=${frameTimestamp}`}
                       alt="Extracted Frame"
@@ -2272,9 +2272,9 @@ function ReconstructContent() {
                 </div>
 
                 {/* VISUAL GUIDE CARD */}
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 h-fit">
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Trunk Click Guide</h4>
-                  <div className="flex justify-center py-2 bg-white rounded-xl border border-slate-100">
+                <div className="bg-[#fafaf9] border border-[#fafaf9] rounded-2xl p-4 flex flex-col gap-3 h-fit">
+                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">Trunk Click Guide</h4>
+                  <div className="flex justify-center py-2 bg-white rounded-xl border border-[#fafaf9]">
                     <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
                       {/* Ground */}
                       <path d="M10 135C40 135 80 135 110 135" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round"/>
@@ -2310,13 +2310,13 @@ function ReconstructContent() {
                       <path d="M50 115C35 115 30 115 25 115" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" strokeLinecap="round" />
                     </svg>
                   </div>
-                  <ul className="text-[11px] text-slate-500 space-y-2 leading-normal">
+                  <ul className="text-[11px] text-[#79716b] space-y-2 leading-normal">
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span className="text-[#616c39] font-bold shrink-0">✓</span>
                       <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                      <span className="text-[#616c39] font-bold shrink-0">✓</span>
                       <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -2331,13 +2331,13 @@ function ReconstructContent() {
                 <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
               )}
 
-              <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 mt-2">
+              <div className="flex flex-col gap-3 border-t border-[#fafaf9] pt-4 mt-2">
                 <div className="flex justify-between items-center gap-2">
                   <button
                     type="button"
                     onClick={() => { setCalibrationPoints([]); setCalibrationMousePos(null); }}
                     disabled={calibrationPoints.length === 0}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#191919] text-xs font-semibold rounded-xl transition"
+                    className="px-4 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition"
                   >
                     Reset Points
                   </button>
@@ -2345,7 +2345,7 @@ function ReconstructContent() {
                     type="button"
                     onClick={handleSkipAndAutoReconstruct}
                     disabled={loading}
-                    className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition disabled:opacity-40"
+                    className="px-4 py-2.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#79716b] text-xs font-bold rounded-xl transition disabled:opacity-40"
                   >
                     {loading ? "Starting…" : "Skip & Auto-detect"}
                   </button>
@@ -2354,7 +2354,7 @@ function ReconstructContent() {
                   type="button"
                   onClick={handleManualReconstruct}
                   disabled={calibrationPoints.length < 2 || loading}
-                  className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -2381,9 +2381,9 @@ function ReconstructContent() {
 export default function Reconstruct() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
-        <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Loading scan page...</p>
+      <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
+        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-[#79716b] font-medium">Loading scan page...</p>
       </main>
     }>
       <ReconstructContent />

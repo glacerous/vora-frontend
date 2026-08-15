@@ -65,28 +65,28 @@ export default function CreatePlotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col font-sans">
 
       <main className="flex-1 pt-28 pb-16 px-6 relative overflow-hidden">
         {/* Background radial overlays */}
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] aspect-square rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] aspect-square rounded-full bg-slate-200/50 blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] aspect-square rounded-full bg-[#616c39]/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] aspect-square rounded-full bg-[#e7e5e4]/50 blur-[120px] pointer-events-none" />
 
         <div className="max-w-xl mx-auto relative z-10">
           {/* Back Link */}
           <div className="mb-8">
-            <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
+            <Link href="/my-plots" className="text-xs text-[#79716b] hover:text-[#616c39] transition-colors flex items-center gap-1.5 font-medium">
               ← Back to Dashboard
             </Link>
           </div>
 
           {/* Card */}
-          <div className="bg-white border border-slate-200/85 rounded-3xl p-8 shadow-sm">
+          <div className="bg-white border border-[#e7e5e4]/85 rounded-3xl p-8 shadow-sm">
             <div className="mb-8">
-              <h1 className="text-xl font-semibold tracking-tight text-[#191919]">
+              <h1 className="text-xl font-semibold tracking-tight text-[#292524]">
                 Create New Forest Plot
               </h1>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              <p className="text-xs text-[#79716b] mt-1.5 leading-relaxed">
                 Define your tree grouping area for accurate carbon biomass data aggregation.
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function CreatePlotPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                   Plot Name
                 </label>
                 <input
@@ -109,12 +109,12 @@ export default function CreatePlotPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Mangrove Plot A1"
-                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                  className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                   Description
                 </label>
                 <textarea
@@ -122,12 +122,12 @@ export default function CreatePlotPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Write details about the location or characteristics of this tree plot..."
                   rows={3}
-                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full resize-none"
+                  className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full resize-none"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                   Plot Privacy
                 </label>
                 <div className="grid grid-cols-2 gap-4 mt-1">
@@ -136,8 +136,8 @@ export default function CreatePlotPage() {
                     onClick={() => setPrivacy("private")}
                     className={`border rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       privacy === "private"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                        ? "border-[#616c39] bg-[#616c39]/10 text-[#616c39]"
+                        : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
                     <span className="text-xs font-semibold">Private</span>
@@ -149,8 +149,8 @@ export default function CreatePlotPage() {
                     onClick={() => setPrivacy("public")}
                     className={`border rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       privacy === "public"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                        ? "border-[#616c39] bg-[#616c39]/10 text-[#616c39]"
+                        : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
                     <span className="text-xs font-semibold">Public</span>
@@ -160,7 +160,7 @@ export default function CreatePlotPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                   Target CO₂e Estimation (kg) (Optional)
                 </label>
                 <input
@@ -169,13 +169,13 @@ export default function CreatePlotPage() {
                   value={targetCo2e}
                   onChange={(e) => setTargetCo2e(e.target.value)}
                   placeholder="e.g. 5000"
-                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                  className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                     GPS Centroid Lat (Optional)
                   </label>
                   <input
@@ -184,12 +184,12 @@ export default function CreatePlotPage() {
                     value={lat}
                     onChange={(e) => setLat(e.target.value)}
                     placeholder="-6.2088"
-                    className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                    className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full"
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
                     GPS Centroid Lon (Optional)
                   </label>
                   <input
@@ -198,7 +198,7 @@ export default function CreatePlotPage() {
                     value={lon}
                     onChange={(e) => setLon(e.target.value)}
                     placeholder="106.8456"
-                    className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-3 text-sm text-[#191919] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                    className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full"
                   />
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function CreatePlotPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#191919] hover:bg-[#191919]/90 disabled:bg-[#191919]/50 text-white font-semibold text-sm rounded-xl py-3.5 shadow-md transition-all mt-4 flex items-center justify-center gap-2 select-none cursor-pointer"
+                className="w-full bg-[#292524] hover:bg-[#292524]/90 disabled:bg-[#292524]/50 text-white font-semibold text-sm rounded-xl py-3.5 shadow-md transition-all mt-4 flex items-center justify-center gap-2 select-none cursor-pointer"
               >
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

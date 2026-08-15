@@ -12,9 +12,9 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrend
 const PlotMap = dynamic(() => import("@/components/PlotMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center min-h-[250px]">
-      <span className="w-6 h-6 border-2 border-[#191919] border-t-transparent rounded-full animate-spin mr-2" />
-      <p className="text-xs text-slate-500 font-medium">Loading satellite map...</p>
+    <div className="w-full h-full bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex items-center justify-center min-h-[250px]">
+      <span className="w-6 h-6 border-2 border-[#292524] border-t-transparent rounded-full animate-spin mr-2" />
+      <p className="text-xs text-[#79716b] font-medium">Loading satellite map...</p>
     </div>
   ),
 });
@@ -837,29 +837,29 @@ export default function PlotDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans">
-        <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Mengambil informasi detail plot...</p>
+      <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
+        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-[#79716b] font-medium">Mengambil informasi detail plot...</p>
       </main>
     );
   }
 
   if (error && !plot) {
     return (
-      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center px-4 font-sans">
-        <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-md text-center shadow-sm">
+      <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center px-4 font-sans">
+        <div className="bg-white border border-[#e7e5e4] rounded-xl p-6 max-w-md text-center shadow-sm">
           <div className="w-12 h-12 rounded-full bg-red-50 border border-red-150 flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-red-650" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-sm font-bold text-slate-800 mb-1.5">Akses Terbatas</h2>
-          <p className="text-xs text-slate-500 leading-relaxed mb-5">{error}</p>
+          <h2 className="text-sm font-bold text-[#292524] mb-1.5">Akses Terbatas</h2>
+          <p className="text-xs text-[#79716b] leading-relaxed mb-5">{error}</p>
           <div className="flex gap-3 justify-center">
-            <Link href="/my-plots" className="bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-lg px-4 py-2 transition-all shadow-sm">
+            <Link href="/my-plots" className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-lg px-4 py-2 transition-all shadow-sm">
               Dashboard
             </Link>
-            <Link href="/login" className="border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs rounded-lg px-4 py-2 transition-all">
+            <Link href="/login" className="border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#79716b] text-xs rounded-lg px-4 py-2 transition-all">
               Login
             </Link>
           </div>
@@ -980,7 +980,7 @@ export default function PlotDetailPage() {
     diversityDesc = "This plot has high species diversity, reflecting a highly resilient ecological structure.";
   }
   const colorPalettes = [
-    { bg: "bg-emerald-600 hover:bg-emerald-500", text: "text-emerald-700", border: "border-emerald-250", lightBg: "bg-emerald-50/50" },
+    { bg: "bg-[#616c39] hover:bg-[#4e572c]", text: "text-[#616c39]", border: "border-[#616c39]/30", lightBg: "bg-[#616c39]/10" },
     { bg: "bg-sky-600 hover:bg-sky-500", text: "text-sky-700", border: "border-sky-250", lightBg: "bg-sky-50/50" },
     { bg: "bg-amber-600 hover:bg-amber-500", text: "text-amber-700", border: "border-amber-250", lightBg: "bg-amber-50/50" },
     { bg: "bg-purple-600 hover:bg-purple-500", text: "text-purple-700", border: "border-purple-250", lightBg: "bg-purple-50/50" },
@@ -989,9 +989,9 @@ export default function PlotDetailPage() {
   ];
 
   const getSpeciesColor = (speciesName: string | null) => {
-    if (!speciesName) return { bg: "bg-slate-500 hover:bg-slate-400", text: "text-slate-700", border: "border-slate-350", lightBg: "bg-slate-50/50" };
+    if (!speciesName) return { bg: "bg-[#fafaf9]0 hover:bg-[#a8a29e]", text: "text-[#292524]", border: "border-[#a8a29e]", lightBg: "bg-[#fafaf9]/50" };
     const index = speciesList.indexOf(speciesName.trim().toLowerCase());
-    if (index === -1) return { bg: "bg-slate-500 hover:bg-slate-400", text: "text-slate-700", border: "border-slate-350", lightBg: "bg-slate-50/50" };
+    if (index === -1) return { bg: "bg-[#fafaf9]0 hover:bg-[#a8a29e]", text: "text-[#292524]", border: "border-[#a8a29e]", lightBg: "bg-[#fafaf9]/50" };
     return colorPalettes[index % colorPalettes.length];
   };
 
@@ -1005,16 +1005,16 @@ export default function PlotDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col font-sans">
       <main className="flex-1 pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
         {/* Background radial overlays */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-emerald-500/5 blur-[130px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-slate-200/50 blur-[130px] pointer-events-none" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-[#4e572c]/5 blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-[#e7e5e4]/50 blur-[130px] pointer-events-none" />
 
         <div className="max-w-[1440px] mx-auto relative z-10 flex flex-col gap-4">
           {/* Top toolbar matching dashboard reference */}
-          <div className="flex justify-between items-center select-none pb-2 border-b border-slate-200/40">
-            <Link href="/my-plots" className="text-xs text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1.5 font-medium">
+          <div className="flex justify-between items-center select-none pb-2 border-b border-[#e7e5e4]/40">
+            <Link href="/my-plots" className="text-xs text-[#79716b] hover:text-[#616c39] transition-colors flex items-center gap-1.5 font-medium">
               ← Back to Dashboard
             </Link>
 
@@ -1023,14 +1023,14 @@ export default function PlotDetailPage() {
                 <span className={`text-[9px] uppercase px-2 py-0.5 rounded border font-bold ${
                   plot?.privacy === "public"
                     ? "bg-sky-50 text-sky-700 border-sky-100"
-                    : "bg-slate-100 text-slate-600 border-slate-200"
+                    : "bg-[#fafaf9] text-[#79716b] border-[#e7e5e4]"
                 }`}>
                   {plot?.privacy}
                 </span>
                 {isOwner && (
                   <button
                     onClick={() => setIsEditPlotModalOpen(true)}
-                    className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-505 hover:text-slate-700 cursor-pointer flex items-center justify-center"
+                    className="p-1 rounded hover:bg-[#fafaf9] transition-colors text-[#79716b] hover:text-[#292524] cursor-pointer flex items-center justify-center"
                     title="Edit Plot"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1044,9 +1044,9 @@ export default function PlotDetailPage() {
               <div className="relative inline-block text-left select-none shrink-0">
                 <button
                   onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-semibold text-[10px] rounded-lg shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="px-3 py-1.5 bg-white hover:bg-[#fafaf9] text-[#292524] border border-[#e7e5e4] font-semibold text-[10px] rounded-lg shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <svg className="w-3.5 h-3.5 text-slate-505" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                   </svg>
                   <span>Download Carbon Data</span>
@@ -1057,8 +1057,8 @@ export default function PlotDetailPage() {
                       className="fixed inset-0 z-40" 
                       onClick={() => setExportDropdownOpen(false)} 
                     />
-                    <div className="absolute right-0 mt-1.5 w-52 rounded-xl bg-white border border-slate-200/80 shadow-lg py-1.5 z-50 animate-fadeIn text-xs">
-                      <div className="px-3 py-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">
+                    <div className="absolute right-0 mt-1.5 w-52 rounded-xl bg-white border border-[#e7e5e4]/80 shadow-lg py-1.5 z-50 animate-fadeIn text-xs">
+                      <div className="px-3 py-1 text-[9px] font-bold text-[#79716b] uppercase tracking-wider border-b border-[#fafaf9] pb-1">
                         Format
                       </div>
                       <button
@@ -1066,9 +1066,9 @@ export default function PlotDetailPage() {
                           setExportDropdownOpen(false);
                           handleExportData("csv");
                         }}
-                        className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 text-[#292524] hover:bg-[#fafaf9] flex items-center gap-2 cursor-pointer transition-colors"
                       >
-                        <span className="font-semibold text-emerald-600 font-mono text-[10px] w-6">CSV</span>
+                        <span className="font-semibold text-[#616c39] font-mono text-[10px] w-6">CSV</span>
                         <span>Comma Separated</span>
                       </button>
                       <button
@@ -1076,12 +1076,12 @@ export default function PlotDetailPage() {
                           setExportDropdownOpen(false);
                           handleExportData("xlsx");
                         }}
-                        className="w-full text-left px-3 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 text-[#292524] hover:bg-[#fafaf9] flex items-center gap-2 cursor-pointer transition-colors"
                       >
-                        <span className="font-semibold text-emerald-600 font-mono text-[10px] w-6">XLSX</span>
+                        <span className="font-semibold text-[#616c39] font-mono text-[10px] w-6">XLSX</span>
                         <span>Excel Spreadsheet</span>
                       </button>
-                      <div className="border-t border-slate-100 mt-1 px-3 py-2 text-[9px] text-slate-400 leading-relaxed font-medium">
+                      <div className="border-t border-[#fafaf9] mt-1 px-3 py-2 text-[9px] text-[#79716b] leading-relaxed font-medium">
                         Structured data suitable as a supporting attachment when registering a carbon project in SRN PPI or for carbon credit documentation.
                       </div>
                     </div>
@@ -1093,7 +1093,7 @@ export default function PlotDetailPage() {
                 <div className="flex items-center gap-1.5 shrink-0 select-none">
                   <button
                     onClick={() => setIsAddTreeModalOpen(true)}
-                    className="px-3 py-1.5 bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                    className="px-3 py-1.5 bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
                   >
                     <span className="text-xs font-bold leading-none">+</span> Add Tree
                   </button>
@@ -1109,19 +1109,19 @@ export default function PlotDetailPage() {
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
               
               {/* Card 1: Plot Profile & Carbon Target Gauge (Unified Left Dashboard Header) */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
-                <div className="w-full border-b border-slate-100 pb-3.5 mb-4 flex flex-col gap-1 text-left select-none">
-                  <span className="text-[9px] font-mono text-emerald-750 font-bold block mb-0.5">{plot?.plot_code}</span>
-                  <h1 className="text-lg font-bold tracking-tight text-slate-800 font-serif leading-tight">{plot?.name}</h1>
-                  <p className="text-[10px] text-slate-500 leading-normal line-clamp-3 mt-1.5">{plot?.description || "No location description."}</p>
-                  <span className="text-[9px] text-slate-400 mt-2 block font-medium">
-                    Oleh <span className="text-slate-600 font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+              <section className="bg-white border border-[#e7e5e4]/80 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
+                <div className="w-full border-b border-[#fafaf9] pb-3.5 mb-4 flex flex-col gap-1 text-left select-none">
+                  <span className="text-[9px] font-mono text-[#616c39] font-bold block mb-0.5">{plot?.plot_code}</span>
+                  <h1 className="text-lg font-bold tracking-tight text-[#292524] font-serif leading-tight">{plot?.name}</h1>
+                  <p className="text-[10px] text-[#79716b] leading-normal line-clamp-3 mt-1.5">{plot?.description || "No location description."}</p>
+                  <span className="text-[9px] text-[#79716b] mt-2 block font-medium">
+                    Oleh <span className="text-[#79716b] font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
 
                 {plot?.target_co2e_kg && plot.target_co2e_kg > 0 ? (
                   <>
-                    <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest self-start mb-1 select-none">Carbon Target Progress</h3>
+                    <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest self-start mb-1 select-none">Carbon Target Progress</h3>
                     
                     {/* Curved SVG Gauge */}
                     <div className="relative flex flex-col items-center justify-center py-3 select-none">
@@ -1151,27 +1151,27 @@ export default function PlotDetailPage() {
                         </defs>
                       </svg>
                       <div className="absolute bottom-1 text-center">
-                        <span className="text-xl font-semibold text-[#191919]">{Math.round(Math.min(totalCo2e / plot.target_co2e_kg, 1) * 100)}%</span>
-                        <span className="text-[9px] text-slate-400 block font-medium mt-0.5">dari target {plot.target_co2e_kg >= 1000 ? `${(plot.target_co2e_kg / 1000).toFixed(0)}k` : plot.target_co2e_kg} kg</span>
+                        <span className="text-xl font-semibold text-[#292524]">{Math.round(Math.min(totalCo2e / plot.target_co2e_kg, 1) * 100)}%</span>
+                        <span className="text-[9px] text-[#79716b] block font-medium mt-0.5">dari target {plot.target_co2e_kg >= 1000 ? `${(plot.target_co2e_kg / 1000).toFixed(0)}k` : plot.target_co2e_kg} kg</span>
                       </div>
                     </div>
                   </>
                 ) : null}
 
-                <div className="w-full border-t border-slate-100 pt-3 mt-1.5 select-none flex flex-col gap-3">
+                <div className="w-full border-t border-[#fafaf9] pt-3 mt-1.5 select-none flex flex-col gap-3">
                   <div className="grid grid-cols-2 gap-4 text-center items-start">
-                    <div className="border-r border-slate-100 pr-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Total Estimasi CO₂e</span>
-                      <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
+                    <div className="border-r border-[#fafaf9] pr-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">Total Estimasi CO₂e</span>
+                      <h2 className="font-serif text-2xl font-normal text-[#292524] tracking-tight">
                         {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
-                        <span className="text-xs font-sans text-slate-450 font-medium">kg</span>
+                        <span className="text-xs font-sans text-[#79716b] font-medium">kg</span>
                       </h2>
                       <div className="mt-2 flex justify-center gap-1.5">
-                        <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                        <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
                           Trees: {scans.length}
                         </span>
                         {aggregation && (
-                          <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                          <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
                             &plusmn;{aggregation.combined_uncertainty_pct.toFixed(1)}%
                           </span>
                         )}
@@ -1179,15 +1179,15 @@ export default function PlotDetailPage() {
                     </div>
 
                     <div className="pl-2 flex flex-col items-center justify-center min-h-[64px] w-full">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">Carbon Density</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">Carbon Density</span>
                       {hasBounds && plotAreas.length === 1 ? (
                         <>
-                          <h2 className="font-serif text-2xl font-normal text-slate-900 tracking-tight">
+                          <h2 className="font-serif text-2xl font-normal text-[#292524] tracking-tight">
                             {areaStats[0].density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
-                            <span className="text-xs font-sans text-slate-450 font-medium font-bold">t/ha</span>
+                            <span className="text-xs font-sans text-[#79716b] font-medium font-bold">t/ha</span>
                           </h2>
                           <div className="mt-2 flex justify-center gap-1.5">
-                            <span className="text-[9px] font-bold text-slate-505 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded-md">
+                            <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
                               Area: {areaStats[0].ha.toFixed(3)} ha
                             </span>
                           </div>
@@ -1202,21 +1202,21 @@ export default function PlotDetailPage() {
                                 onClick={() => setSelectedAreaIndex(idx)}
                                 className={`flex justify-between items-center px-2.5 py-1.5 rounded-lg text-[10px] cursor-pointer transition-all border ${
                                   isActive 
-                                    ? "bg-emerald-50 border-emerald-250 text-emerald-800 font-semibold shadow-xs" 
-                                    : "bg-slate-50/50 border-slate-100 text-slate-600 hover:bg-slate-50"
+                                    ? "bg-[#616c39]/10 border-[#616c39]/30 text-[#4e572c] font-semibold shadow-xs" 
+                                    : "bg-[#fafaf9]/50 border-[#fafaf9] text-[#79716b] hover:bg-[#fafaf9]"
                                 }`}
                               >
                                 <span className="truncate max-w-[50%]">{stat.name}</span>
                                 <div className="text-right">
-                                  <span className="font-serif font-bold text-slate-800">{stat.density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/ha</span>
-                                  <span className="text-[8px] text-slate-400 block">({stat.ha.toFixed(3)} ha)</span>
+                                  <span className="font-serif font-bold text-[#292524]">{stat.density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/ha</span>
+                                  <span className="text-[8px] text-[#79716b] block">({stat.ha.toFixed(3)} ha)</span>
                                 </div>
                               </div>
                             );
                           })}
                         </div>
                       ) : (
-                        <p className="text-[9px] text-slate-450 font-medium italic text-center leading-normal max-w-[150px] mt-1">
+                        <p className="text-[9px] text-[#79716b] font-medium italic text-center leading-normal max-w-[150px] mt-1">
                           Draw plot area to view carbon density per hectare
                         </p>
                       )}
@@ -1237,34 +1237,34 @@ export default function PlotDetailPage() {
               </section>
 
               {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <div className="flex justify-between items-center select-none border-b border-slate-100 pb-2">
-                  <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest">Species Distribution & Biodiversity</h3>
+              <section className="bg-white border border-[#e7e5e4]/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-center select-none border-b border-[#fafaf9] pb-2">
+                  <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest">Species Distribution & Biodiversity</h3>
                 </div>
 
                 {/* Shannon-Wiener Biodiversity Index Display */}
-                <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex flex-col gap-1.5 select-none">
+                <div className="bg-[#fafaf9] border border-[#e7e5e4] rounded-xl p-3 flex flex-col gap-1.5 select-none">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Shannon-Wiener Index (H')</span>
-                    <span className="font-serif text-base font-bold text-slate-900">{shannonIndex.toFixed(2)}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">Shannon-Wiener Index (H')</span>
+                    <span className="font-serif text-base font-bold text-[#292524]">{shannonIndex.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${shannonIndex < 1.5 ? "bg-amber-505" : shannonIndex <= 3.0 ? "bg-emerald-500" : "bg-sky-550"}`} />
-                    <span className="text-xs font-bold text-slate-700">{diversityLevel}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${shannonIndex < 1.5 ? "bg-amber-505" : shannonIndex <= 3.0 ? "bg-[#4e572c]" : "bg-sky-550"}`} />
+                    <span className="text-xs font-bold text-[#292524]">{diversityLevel}</span>
                   </div>
-                  <p className="text-[10px] text-slate-550 leading-relaxed font-medium">
+                  <p className="text-[10px] text-[#79716b] leading-relaxed font-medium">
                     {diversityDesc}
                   </p>
-                  <div className="border-t border-slate-200/50 mt-1 pt-1.5 text-[9px] text-slate-450 leading-relaxed italic font-medium">
+                  <div className="border-t border-[#e7e5e4] mt-1 pt-1.5 text-[9px] text-[#79716b] leading-relaxed italic font-medium">
                     Note: Higher biodiversity forests are generally associated with premium pricing in voluntary carbon markets due to ecological resilience and environmental co-benefits.
                   </div>
                 </div>
 
-                <h4 className="font-bold text-[9px] text-slate-400 uppercase tracking-widest mt-1 select-none">Contribution per Species</h4>
+                <h4 className="font-bold text-[9px] text-[#79716b] uppercase tracking-widest mt-1 select-none">Contribution per Species</h4>
                 
                 <div data-lenis-prevent className="flex flex-col gap-3 max-h-[160px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-4 text-center">Species not classified yet</p>
+                    <p className="text-xs text-[#79716b] italic py-4 text-center">Species not classified yet</p>
                   ) : (
                     speciesList.map((spec, idx) => {
                       const specScans = scans.filter(s => getSpeciesName(s)?.trim().toLowerCase() === spec);
@@ -1273,16 +1273,16 @@ export default function PlotDetailPage() {
                       const color = getSpeciesColor(spec);
                       return (
                         <div key={idx} className="flex flex-col gap-1">
-                          <div className="flex justify-between items-center text-xs text-slate-650 font-semibold capitalize">
+                          <div className="flex justify-between items-center text-xs text-[#79716b] font-semibold capitalize">
                             <div className="flex items-center gap-1.5 truncate max-w-[80%]">
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.bg.split(' ')[0]}`} />
                               <span className="italic truncate">{spec}</span>
-                              <span className="text-[9px] text-slate-400 font-normal shrink-0">({specScans.length} trees)</span>
+                              <span className="text-[9px] text-[#79716b] font-normal shrink-0">({specScans.length} trees)</span>
                             </div>
-                            <span className="font-bold text-slate-800 shrink-0">{specPct.toFixed(0)}%</span>
+                            <span className="font-bold text-[#292524] shrink-0">{specPct.toFixed(0)}%</span>
                           </div>
                           {/* Progress bar track */}
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/20">
+                          <div className="h-1.5 w-full bg-[#fafaf9] rounded-full overflow-hidden border border-[#e7e5e4]/20">
                             <div 
                               className={`h-full ${color.bg.split(' ')[0]} rounded-full transition-all duration-500`} 
                               style={{ width: `${specPct}%` }} 
@@ -1296,33 +1296,33 @@ export default function PlotDetailPage() {
               </section>
 
               {/* Card 3: Rata-rata & Visual Wave Dist (Fuel Usage & Cost) */}
-              <section className="bg-white border border-slate-200/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-slate-455 uppercase tracking-widest select-none">Dimensi Rata-rata & Kerapatan DBH</h3>
+              <section className="bg-white border border-[#e7e5e4]/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
+                <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest select-none">Dimensi Rata-rata & Kerapatan DBH</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block select-none">Avg DBH</span>
-                    <span className="text-lg font-bold font-serif text-slate-800">{avgDbh.toFixed(1)} cm</span>
+                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">Avg DBH</span>
+                    <span className="text-lg font-bold font-serif text-[#292524]">{avgDbh.toFixed(1)} cm</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block select-none">Avg Tinggi</span>
-                    <span className="text-lg font-bold font-serif text-slate-800">{avgTinggi.toFixed(1)} m</span>
+                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">Avg Tinggi</span>
+                    <span className="text-lg font-bold font-serif text-[#292524]">{avgTinggi.toFixed(1)} m</span>
                   </div>
                 </div>
 
                 {/* Stylized density bar graph (wave simulation) - only if scans length >= 5 */}
                 {scans.length >= 5 ? (
-                  <div className="flex items-end justify-between h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 select-none">
+                  <div className="flex items-end justify-between h-12 bg-[#fafbfd] border border-[#e7e5e4] rounded-lg p-2.5 mt-0.5 select-none">
                     {[45, 60, 30, 80, 50, 75, 45, 90, 65, 35, 70, 55, 85, 30].map((h, i) => (
                       <div
                         key={i}
                         style={{ height: `${h}%` }}
-                        className="w-1.5 bg-emerald-500/20 hover:bg-emerald-500 rounded-full transition-all duration-300 cursor-pointer"
+                        className="w-1.5 bg-[#4e572c]/20 hover:bg-[#4e572c] rounded-full transition-all duration-300 cursor-pointer"
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-12 bg-[#fafbfd] border border-slate-200/50 rounded-lg p-2.5 mt-0.5 text-[10px] text-slate-400 font-medium italic select-none text-center">
+                  <div className="flex items-center justify-center h-12 bg-[#fafbfd] border border-[#e7e5e4] rounded-lg p-2.5 mt-0.5 text-[10px] text-[#79716b] font-medium italic select-none text-center">
                     Requires at least 5 trees to view DBH distribution
                   </div>
                 )}
@@ -1335,14 +1335,14 @@ export default function PlotDetailPage() {
               
               <div 
                 onClick={() => setSelectedNode(null)}
-                className="hidden md:flex bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex-col gap-4 relative select-none"
+                className="hidden md:flex bg-white border border-[#e7e5e4] rounded-xl p-4 shadow-sm flex-col gap-4 relative select-none"
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">
+                    <h3 className="font-bold text-xs text-[#79716b] uppercase tracking-widest">
                       {spatialMode === "grid" ? "Forest Spatial Grid Map" : "GPS Satellite Distribution Map"}
                     </h3>
-                    <p className="text-[11px] text-slate-450 mt-0.5">
+                    <p className="text-[11px] text-[#79716b] mt-0.5">
                       {spatialMode === "grid" 
                         ? "Drag 48x48px nodes (2x2 cells) to position the actual tree location" 
                         : "Displays the geographical distribution of actual tree GPS coordinates on the map"}
@@ -1351,16 +1351,16 @@ export default function PlotDetailPage() {
 
                   {/* Passive Auto-save Indicator */}
                   {isOwner && spatialMode === "grid" && saveStatus !== "idle" && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-semibold transition-all select-none shadow-xs bg-white shrink-0">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e7e5e4] text-[10px] font-semibold transition-all select-none shadow-xs bg-white shrink-0">
                       {saveStatus === "saving" ? (
                         <>
-                          <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block" />
-                          <span className="text-slate-500">Menyimpan...</span>
+                          <span className="w-3 h-3 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin inline-block" />
+                          <span className="text-[#79716b]">Menyimpan...</span>
                         </>
                       ) : (
                         <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                          <span className="text-emerald-700 font-bold">Perubahan disimpan</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] inline-block animate-pulse" />
+                          <span className="text-[#616c39] font-bold">Perubahan disimpan</span>
                         </>
                       )}
                     </div>
@@ -1369,7 +1369,7 @@ export default function PlotDetailPage() {
 
                 <div className="flex flex-col md:flex-row gap-3 items-stretch relative w-full">
                   {/* Vertical Photoshop-style Sidebar */}
-                  <div className="flex flex-row md:flex-col gap-2 bg-slate-50 border border-slate-200/85 p-2 rounded-xl shadow-xs shrink-0 items-center justify-center md:justify-start w-full md:w-12 select-none z-20">
+                  <div className="flex flex-row md:flex-col gap-2 bg-[#fafaf9] border border-[#e7e5e4]/85 p-2 rounded-xl shadow-xs shrink-0 items-center justify-center md:justify-start w-full md:w-12 select-none z-20">
                     
                     {/* Grid Mode Button */}
                     <div className="relative group">
@@ -1377,15 +1377,15 @@ export default function PlotDetailPage() {
                         onClick={(e) => { e.stopPropagation(); setSpatialMode("grid"); }}
                         className={`p-2 rounded-lg border transition-all cursor-pointer ${
                           spatialMode === "grid" 
-                            ? "bg-slate-900 border-slate-900 text-white" 
-                            : "bg-white border-slate-100 hover:bg-slate-100/50 text-slate-500"
+                            ? "bg-[#292524] border-[#1c1917] text-white" 
+                            : "bg-white border-[#fafaf9] hover:bg-[#fafaf9]/50 text-[#79716b]"
                         }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                         </svg>
                       </button>
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                         Grid Spasial
                       </div>
                     </div>
@@ -1396,21 +1396,21 @@ export default function PlotDetailPage() {
                         onClick={(e) => { e.stopPropagation(); setSpatialMode("gps"); }}
                         className={`p-2 rounded-lg border transition-all cursor-pointer ${
                           spatialMode === "gps" 
-                            ? "bg-slate-900 border-slate-900 text-white" 
-                            : "bg-white border-slate-100 hover:bg-slate-100/50 text-slate-500"
+                            ? "bg-[#292524] border-[#1c1917] text-white" 
+                            : "bg-white border-[#fafaf9] hover:bg-[#fafaf9]/50 text-[#79716b]"
                         }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.89-2.203a.75.75 0 00.407-.675V5.27a.75.75 0 00-1.08-.674L15 6.75 9 3.75 3.28 6.324A.75.75 0 003 7v11.75a.75.75 0 001.08.674L9 17.25l6 3m.503-.002L9 17.25m6 3l4.89-2.203a.75.75 0 00.407-.675V5.27a.75.75 0 00-1.08-.674L15 6.75" />
                         </svg>
                       </button>
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                         GPS Map
                       </div>
                     </div>
 
                     {/* Divider for Zoom */}
-                    {spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-slate-200 my-0 md:my-1" />}
+                    {spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-[#e7e5e4] my-0 md:my-1" />}
 
                     {/* Zoom In Button */}
                     {spatialMode === "grid" && (
@@ -1420,15 +1420,15 @@ export default function PlotDetailPage() {
                           disabled={zoomLevel >= 1.25}
                           className={`p-2 rounded-lg border transition-all cursor-pointer ${
                             zoomLevel >= 1.25
-                              ? "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"
-                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
+                              ? "bg-[#fafaf9] border-[#fafaf9] text-[#d6d3d1] cursor-not-allowed"
+                              : "bg-white border-[#e7e5e4] text-[#79716b] hover:bg-[#fafaf9]"
                           }`}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                           </svg>
                         </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                           Zoom In ({zoomLevel * 100}%)
                         </div>
                       </div>
@@ -1442,22 +1442,22 @@ export default function PlotDetailPage() {
                           disabled={zoomLevel <= 0.5}
                           className={`p-2 rounded-lg border transition-all cursor-pointer ${
                             zoomLevel <= 0.5
-                              ? "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"
-                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
+                              ? "bg-[#fafaf9] border-[#fafaf9] text-[#d6d3d1] cursor-not-allowed"
+                              : "bg-white border-[#e7e5e4] text-[#79716b] hover:bg-[#fafaf9]"
                           }`}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
                           </svg>
                         </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                           Zoom Out ({zoomLevel * 100}%)
                         </div>
                       </div>
                     )}
 
                     {/* Divider for Owner tools */}
-                    {isOwner && spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-slate-200 my-0 md:my-1" />}
+                    {isOwner && spatialMode === "grid" && <div className="w-full md:w-8 h-px bg-[#e7e5e4] my-0 md:my-1" />}
 
                     {/* Draw Area Toggle Button */}
                     {isOwner && spatialMode === "grid" && (
@@ -1466,15 +1466,15 @@ export default function PlotDetailPage() {
                           onClick={(e) => { e.stopPropagation(); setIsDrawingMode(!isDrawingMode); }}
                           className={`p-2 rounded-lg border transition-all cursor-pointer ${
                             isDrawingMode 
-                              ? "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700" 
-                              : "bg-white border-slate-150 text-slate-600 hover:bg-slate-50"
+                              ? "bg-[#616c39] border-[#616c39] text-white hover:bg-[#4e572c]" 
+                              : "bg-white border-[#e7e5e4] text-[#79716b] hover:bg-[#fafaf9]"
                           }`}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0l-6-6" />
                           </svg>
                         </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                           {isDrawingMode ? "Selesai Menandai" : "Tandai Area Plot"}
                         </div>
                       </div>
@@ -1496,7 +1496,7 @@ export default function PlotDetailPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                           </svg>
                         </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
                           Hapus Semua Area
                         </div>
                       </div>
@@ -1514,7 +1514,7 @@ export default function PlotDetailPage() {
                         <div 
                           ref={containerRef}
                           style={{ height: "650px" }} 
-                          className="w-full border border-slate-200/50 rounded-xl bg-slate-50/20 p-2 relative overflow-hidden select-none"
+                          className="w-full border border-[#e7e5e4] rounded-xl bg-[#fafaf9]/20 p-2 relative overflow-hidden select-none"
                         >
                           <div
                             style={{
@@ -1560,7 +1560,7 @@ export default function PlotDetailPage() {
                                   backgroundImage: "linear-gradient(to right, rgba(226, 232, 240, 0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.45) 1px, transparent 1px)",
                                   backgroundSize: "24px 24px",
                                 }}
-                                className={`absolute top-0 left-0 bg-[#fafbfd] rounded-lg border border-slate-100 select-none ${isDrawingMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'}`}
+                                className={`absolute top-0 left-0 bg-[#fafbfd] rounded-lg border border-[#fafaf9] select-none ${isDrawingMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'}`}
                                 ref={gridRef}
                               >
 
@@ -1585,7 +1585,7 @@ export default function PlotDetailPage() {
                                   pointerEvents: "none",
                                   zIndex: 10,
                                 }}
-                                className="border-2 border-emerald-500 border-dashed bg-emerald-500/10"
+                                className="border-2 border-[#616c39] border-dashed bg-[#4e572c]/10"
                               />
                             );
                           })()}
@@ -1628,12 +1628,12 @@ export default function PlotDetailPage() {
                                 }}
                                 className={`group/area border-2 rounded-md flex flex-col justify-between p-1.5 ${
                                   isSelected 
-                                    ? "border-emerald-600 bg-emerald-500/15 ring-4 ring-emerald-500/20 shadow-md" 
-                                    : "border-emerald-500/60 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/10"
+                                    ? "border-[#616c39] bg-[#4e572c]/15 ring-4 ring-[#616c39]/20 shadow-md" 
+                                    : "border-[#616c39]/60 bg-[#4e572c]/5 hover:border-[#616c39] hover:bg-[#4e572c]/10"
                                 }`}
                               >
                                 {/* Area Label & Rename Input */}
-                                <div className="flex items-center gap-1 bg-emerald-600/90 text-white font-bold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs w-fit select-none pointer-events-auto">
+                                <div className="flex items-center gap-1 bg-[#616c39]/90 text-white font-bold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs w-fit select-none pointer-events-auto">
                                   {editingAreaIndex === index ? (
                                     <input
                                       type="text"
@@ -1657,7 +1657,7 @@ export default function PlotDetailPage() {
                                           e.currentTarget.blur();
                                         }
                                       }}
-                                      className="bg-white border-0 rounded px-1 py-0 text-[8px] text-slate-800 font-bold focus:outline-none w-20"
+                                      className="bg-white border-0 rounded px-1 py-0 text-[8px] text-[#292524] font-bold focus:outline-none w-20"
                                     />
                                   ) : (
                                     <span 
@@ -1692,7 +1692,7 @@ export default function PlotDetailPage() {
                                 </div>
 
                                 {/* Size label display */}
-                                <span className="absolute bottom-1 right-1 text-[7px] text-slate-500 font-bold bg-white/70 px-1 py-0.1 rounded select-none pointer-events-none">
+                                <span className="absolute bottom-1 right-1 text-[7px] text-[#79716b] font-bold bg-white/70 px-1 py-0.1 rounded select-none pointer-events-none">
                                   {stat.ha.toFixed(3)} ha
                                 </span>
 
@@ -1702,22 +1702,22 @@ export default function PlotDetailPage() {
                                     <div
                                       data-handle="tl"
                                       onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "tl")}
-                                      className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
+                                      className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#616c39] rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
                                     />
                                     <div
                                       data-handle="tr"
                                       onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "tr")}
-                                      className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
+                                      className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#616c39] rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
                                     />
                                     <div
                                       data-handle="bl"
                                       onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "bl")}
-                                      className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
+                                      className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#616c39] rounded-full cursor-nesw-resize z-20 hover:scale-125 transition-transform"
                                     />
                                     <div
                                       data-handle="br"
                                       onMouseDown={(e) => handleAreaMouseDown(e, index, "resize", "br")}
-                                      className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-emerald-600 rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
+                                      className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#616c39] rounded-full cursor-nwse-resize z-20 hover:scale-125 transition-transform"
                                     />
                                   </>
                                 )}
@@ -1761,7 +1761,7 @@ export default function PlotDetailPage() {
                               className={`w-12 h-12 rounded-lg border-2 cursor-pointer transition-all flex items-center justify-center hover:scale-105 hover:shadow-md ${
                                 specColor.bg.split(' ')[0]
                               } ${specColor.border} ${
-                                isSelected ? "ring-4 ring-emerald-500/35 border-emerald-600 shadow-md scale-105" : ""
+                                isSelected ? "ring-4 ring-[#616c39]/35 border-[#616c39] shadow-md scale-105" : ""
                               }`}
                             >
                               <svg className="w-5.5 h-5.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1770,7 +1770,7 @@ export default function PlotDetailPage() {
                             </div>
                             
                             {/* Small label below node */}
-                            <span className="text-[8px] font-mono font-bold text-slate-505 bg-white/80 border border-slate-200/50 px-1 py-0.2 rounded shadow-xs mt-1 block w-fit mx-auto text-center pointer-events-none select-none shrink-0 truncate max-w-full">
+                            <span className="text-[8px] font-mono font-bold text-[#79716b] bg-white/80 border border-[#e7e5e4] px-1 py-0.2 rounded shadow-xs mt-1 block w-fit mx-auto text-center pointer-events-none select-none shrink-0 truncate max-w-full">
                               #{scan.tree_code.replace("POHON-", "")}
                             </span>
                           </div>
@@ -1798,35 +1798,35 @@ export default function PlotDetailPage() {
                               zIndex: 50,
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xl flex flex-col gap-2.5 animate-fadeIn select-none pointer-events-auto"
+                            className="bg-white border border-[#e7e5e4] rounded-lg p-3.5 shadow-xl flex flex-col gap-2.5 animate-fadeIn select-none pointer-events-auto"
                           >
                             <div className="flex justify-between items-center">
-                              <span className="text-[9px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">
+                              <span className="text-[9px] font-mono bg-[#fafaf9] text-[#79716b] px-2 py-0.5 rounded font-bold">
                                 {selectedNode.tree_code}
                               </span>
                               <button
                                 onClick={() => setSelectedNode(null)}
-                                className="text-slate-400 hover:text-slate-700 text-xs font-bold font-sans"
+                                className="text-[#79716b] hover:text-[#292524] text-xs font-bold font-sans"
                               >
                                 ✕
                               </button>
                             </div>
 
-                            <div className="flex flex-col gap-1 text-[11px] text-slate-555">
+                            <div className="flex flex-col gap-1 text-[11px] text-[#79716b]">
                               {specName && (
                                 <span className={`text-[8px] font-semibold border ${specColor.border} ${specColor.lightBg} ${specColor.text} px-2 py-0.5 rounded capitalize w-fit`}>
                                   <i>{specName}</i>
                                 </span>
                               )}
-                              <div className="flex justify-between border-b border-slate-100 pb-1 mt-1">
+                              <div className="flex justify-between border-b border-[#fafaf9] pb-1 mt-1">
                                 <span>DBH:</span>
-                                <span className="font-bold text-slate-800">{selectedNode.dbh_cm.toFixed(1)} cm</span>
+                                <span className="font-bold text-[#292524]">{selectedNode.dbh_cm.toFixed(1)} cm</span>
                               </div>
-                              <div className="flex justify-between border-b border-slate-100 pb-1">
+                              <div className="flex justify-between border-b border-[#fafaf9] pb-1">
                                 <span>Tinggi:</span>
-                                <span className="font-bold text-slate-800">{selectedNode.tinggi_m.toFixed(1)} m</span>
+                                <span className="font-bold text-[#292524]">{selectedNode.tinggi_m.toFixed(1)} m</span>
                               </div>
-                              <div className="flex justify-between text-emerald-800 font-semibold mt-0.5">
+                              <div className="flex justify-between text-[#4e572c] font-semibold mt-0.5">
                                 <span>CO₂e:</span>
                                 <span className="font-bold">{selectedNode.co2e_kg.toFixed(1)} kg</span>
                               </div>
@@ -1834,7 +1834,7 @@ export default function PlotDetailPage() {
 
                             <Link
                               href={`/reconstruct?code=${selectedNode.tree_code}&phase=result`}
-                              className="bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-[10px] rounded py-1.5 text-center shadow-sm transition-all"
+                              className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-[10px] rounded py-1.5 text-center shadow-sm transition-all"
                             >
                               Buka detail →
                             </Link>
@@ -1858,8 +1858,8 @@ export default function PlotDetailPage() {
                       </div>
                       
                       {/* Explicit Scale Indicator Label (Anchored in place, never scales or scrolls) */}
-                      <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-xs border border-slate-200/60 rounded px-2.5 py-1 text-[9px] font-bold text-slate-505 shadow-sm select-none z-30 pointer-events-none flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-xs border border-[#e7e5e4] rounded px-2.5 py-1 text-[9px] font-bold text-[#79716b] shadow-sm select-none z-30 pointer-events-none flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] animate-pulse" />
                         <span>1 kotak grid = 2 meter</span>
                       </div>
                     </>
@@ -1871,7 +1871,7 @@ export default function PlotDetailPage() {
                           <span>Showing {gpsScans.length} of {scans.length} trees — the rest do not have GPS data</span>
                         </div>
                       )}
-                      <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-slate-200 rounded-lg overflow-hidden relative">
+                      <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-[#e7e5e4] rounded-lg overflow-hidden relative">
                         <PlotMap
                           scans={scans}
                           centroidLat={plot?.gps_centroid_lat || null}
@@ -1885,18 +1885,18 @@ export default function PlotDetailPage() {
             </div>
 
               {/* Card 5: Orders-style Tree Scans Table */}
-              <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
+              <section className="bg-white border border-[#e7e5e4] rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest select-none">Tree Records List ({filteredScans.length})</h3>
+                    <h3 className="font-bold text-xs text-[#79716b] uppercase tracking-widest select-none">Tree Records List ({filteredScans.length})</h3>
                   </div>
                   
                   {/* Tab Filters */}
-                  <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50 select-none">
+                  <div className="flex bg-[#fafaf9] p-0.5 rounded-lg border border-[#e7e5e4] select-none">
                     <button 
                       onClick={() => setFilterTab("all")} 
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
-                        filterTab === "all" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-755"
+                        filterTab === "all" ? "bg-white text-[#292524] shadow-xs" : "text-[#79716b] hover:text-[#292524]"
                       }`}
                     >
                       Semua
@@ -1904,7 +1904,7 @@ export default function PlotDetailPage() {
                     <button 
                       onClick={() => setFilterTab("large")} 
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
-                        filterTab === "large" ? "bg-white text-[#191919] shadow-xs" : "text-slate-500 hover:text-slate-755"
+                        filterTab === "large" ? "bg-white text-[#292524] shadow-xs" : "text-[#79716b] hover:text-[#292524]"
                       }`}
                     >
                       DBH &gt; 10cm
@@ -1912,7 +1912,7 @@ export default function PlotDetailPage() {
                     <button 
                       onClick={() => setFilterTab("small")} 
                       className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
-                        filterTab === "small" ? "bg-white text-[#191919] shadow-xs" : "text-slate-505 hover:text-slate-755"
+                        filterTab === "small" ? "bg-white text-[#292524] shadow-xs" : "text-[#79716b] hover:text-[#292524]"
                       }`}
                     >
                       DBH &le; 10cm
@@ -1922,9 +1922,9 @@ export default function PlotDetailPage() {
 
                 {/* Table Layout */}
                 <div data-lenis-prevent className="w-full max-h-[380px] overflow-y-auto overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs text-slate-500">
+                  <table className="w-full border-collapse text-left text-xs text-[#79716b]">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
+                      <tr className="border-b border-[#fafaf9] text-[#79716b] font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
                         <th className="py-2.5 px-3">Tree</th>
                         <th className="py-2.5 px-3">Species Classification</th>
                         <th className="py-2.5 px-3">Metrik Fisik</th>
@@ -1936,7 +1936,7 @@ export default function PlotDetailPage() {
                     <tbody>
                       {filteredScans.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center italic text-slate-400">
+                          <td colSpan={6} className="py-8 text-center italic text-[#79716b]">
                             No tree records found for this criteria.
                           </td>
                         </tr>
@@ -1951,7 +1951,7 @@ export default function PlotDetailPage() {
                               {/* Row click to view details */}
                               <tr 
                                 onClick={() => router.push(`/reconstruct?code=${scan.tree_code}&phase=result`)}
-                                className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                className="border-b border-[#fafaf9]/50 hover:bg-[#fafaf9]/50 transition-colors cursor-pointer"
                               >
                                 <td className="py-3 px-3">
                                   <div className="flex items-center gap-2.5">
@@ -1960,18 +1960,18 @@ export default function PlotDetailPage() {
                                         src={scan.thumbnail_url}
                                         alt={scan.tree_code}
                                         loading="lazy"
-                                        className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+                                        className="w-8 h-8 rounded-lg object-cover border border-[#e7e5e4] shrink-0"
                                       />
                                     ) : (
-                                      <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                      <div className="w-8 h-8 rounded-lg bg-[#fafaf9] border border-[#e7e5e4] flex items-center justify-center text-[#79716b] shrink-0">
                                         <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                         </svg>
                                       </div>
                                     )}
                                     <div>
-                                      <span className="font-bold text-slate-800 block text-xs">{scan.tree_code}</span>
-                                      <span className="text-[10px] text-slate-400 block font-mono">
+                                      <span className="font-bold text-[#292524] block text-xs">{scan.tree_code}</span>
+                                      <span className="text-[10px] text-[#79716b] block font-mono">
                                         {new Date(scan.scan_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                                       </span>
                                     </div>
@@ -1984,25 +1984,25 @@ export default function PlotDetailPage() {
                                       <span className={`text-[10px] font-semibold ${specColor.text} capitalize`}>
                                         <i>{specName}</i>
                                       </span>
-                                      {specCommon && <span className="text-[9px] text-slate-400">{specCommon}</span>}
+                                      {specCommon && <span className="text-[9px] text-[#79716b]">{specCommon}</span>}
                                     </div>
                                   ) : (
-                                    <span className="text-slate-400 italic">Tidak terklasifikasi</span>
+                                    <span className="text-[#79716b] italic">Tidak terklasifikasi</span>
                                   )}
                                 </td>
                                 
                                 <td className="py-3 px-3">
                                   <div className="flex flex-col gap-0.5">
-                                    <span>DBH: <span className="font-semibold text-slate-700">{scan.dbh_cm.toFixed(1)} cm</span></span>
-                                    <span>Tinggi: <span className="font-semibold text-slate-700">{scan.tinggi_m.toFixed(1)} m</span></span>
+                                    <span>DBH: <span className="font-semibold text-[#292524]">{scan.dbh_cm.toFixed(1)} cm</span></span>
+                                    <span>Tinggi: <span className="font-semibold text-[#292524]">{scan.tinggi_m.toFixed(1)} m</span></span>
                                   </div>
                                 </td>
                                 
-                                <td className="py-3 px-3 text-right font-medium text-slate-600">
+                                <td className="py-3 px-3 text-right font-medium text-[#79716b]">
                                   {scan.biomassa_kg.toFixed(1)} kg
                                 </td>
                                 
-                                <td className="py-3 px-3 text-right font-bold text-slate-800">
+                                <td className="py-3 px-3 text-right font-bold text-[#292524]">
                                   {scan.co2e_kg.toFixed(1)} kg
                                 </td>
                                 
@@ -2041,11 +2041,11 @@ export default function PlotDetailPage() {
       {treeToRemove && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            className="absolute inset-0 bg-[#292524]/40 backdrop-blur-sm transition-opacity" 
             onClick={() => setTreeToRemove(null)}
           />
           
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
+          <div className="bg-white border border-[#e7e5e4] rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -2053,20 +2053,20 @@ export default function PlotDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-serif text-base text-[#191919] font-bold">Remove Tree</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5">This action will remove the tree from the plot.</p>
+                <h3 className="font-serif text-base text-[#292524] font-bold">Remove Tree</h3>
+                <p className="text-[10px] text-[#79716b] mt-0.5">This action will remove the tree from the plot.</p>
               </div>
             </div>
             
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to remove tree <span className="font-bold text-slate-800">{treeToRemove}</span> from this plot?
+            <p className="text-xs text-[#79716b] leading-relaxed">
+              Are you sure you want to remove tree <span className="font-bold text-[#292524]">{treeToRemove}</span> from this plot?
             </p>
             
             <div className="flex justify-end gap-2 mt-2">
               <button
                 type="button"
                 onClick={() => setTreeToRemove(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] hover:text-[#292524] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -2090,19 +2090,19 @@ export default function PlotDetailPage() {
       {isAddTreeModalOpen && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            className="absolute inset-0 bg-[#292524]/40 backdrop-blur-sm transition-opacity" 
             onClick={() => setIsAddTreeModalOpen(false)}
           />
           
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-lg max-h-[85vh] flex flex-col gap-5 animate-fadeIn">
+          <div className="bg-white border border-[#e7e5e4] rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-lg max-h-[85vh] flex flex-col gap-5 animate-fadeIn">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#191919] font-normal">Add Tree to Plot</h3>
-                <p className="text-xs text-slate-500 mt-1">Select a method to add tree biomass records.</p>
+                <h3 className="font-serif text-lg text-[#292524] font-normal">Add Tree to Plot</h3>
+                <p className="text-xs text-[#79716b] mt-1">Select a method to add tree biomass records.</p>
               </div>
               <button 
                 onClick={() => setIsAddTreeModalOpen(false)} 
-                className="text-slate-400 hover:text-[#191919] text-sm font-semibold w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-colors cursor-pointer"
+                className="text-[#79716b] hover:text-[#292524] text-sm font-semibold w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -2110,38 +2110,38 @@ export default function PlotDetailPage() {
 
             <div data-lenis-prevent className="flex flex-col gap-4 overflow-y-auto pr-1">
               <div 
-                className="border border-slate-200 rounded-lg p-4 hover:border-[#191919]/60 hover:bg-slate-50/50 transition-all cursor-pointer flex flex-col gap-1.5" 
+                className="border border-[#e7e5e4] rounded-lg p-4 hover:border-[#292524]/60 hover:bg-[#fafaf9]/50 transition-all cursor-pointer flex flex-col gap-1.5" 
                 onClick={handleStartNewScan}
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base leading-none">+</span>
-                  <span className="font-semibold text-xs text-[#191919]">Start New Scan</span>
+                  <span className="w-6 h-6 rounded-lg bg-[#616c39]/10 text-[#616c39] flex items-center justify-center font-bold text-base leading-none">+</span>
+                  <span className="font-semibold text-xs text-[#292524]">Start New Scan</span>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed ml-8">
+                <p className="text-[11px] text-[#79716b] leading-relaxed ml-8">
                   Record video/photos of a new tree directly with your camera.
                 </p>
               </div>
 
-              <div className="border border-slate-200 rounded-lg p-4 flex flex-col gap-3">
+              <div className="border border-[#e7e5e4] rounded-lg p-4 flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                     </svg>
                   </span>
-                  <span className="font-semibold text-xs text-[#191919]">Hubungkan Scan Lama</span>
+                  <span className="font-semibold text-xs text-[#292524]">Hubungkan Scan Lama</span>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed ml-8">
+                <p className="text-[11px] text-[#79716b] leading-relaxed ml-8">
                   Select a previous tree recording not yet associated with any plot.
                 </p>
                 
-                <div className="ml-8 border-t border-slate-100 pt-3 flex flex-col gap-2.5">
+                <div className="ml-8 border-t border-[#fafaf9] pt-3 flex flex-col gap-2.5">
                   <input
                     type="text"
                     placeholder="Search tree code (e.g. POHON-1234)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-lg px-3 py-1.5 text-xs text-[#191919] placeholder-slate-455 focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                    className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#292524] rounded-lg px-3 py-1.5 text-xs text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#1c1917]/5 transition-all w-full"
                   />
 
                   {claimError && (
@@ -2150,12 +2150,12 @@ export default function PlotDetailPage() {
 
                   <div data-lenis-prevent className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto pr-1">
                     {unclaimedLoading ? (
-                      <div className="text-center py-3 text-slate-400 text-[10px] font-semibold flex items-center justify-center gap-1.5">
-                        <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                      <div className="text-center py-3 text-[#79716b] text-[10px] font-semibold flex items-center justify-center gap-1.5">
+                        <span className="w-3 h-3 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin" />
                         Loading scan data...
                       </div>
                     ) : unclaimedScans.length === 0 ? (
-                      <div className="text-center py-3 text-slate-400 text-[10px] italic">
+                      <div className="text-center py-3 text-[#79716b] text-[10px] italic">
                         No unclaimed scans available.
                       </div>
                     ) : (
@@ -2165,15 +2165,15 @@ export default function PlotDetailPage() {
                           <div 
                             key={scan.id} 
                             onClick={() => handleClaimOldScan(scan)}
-                            className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-slate-100/70 hover:border-slate-200 transition-all cursor-pointer"
+                            className="flex items-center justify-between p-2 rounded-lg hover:bg-[#fafaf9] border border-[#fafaf9]/70 hover:border-[#e7e5e4] transition-all cursor-pointer"
                           >
                             <div>
-                              <span className="text-xs font-bold text-slate-800 block">{scan.tree_code}</span>
-                              <span className="text-[10px] text-slate-500">DBH: {scan.dbh_cm.toFixed(1)} cm</span>
+                              <span className="text-xs font-bold text-[#292524] block">{scan.tree_code}</span>
+                              <span className="text-[10px] text-[#79716b]">DBH: {scan.dbh_cm.toFixed(1)} cm</span>
                             </div>
                             <button 
                               disabled={claimLoading !== null}
-                              className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-[#191919] font-bold text-[9px] rounded transition-colors cursor-pointer"
+                              className="px-2 py-0.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] font-bold text-[9px] rounded transition-colors cursor-pointer"
                             >
                               {claimLoading === scan.id ? "Menghubungkan..." : "Hubungkan"}
                             </button>
@@ -2192,23 +2192,23 @@ export default function PlotDetailPage() {
       {isEditPlotModalOpen && plot && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            className="absolute inset-0 bg-[#292524]/40 backdrop-blur-sm transition-opacity" 
             onClick={() => setIsEditPlotModalOpen(false)}
           />
           
           <form 
             onSubmit={handleEditPlot}
-            className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-md flex flex-col gap-4 animate-fadeIn"
+            className="bg-white border border-[#e7e5e4] rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-md flex flex-col gap-4 animate-fadeIn"
           >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#191919] font-normal">Edit Plot Info</h3>
-                <p className="text-xs text-slate-500 mt-1">Change the name, description, and privacy of this plot.</p>
+                <h3 className="font-serif text-lg text-[#292524] font-normal">Edit Plot Info</h3>
+                <p className="text-xs text-[#79716b] mt-1">Change the name, description, and privacy of this plot.</p>
               </div>
               <button 
                 type="button"
                 onClick={() => setIsEditPlotModalOpen(false)} 
-                className="text-slate-400 hover:text-[#191919] text-sm font-semibold w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-colors cursor-pointer"
+                className="text-[#79716b] hover:text-[#292524] text-sm font-semibold w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -2216,36 +2216,36 @@ export default function PlotDetailPage() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Plot Name</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Plot Name</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-2.5 text-xs text-[#191919] focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full"
+                  className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#292524] rounded-xl px-4 py-2.5 text-xs text-[#292524] focus:outline-none focus:ring-4 focus:ring-[#1c1917]/5 transition-all w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Description</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Description</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
-                  className="bg-slate-50 border border-slate-200 focus:border-[#191919] rounded-xl px-4 py-2.5 text-xs text-[#191919] focus:outline-none focus:ring-4 focus:ring-slate-900/5 transition-all w-full resize-none"
+                  className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#292524] rounded-xl px-4 py-2.5 text-xs text-[#292524] focus:outline-none focus:ring-4 focus:ring-[#1c1917]/5 transition-all w-full resize-none"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Plot Privacy</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Plot Privacy</label>
                 <div className="grid grid-cols-2 gap-3 mt-0.5">
                   <button
                     type="button"
                     onClick={() => setEditPrivacy("private")}
                     className={`border rounded-xl p-2.5 flex flex-col items-center gap-1 transition-all cursor-pointer ${
                       editPrivacy === "private"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                        ? "border-[#616c39] bg-[#616c39]/10 text-[#616c39]"
+                        : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
                     <span className="text-xs font-semibold">Private</span>
@@ -2257,8 +2257,8 @@ export default function PlotDetailPage() {
                     onClick={() => setEditPrivacy("public")}
                     className={`border rounded-xl p-2.5 flex flex-col items-center gap-1 transition-all cursor-pointer ${
                       editPrivacy === "public"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                        ? "border-[#616c39] bg-[#616c39]/10 text-[#616c39]"
+                        : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
                     <span className="text-xs font-semibold">Public</span>
@@ -2268,18 +2268,18 @@ export default function PlotDetailPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2.5 mt-2 border-t border-slate-100 pt-3.5">
+            <div className="flex justify-end gap-2.5 mt-2 border-t border-[#fafaf9] pt-3.5">
               <button
                 type="button"
                 onClick={() => setIsEditPlotModalOpen(false)}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={actionLoading}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#191919] hover:bg-[#191919]/90 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#292524] hover:bg-[#292524]/90 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
               >
                 {actionLoading && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />}
                 Save Changes

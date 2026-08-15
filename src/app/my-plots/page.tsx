@@ -37,7 +37,7 @@ interface ScanRecord {
   }> | string;
 }
 
-const TreeIcon = ({ className = "w-8 h-8 text-slate-350" }) => (
+const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
   <svg 
     viewBox="0 0 24 24" 
     fill="none" 
@@ -163,9 +163,9 @@ export default function MyPlotsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col items-center justify-center font-sans p-6 text-center select-none">
-        <span className="w-8 h-8 border-3 border-[#191919] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500 font-medium">Loading dashboard data...</p>
+      <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans p-6 text-center select-none">
+        <span className="w-8 h-8 border-3 border-[#292524] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-[#79716b] font-medium">Loading dashboard data...</p>
         {isWakingUp && (
           <p className="text-xs text-amber-600 mt-3 max-w-xs animate-pulse leading-relaxed">
             ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds on first visit.
@@ -176,29 +176,29 @@ export default function MyPlotsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/60 text-[#191919] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col font-sans">
       <main className="flex-1 pt-28 pb-20 px-6 relative overflow-hidden">
         {/* Background radial overlays */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-emerald-500/5 blur-[130px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-slate-200/50 blur-[130px] pointer-events-none" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square rounded-full bg-[#4e572c]/5 blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-[#e7e5e4]/50 blur-[130px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative z-10">
           
           {/* Header */}
-          <header className="flex justify-between items-center pb-6 border-b border-slate-200/80 mb-8 select-none">
+          <header className="flex justify-between items-center pb-6 border-b border-[#e7e5e4]/80 mb-8 select-none">
             <div>
-              <h1 className="text-2xl font-serif font-normal tracking-tight text-[#191919]">
+              <h1 className="text-2xl font-serif font-normal tracking-tight text-[#292524]">
                 Dashboard
               </h1>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Welcome back, <span className="text-emerald-700 font-semibold">{user?.display_name || user?.username}</span>
+              <p className="text-xs text-[#79716b] mt-1 leading-relaxed">
+                Welcome back, <span className="text-[#616c39] font-semibold">{user?.display_name || user?.username}</span>
               </p>
             </div>
 
             <div className="flex items-center gap-4">
               <Link
                 href="/plots/create"
-                className="bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-4 py-2.5 shadow-sm transition-all"
+                className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-4 py-2.5 shadow-sm transition-all"
               >
                 + Create New Plot
               </Link>
@@ -213,13 +213,13 @@ export default function MyPlotsPage() {
           )}
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-slate-200/60 mb-8 select-none">
+          <div className="flex border-b border-[#e7e5e4] mb-8 select-none">
             <button
               onClick={() => setActiveTab("trees")}
               className={`pb-3.5 px-6 text-xs uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === "trees"
-                  ? "border-emerald-600 text-emerald-700"
-                  : "border-transparent text-slate-400 hover:text-slate-700"
+                  ? "border-[#616c39] text-[#616c39]"
+                  : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
               My Trees ({scans.length})
@@ -228,8 +228,8 @@ export default function MyPlotsPage() {
               onClick={() => setActiveTab("plots")}
               className={`pb-3.5 px-6 text-xs uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === "plots"
-                  ? "border-emerald-600 text-emerald-700"
-                  : "border-transparent text-slate-400 hover:text-slate-700"
+                  ? "border-[#616c39] text-[#616c39]"
+                  : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
               My Plots ({plots.length})
@@ -239,19 +239,19 @@ export default function MyPlotsPage() {
           {/* TAB 1: My Trees */}
           {activeTab === "trees" && (
             scans.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-5">
-                  <svg className="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white border border-[#e7e5e4] rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[#616c39]/10 border border-[#616c39]/20 flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-6 h-6 text-[#616c39]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-slate-800 mb-2">No Tree Records Yet</h2>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-6">
+                <h2 className="text-base font-semibold text-[#292524] mb-2">No Tree Records Yet</h2>
+                <p className="text-xs text-[#79716b] max-w-sm mx-auto leading-relaxed mb-6">
                   Record a new tree using our reconstruct module to visualize biomass data.
                 </p>
                 <Link
                   href="/reconstruct"
-                  className="inline-block bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
+                  className="inline-block bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
                   Start Tree Scan
                 </Link>
@@ -284,7 +284,7 @@ export default function MyPlotsPage() {
                           <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded backdrop-blur-sm border ${
                             record.thumbnail_url 
                               ? "bg-black/30 border-white/10 text-white" 
-                              : "bg-white/40 border-slate-200 text-slate-600"
+                              : "bg-white/40 border-[#e7e5e4] text-[#79716b]"
                           }`}>
                             #{record.id}
                           </span>
@@ -309,7 +309,7 @@ export default function MyPlotsPage() {
                               Invalid scan
                             </span>
                           ) : (
-                            <div className="text-[10px] text-slate-450 font-semibold">
+                            <div className="text-[10px] text-[#79716b] font-semibold">
                               {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} / {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
                             </div>
                           )}
@@ -353,19 +353,19 @@ export default function MyPlotsPage() {
           {/* TAB 2: My Plots */}
           {activeTab === "plots" && (
             plots.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-5">
-                  <svg className="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white border border-[#e7e5e4] rounded-3xl p-12 text-center max-w-xl mx-auto mt-8 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[#616c39]/10 border border-[#616c39]/20 flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-6 h-6 text-[#616c39]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-slate-800 mb-2">No Forest Plots Yet</h2>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed mb-6">
+                <h2 className="text-base font-semibold text-[#292524] mb-2">No Forest Plots Yet</h2>
+                <p className="text-xs text-[#79716b] max-w-sm mx-auto leading-relaxed mb-6">
                   Create a new plot to aggregate spread coordinates, average DBH, and total estimated carbon target.
                 </p>
                 <Link
                   href="/plots/create"
-                  className="inline-block bg-[#191919] hover:bg-[#191919]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
+                  className="inline-block bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
                   Create Your First Plot
                 </Link>
@@ -375,36 +375,36 @@ export default function MyPlotsPage() {
                 {plots.map((plot) => (
                   <div
                     key={plot.id}
-                    className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm hover:border-slate-350 transition-all flex flex-col justify-between"
+                    className="bg-white border border-[#e7e5e4]/80 rounded-2xl p-6 shadow-sm hover:border-[#a8a29e] transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-4 select-none">
-                        <span className="text-[10px] font-mono tracking-wider bg-slate-100 text-slate-500 border border-slate-200/50 px-2 py-0.5 rounded font-bold">
+                        <span className="text-[10px] font-mono tracking-wider bg-[#fafaf9] text-[#79716b] border border-[#e7e5e4] px-2 py-0.5 rounded font-bold">
                           {plot.plot_code}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${
                             plot.privacy === "public"
                               ? "bg-sky-50 text-sky-700 border-sky-100"
-                              : "bg-slate-100 text-slate-600 border-slate-200"
+                              : "bg-[#fafaf9] text-[#79716b] border-[#e7e5e4]"
                           }`}>
                             {plot.privacy}
                           </span>
                         </div>
                       </div>
 
-                      <h3 className="text-base font-semibold text-slate-800 mb-2 hover:text-emerald-750 transition-colors font-serif">
+                      <h3 className="text-base font-semibold text-[#292524] mb-2 hover:text-[#616c39] transition-colors font-serif">
                         <Link href={`/plots/${plot.plot_code}`}>
                           {plot.name}
                         </Link>
                       </h3>
 
-                      <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-2">
+                      <p className="text-xs text-[#79716b] leading-relaxed mb-6 line-clamp-2">
                         {plot.description || "No location description."}
                       </p>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-100 flex justify-between items-center select-none font-sans">
+                    <div className="pt-4 border-t border-[#fafaf9] flex justify-between items-center select-none font-sans">
                       <div className="flex items-center gap-3">
                         {/* Overlapping thumbnail avatars */}
                         <div className="flex -space-x-2.5 overflow-hidden">
@@ -412,35 +412,35 @@ export default function MyPlotsPage() {
                             plot.thumbnails.map((url, i) => (
                               <img
                                 key={i}
-                                className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-slate-200"
+                                className="inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover object-center border border-[#e7e5e4]"
                                 src={url}
                                 alt="Tree avatar"
                                 loading="lazy"
                               />
                             ))
                           ) : (
-                            <div className="inline-block h-7 w-7 rounded-full bg-slate-50 ring-2 ring-white border border-slate-200 flex items-center justify-center text-slate-400">
+                            <div className="inline-block h-7 w-7 rounded-full bg-[#fafaf9] ring-2 ring-white border border-[#e7e5e4] flex items-center justify-center text-[#79716b]">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                               </svg>
                             </div>
                           )}
                           {plot.scans_count > 3 && (
-                            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-slate-50 text-[9px] font-bold text-slate-550 border border-slate-200 ring-2 ring-white">
+                            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-[#fafaf9] text-[9px] font-bold text-[#79716b] border border-[#e7e5e4] ring-2 ring-white">
                               +{plot.scans_count - 3}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex flex-col text-[10px] text-slate-455 leading-tight">
-                          <span>Trees: <span className="font-semibold text-slate-750">{plot.scans_count}</span></span>
-                          <span className="mt-0.5">CO₂e: <span className="font-bold text-slate-800">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
+                        <div className="flex flex-col text-[10px] text-[#79716b] leading-tight">
+                          <span>Trees: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
+                          <span className="mt-0.5">CO₂e: <span className="font-bold text-[#292524]">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
                       
                       <Link
                         href={`/plots/${plot.plot_code}`}
-                        className="text-xs text-emerald-650 font-bold hover:text-emerald-700 flex items-center gap-1 transition-colors"
+                        className="text-xs text-[#616c39] font-bold hover:text-[#616c39] flex items-center gap-1 transition-colors"
                       >
                         Plot Details &rarr;
                       </Link>
@@ -458,11 +458,11 @@ export default function MyPlotsPage() {
       {treeToDelete && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            className="absolute inset-0 bg-[#292524]/40 backdrop-blur-sm transition-opacity" 
             onClick={() => setTreeToDelete(null)}
           />
           
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
+          <div className="bg-white border border-[#e7e5e4] rounded-xl p-6 shadow-2xl relative z-10 w-full max-w-sm flex flex-col gap-4 animate-fadeIn">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -470,20 +470,20 @@ export default function MyPlotsPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-serif text-base text-[#191919] font-bold">Delete Tree</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5">This action cannot be undone.</p>
+                <h3 className="font-serif text-base text-[#292524] font-bold">Delete Tree</h3>
+                <p className="text-[10px] text-[#79716b] mt-0.5">This action cannot be undone.</p>
               </div>
             </div>
             
-            <p className="text-xs text-slate-600 leading-relaxed font-sans">
-              Are you sure you want to delete tree <span className="font-bold text-slate-800">{treeToDelete}</span> and all of its reconstruction data?
+            <p className="text-xs text-[#79716b] leading-relaxed font-sans">
+              Are you sure you want to delete tree <span className="font-bold text-[#292524]">{treeToDelete}</span> and all of its reconstruction data?
             </p>
             
             <div className="flex justify-end gap-2 mt-2 font-sans">
               <button
                 type="button"
                 onClick={() => setTreeToDelete(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] hover:text-[#292524] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
