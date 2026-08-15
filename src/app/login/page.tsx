@@ -53,7 +53,7 @@ function LoginForm() {
       await refreshUser();
       window.location.href = redirectPath;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : (isId ? "Gagal masuk ke akun" : "Failed to sign in"));
+      setError(err instanceof Error ? err.message : (isId ? "Gagal masuk ke akun" : "Failed to log in"));
     } finally {
       setLoading(false);
     }
@@ -65,51 +65,53 @@ function LoginForm() {
   };
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-[#f4f4f5] flex flex-col items-center justify-center relative overflow-hidden px-4 py-12 font-sans selection:bg-[#616c39]/30">
+    <main className="min-h-screen bg-[#fafaf9] text-[#292524] flex flex-col items-center justify-center px-4 py-16 font-sans selection:bg-[#616c39]/15">
       
-      {/* Subtle radial ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#616c39]/10 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Main Modern Dark Card */}
-      <div className="w-full max-w-[420px] bg-[#121215] border border-[#27272a] rounded-3xl p-7 sm:p-9 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-left">
-        
-        {/* Top V Logo Badge */}
-        <div className="w-11 h-11 rounded-xl bg-[#1c1c21] border border-[#3f3f46]/40 flex items-center justify-center mb-6 shadow-inner">
+      {/* Top Botanical V Logo (Above the Card, Centered) */}
+      <div className="mb-8 flex justify-center">
+        <Link href="/" className="group inline-block transition-transform hover:scale-105">
           <Image
-            src="/vora_v_logo_white.png"
-            alt="Vora"
-            width={24}
-            height={24}
-            className="w-5.5 h-5.5 object-contain"
+            src="/vora_v_logo.png"
+            alt="Vora Logo"
+            width={46}
+            height={46}
+            className="h-11 w-auto object-contain"
             priority
           />
-        </div>
+        </Link>
+      </div>
 
-        {/* Heading */}
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          {isId ? "Masuk ke akun Anda" : "Sign in to your account"}
-        </h1>
-        <p className="text-xs text-[#a1a1aa] mt-1.5 leading-relaxed">
-          {isId
-            ? "Akses dasbor plot, manajemen inventaris pohon, dan analisis 3D."
-            : "Access your plot dashboard, tree inventory, and 3D analytics."}
-        </p>
+      {/* Main Light Card */}
+      <div className="w-full max-w-[430px] bg-[#ffffff] border border-[#e7e5e4] rounded-[26px] p-8 sm:p-10 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.05),0_0_1px_rgba(0,0,0,0.1)] text-left">
+        
+        {/* Title & Switch link in Serif */}
+        <div className="mb-7 pb-4 border-b border-[#e7e5e4]/60">
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#292524] tracking-tight">
+            {isId ? "Masuk" : "Login"}
+          </h1>
+          <p className="text-xs text-[#79716b] mt-1.5 font-sans">
+            {isId ? "Belum punya akun?" : "Don't have an account?"}{" "}
+            <Link href="/register" className="text-[#292524] font-semibold underline underline-offset-4 hover:text-[#616c39] transition">
+              {isId ? "Daftar sekarang" : "Sign up"}
+            </Link>
+          </p>
+        </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-950/60 border border-red-500/40 text-red-200 text-xs rounded-xl p-3 mt-5 flex items-center gap-2.5 animate-fadeIn">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-5 flex items-center gap-2.5 animate-fadeIn">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
             <p className="leading-snug">{error}</p>
           </div>
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           
           {/* Username Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#e4e4e7]">
-              {isId ? "Nama pengguna" : "Username"}
+            <label className="text-xs font-semibold text-[#292524] flex items-center gap-0.5">
+              {isId ? "Nama Pengguna" : "Username"} <span className="text-[#d97757]">*</span>
             </label>
             <input
               type="text"
@@ -117,14 +119,14 @@ function LoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={isId ? "Masukkan username..." : "Enter username..."}
-              className="bg-[#09090b] border border-[#27272a] focus:border-[#616c39] focus:ring-1 focus:ring-[#616c39] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[#71717a] focus:outline-none transition-all w-full"
+              className="bg-white border border-[#e7e5e4] focus:border-[#292524] focus:ring-2 focus:ring-[#292524]/5 rounded-xl px-4 py-2.5 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none transition-all w-full shadow-2xs"
             />
           </div>
 
           {/* Password Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#e4e4e7]">
-              {isId ? "Kata sandi" : "Password"}
+            <label className="text-xs font-semibold text-[#292524] flex items-center gap-0.5">
+              {isId ? "Kata Sandi" : "Password"} <span className="text-[#d97757]">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -133,12 +135,12 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="bg-[#09090b] border border-[#27272a] focus:border-[#616c39] focus:ring-1 focus:ring-[#616c39] rounded-xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-[#71717a] focus:outline-none transition-all w-full"
+                className="bg-white border border-[#e7e5e4] focus:border-[#292524] focus:ring-2 focus:ring-[#292524]/5 rounded-xl pl-4 pr-11 py-2.5 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none transition-all w-full shadow-2xs"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 p-1 text-[#71717a] hover:text-[#d4d4d8] transition cursor-pointer"
+                className="absolute right-3 p-1 text-[#79716b] hover:text-[#292524] transition cursor-pointer"
                 title={showPassword ? "Hide password" : "Show password"}
                 aria-label="Toggle password visibility"
               >
@@ -160,30 +162,30 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#e4e4e7] hover:bg-white text-black font-semibold text-sm rounded-xl py-3 transition-all active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            className="w-full bg-[#292524] hover:bg-[#1c1917] text-white font-mono uppercase tracking-[0.06em] text-xs font-semibold rounded-xl py-3.5 transition-all shadow-sm active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              isId ? "Masuk Sekarang" : "Sign In"
+              isId ? "MASUK" : "LOGIN"
             )}
           </button>
         </form>
 
         {/* Demo Account Capsule */}
-        <div className="mt-5 p-3.5 bg-[#09090b] border border-[#27272a] rounded-2xl flex items-center justify-between text-xs">
+        <div className="mt-6 p-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl flex items-center justify-between text-xs">
           <div>
-            <span className="font-semibold text-[#e4e4e7] block text-[11px]">
+            <span className="font-semibold text-[#292524] block text-[11px]">
               {isId ? "Akun Demo Evaluasi" : "Evaluation Demo Account"}
             </span>
-            <span className="font-mono text-[10px] text-[#a1a1aa]">
-              user: <strong className="text-white">juri_demo</strong> &middot; pass: <strong className="text-white">demo123</strong>
+            <span className="font-mono text-[10px] text-[#79716b]">
+              user: <strong className="text-[#292524]">juri_demo</strong> &middot; pass: <strong className="text-[#292524]">demo123</strong>
             </span>
           </div>
           <button
             type="button"
             onClick={fillDemoAccount}
-            className="px-2.5 py-1 bg-[#18181b] hover:bg-[#27272a] border border-[#3f3f46] text-[#e4e4e7] text-[10px] font-mono font-medium rounded-lg transition cursor-pointer"
+            className="px-2.5 py-1 bg-white hover:bg-[#e7e5e4]/50 border border-[#e7e5e4] text-[#292524] text-[10px] font-mono font-medium rounded-lg transition cursor-pointer"
           >
             {isId ? "Isi Otomatis" : "Auto Fill"}
           </button>
@@ -191,13 +193,14 @@ function LoginForm() {
 
       </div>
 
-      {/* Bottom Switch Link */}
-      <div className="mt-6 text-center z-10">
-        <p className="text-xs text-[#a1a1aa]">
-          {isId ? "Belum punya akun?" : "Don't have an account?"}{" "}
-          <Link href="/register" className="text-white font-semibold hover:underline">
-            {isId ? "Buat akun" : "Sign up"}
-          </Link>
+      {/* Footer Legal Disclaimer */}
+      <div className="mt-8 text-center max-w-sm">
+        <p className="text-[11px] text-[#79716b] leading-relaxed">
+          {isId ? (
+            <>Dengan masuk, Anda menyetujui <span className="underline underline-offset-2 text-[#292524]">Syarat & Ketentuan</span> dan <span className="underline underline-offset-2 text-[#292524]">Kebijakan Privasi</span> Vora.</>
+          ) : (
+            <>By signing in, you agree to Vora <span className="underline underline-offset-2 text-[#292524]">Terms of Service</span> and <span className="underline underline-offset-2 text-[#292524]">Privacy Policy</span>.</>
+          )}
         </p>
       </div>
 
@@ -209,7 +212,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
+        <div className="min-h-screen flex items-center justify-center bg-[#fafaf9]">
           <div className="w-6 h-6 border-2 border-[#616c39] border-t-transparent rounded-full animate-spin" />
         </div>
       }

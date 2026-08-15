@@ -16,7 +16,6 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [agreed, setAgreed] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,10 +29,6 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreed) {
-      setError(isId ? "Anda harus menyetujui syarat dan ketentuan." : "You must agree to the terms of service.");
-      return;
-    }
     setError(null);
     setLoading(true);
 
@@ -68,51 +63,53 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-[#f4f4f5] flex flex-col items-center justify-center relative overflow-hidden px-4 py-12 font-sans selection:bg-[#616c39]/30">
+    <main className="min-h-screen bg-[#fafaf9] text-[#292524] flex flex-col items-center justify-center px-4 py-16 font-sans selection:bg-[#616c39]/15">
       
-      {/* Subtle radial ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#616c39]/10 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Main Modern Dark Card */}
-      <div className="w-full max-w-[420px] bg-[#121215] border border-[#27272a] rounded-3xl p-7 sm:p-9 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-left">
-        
-        {/* Top V Logo Badge */}
-        <div className="w-11 h-11 rounded-xl bg-[#1c1c21] border border-[#3f3f46]/40 flex items-center justify-center mb-6 shadow-inner">
+      {/* Top Botanical V Logo (Above the Card, Centered) */}
+      <div className="mb-8 flex justify-center">
+        <Link href="/" className="group inline-block transition-transform hover:scale-105">
           <Image
-            src="/vora_v_logo_white.png"
-            alt="Vora"
-            width={24}
-            height={24}
-            className="w-5.5 h-5.5 object-contain"
+            src="/vora_v_logo.png"
+            alt="Vora Logo"
+            width={46}
+            height={46}
+            className="h-11 w-auto object-contain"
             priority
           />
-        </div>
+        </Link>
+      </div>
 
-        {/* Heading */}
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          {isId ? "Buat akun Anda" : "Create your account"}
-        </h1>
-        <p className="text-xs text-[#a1a1aa] mt-1.5 leading-relaxed">
-          {isId
-            ? "Mulai memetakan pohon dan mengukur karbon hutan dengan presisi tinggi."
-            : "Start mapping trees and measuring forest carbon with high precision."}
-        </p>
+      {/* Main Light Card */}
+      <div className="w-full max-w-[430px] bg-[#ffffff] border border-[#e7e5e4] rounded-[26px] p-8 sm:p-10 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.05),0_0_1px_rgba(0,0,0,0.1)] text-left">
+        
+        {/* Title & Switch link in Serif */}
+        <div className="mb-7 pb-4 border-b border-[#e7e5e4]/60">
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#292524] tracking-tight">
+            {isId ? "Daftar Akun" : "Create Account"}
+          </h1>
+          <p className="text-xs text-[#79716b] mt-1.5 font-sans">
+            {isId ? "Sudah punya akun?" : "Already have an account?"}{" "}
+            <Link href="/login" className="text-[#292524] font-semibold underline underline-offset-4 hover:text-[#616c39] transition">
+              {isId ? "Masuk ke akun" : "Log in"}
+            </Link>
+          </p>
+        </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-950/60 border border-red-500/40 text-red-200 text-xs rounded-xl p-3 mt-5 flex items-center gap-2.5 animate-fadeIn">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 mb-5 flex items-center gap-2.5 animate-fadeIn">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
             <p className="leading-snug">{error}</p>
           </div>
         )}
 
         {/* Register Form (NO EMAIL - USERNAME BASED) */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           
           {/* Full Name */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#e4e4e7]">
-              {isId ? "Nama lengkap" : "Full name"}
+            <label className="text-xs font-semibold text-[#292524] flex items-center gap-0.5">
+              {isId ? "Nama Lengkap" : "Full Name"} <span className="text-[#d97757]">*</span>
             </label>
             <input
               type="text"
@@ -120,14 +117,14 @@ export default function RegisterPage() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Dr. Jane Forester"
-              className="bg-[#09090b] border border-[#27272a] focus:border-[#616c39] focus:ring-1 focus:ring-[#616c39] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[#71717a] focus:outline-none transition-all w-full"
+              className="bg-white border border-[#e7e5e4] focus:border-[#292524] focus:ring-2 focus:ring-[#292524]/5 rounded-xl px-4 py-2.5 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none transition-all w-full shadow-2xs"
             />
           </div>
 
           {/* Username (Not Email) */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#e4e4e7]">
-              {isId ? "Nama pengguna" : "Username"}
+            <label className="text-xs font-semibold text-[#292524] flex items-center gap-0.5">
+              {isId ? "Nama Pengguna" : "Username"} <span className="text-[#d97757]">*</span>
             </label>
             <input
               type="text"
@@ -135,17 +132,17 @@ export default function RegisterPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="forestry_researcher"
-              className="bg-[#09090b] border border-[#27272a] focus:border-[#616c39] focus:ring-1 focus:ring-[#616c39] rounded-xl px-4 py-2.5 text-sm text-white placeholder-[#71717a] focus:outline-none transition-all w-full"
+              className="bg-white border border-[#e7e5e4] focus:border-[#292524] focus:ring-2 focus:ring-[#292524]/5 rounded-xl px-4 py-2.5 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none transition-all w-full shadow-2xs"
             />
-            <span className="text-[11px] text-[#71717a]">
+            <span className="text-[11px] text-[#79716b]">
               {isId ? "Digunakan untuk masuk ke akun dan mengidentifikasi plot Anda." : "Used to sign in and identify your forest plots."}
             </span>
           </div>
 
           {/* Password */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#e4e4e7]">
-              {isId ? "Kata sandi" : "Password"}
+            <label className="text-xs font-semibold text-[#292524] flex items-center gap-0.5">
+              {isId ? "Kata Sandi" : "Password"} <span className="text-[#d97757]">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -154,12 +151,12 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="bg-[#09090b] border border-[#27272a] focus:border-[#616c39] focus:ring-1 focus:ring-[#616c39] rounded-xl pl-4 pr-11 py-2.5 text-sm text-white placeholder-[#71717a] focus:outline-none transition-all w-full"
+                className="bg-white border border-[#e7e5e4] focus:border-[#292524] focus:ring-2 focus:ring-[#292524]/5 rounded-xl pl-4 pr-11 py-2.5 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none transition-all w-full shadow-2xs"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 p-1 text-[#71717a] hover:text-[#d4d4d8] transition cursor-pointer"
+                className="absolute right-3 p-1 text-[#79716b] hover:text-[#292524] transition cursor-pointer"
                 title={showPassword ? "Hide password" : "Show password"}
                 aria-label="Toggle password visibility"
               >
@@ -178,74 +175,58 @@ export default function RegisterPage() {
 
             {/* 4 Segmented Strength Indicator Bars */}
             <div className="grid grid-cols-4 gap-1.5 mt-2">
-              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 1 ? "bg-[#616c39]" : "bg-[#27272a]"}`} />
-              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 2 ? "bg-[#616c39]" : "bg-[#27272a]"}`} />
-              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 3 ? "bg-[#616c39]" : "bg-[#27272a]"}`} />
-              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 4 ? "bg-[#616c39]" : "bg-[#27272a]"}`} />
+              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 1 ? "bg-[#616c39]" : "bg-[#e7e5e4]"}`} />
+              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 2 ? "bg-[#616c39]" : "bg-[#e7e5e4]"}`} />
+              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 3 ? "bg-[#616c39]" : "bg-[#e7e5e4]"}`} />
+              <div className={`h-1 rounded-full transition-all duration-300 ${passedChecksCount >= 4 ? "bg-[#616c39]" : "bg-[#e7e5e4]"}`} />
             </div>
 
             {/* 4 Password Rule Badges */}
-            <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px] text-[#71717a] mt-2">
-              <div className={`flex items-center gap-1.5 transition-colors ${hasMinLen ? "text-[#e4e4e7]" : ""}`}>
-                <span className={`w-1 h-1 rounded-full ${hasMinLen ? "bg-[#616c39]" : "bg-[#3f3f46]"}`} />
+            <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px] text-[#79716b] mt-2">
+              <div className={`flex items-center gap-1.5 transition-colors ${hasMinLen ? "text-[#292524] font-medium" : ""}`}>
+                <span className={`w-1 h-1 rounded-full ${hasMinLen ? "bg-[#616c39]" : "bg-[#d6d3d1]"}`} />
                 <span>{isId ? "Minimal 8 karakter" : "At least 8 characters"}</span>
               </div>
-              <div className={`flex items-center gap-1.5 transition-colors ${hasUpper ? "text-[#e4e4e7]" : ""}`}>
-                <span className={`w-1 h-1 rounded-full ${hasUpper ? "bg-[#616c39]" : "bg-[#3f3f46]"}`} />
+              <div className={`flex items-center gap-1.5 transition-colors ${hasUpper ? "text-[#292524] font-medium" : ""}`}>
+                <span className={`w-1 h-1 rounded-full ${hasUpper ? "bg-[#616c39]" : "bg-[#d6d3d1]"}`} />
                 <span>{isId ? "Satu huruf kapital" : "One uppercase letter"}</span>
               </div>
-              <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-[#e4e4e7]" : ""}`}>
-                <span className={`w-1 h-1 rounded-full ${hasNumber ? "bg-[#616c39]" : "bg-[#3f3f46]"}`} />
+              <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-[#292524] font-medium" : ""}`}>
+                <span className={`w-1 h-1 rounded-full ${hasNumber ? "bg-[#616c39]" : "bg-[#d6d3d1]"}`} />
                 <span>{isId ? "Satu angka" : "One number"}</span>
               </div>
-              <div className={`flex items-center gap-1.5 transition-colors ${hasSymbol ? "text-[#e4e4e7]" : ""}`}>
-                <span className={`w-1 h-1 rounded-full ${hasSymbol ? "bg-[#616c39]" : "bg-[#3f3f46]"}`} />
+              <div className={`flex items-center gap-1.5 transition-colors ${hasSymbol ? "text-[#292524] font-medium" : ""}`}>
+                <span className={`w-1 h-1 rounded-full ${hasSymbol ? "bg-[#616c39]" : "bg-[#d6d3d1]"}`} />
                 <span>{isId ? "Satu simbol" : "One symbol"}</span>
               </div>
             </div>
 
           </div>
 
-          {/* Terms Checkbox */}
-          <label className="flex items-start gap-2.5 mt-2 text-xs text-[#a1a1aa] cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 rounded border-[#27272a] bg-[#09090b] text-[#616c39] focus:ring-[#616c39] cursor-pointer"
-            />
-            <span>
-              {isId ? (
-                <>Saya menyetujui <span className="font-semibold text-white">syarat & ketentuan</span> dan <span className="font-semibold text-white">kebijakan privasi</span>.</>
-              ) : (
-                <>I agree to the <span className="font-semibold text-white">terms of service</span> and the <span className="font-semibold text-white">privacy policy</span>.</>
-              )}
-            </span>
-          </label>
-
           {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#e4e4e7] hover:bg-white text-black font-semibold text-sm rounded-xl py-3 transition-all active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            className="w-full bg-[#292524] hover:bg-[#1c1917] text-white font-mono uppercase tracking-[0.06em] text-xs font-semibold rounded-xl py-3.5 transition-all shadow-sm active:scale-[0.99] mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              isId ? "Buat Akun" : "Create account"
+              isId ? "DAFTAR AKUN" : "CREATE ACCOUNT"
             )}
           </button>
         </form>
 
       </div>
 
-      {/* Bottom Switch Link */}
-      <div className="mt-6 text-center z-10">
-        <p className="text-xs text-[#a1a1aa]">
-          {isId ? "Sudah punya akun?" : "Already have an account?"}{" "}
-          <Link href="/login" className="text-white font-semibold hover:underline">
-            {isId ? "Masuk" : "Sign in"}
-          </Link>
+      {/* Footer Legal Disclaimer */}
+      <div className="mt-8 text-center max-w-sm">
+        <p className="text-[11px] text-[#79716b] leading-relaxed">
+          {isId ? (
+            <>Dengan mendaftar, Anda menyetujui <span className="underline underline-offset-2 text-[#292524]">Syarat & Ketentuan</span> dan <span className="underline underline-offset-2 text-[#292524]">Kebijakan Privasi</span> Vora.</>
+          ) : (
+            <>By registering, you agree to Vora <span className="underline underline-offset-2 text-[#292524]">Terms of Service</span> and <span className="underline underline-offset-2 text-[#292524]">Privacy Policy</span>.</>
+          )}
         </p>
       </div>
 
