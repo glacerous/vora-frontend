@@ -1294,7 +1294,7 @@ function ReconstructContent() {
         {/* Sidebar Intelligence Drawer Wrapper (Responsive: Drawer on desktop, scrollable pane below viewer on mobile) */}
         <div
           className={`
-            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-40 lg:w-96 lg:pt-[72px] lg:border-l lg:border-[#e7e5e4]/80 lg:shadow-2xl
+            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-35 lg:w-96 lg:pt-[72px] lg:border-l lg:border-[#e7e5e4] lg:shadow-2xl
             lg:transition-transform lg:duration-300 lg:ease-in-out
             ${sidebarOpen ? "lg:translate-x-0" : "lg:translate-x-full"}
             w-full flex-1 bg-white flex flex-col overflow-y-auto lg:overflow-hidden shrink-0

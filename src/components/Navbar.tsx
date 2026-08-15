@@ -13,7 +13,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-[#ffffff]/90 backdrop-blur-md border-b border-[#e7e5e4]/50 transition-all">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#e7e5e4] transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between relative">
         
         {/* Left: Brand Logo & Wordmark */}
