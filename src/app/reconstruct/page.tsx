@@ -1104,13 +1104,13 @@ function ReconstructContent() {
 
   if (phase === "result") {
     return (
-      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#292524] flex flex-col pt-[60px] lg:pt-[72px]">
+      <div className="fixed inset-0 bg-white overflow-hidden font-sans text-[#292524] flex flex-col pt-14 sm:pt-16">
 
         {/* Unified Dashboard layout: flex-col on mobile/tablet, flex-row on desktop */}
         <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
           
           {/* 3D Viewer Frame Container (Left/Top Side) */}
-          <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative border-b lg:border-b-0 border-[#fafaf9] bg-white shrink-0">
+          <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative bg-white shrink-0">
           {currentScan && renderViewer ? (
             <iframe
               src={`${BACKEND_URL}/viewer.html?v=11&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
@@ -1294,7 +1294,7 @@ function ReconstructContent() {
         {/* Sidebar Intelligence Drawer Wrapper (Responsive: Drawer on desktop, scrollable pane below viewer on mobile) */}
         <div
           className={`
-            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-35 lg:w-96 lg:pt-[72px] lg:border-l lg:border-[#e7e5e4] lg:shadow-2xl
+            lg:fixed lg:top-0 lg:right-0 lg:bottom-0 lg:z-35 lg:w-96 lg:pt-16 lg:border-l lg:border-[#e7e5e4] lg:shadow-2xl
             lg:transition-transform lg:duration-300 lg:ease-in-out
             ${sidebarOpen ? "lg:translate-x-0" : "lg:translate-x-full"}
             w-full flex-1 bg-white flex flex-col overflow-y-auto lg:overflow-hidden shrink-0
