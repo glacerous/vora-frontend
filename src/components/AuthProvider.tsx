@@ -673,12 +673,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         credentials: "include",
       });
-      setUser(null);
-      document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
-      router.push("/login");
-      router.refresh();
     } catch (err) {
-      console.error("Failed to log out:", err);
+      console.warn("Backend logout ping:", err);
+    } finally {
+      setUser(null);
+      // Aggressively clear cookie across paths and max-age
+      document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+      document.cookie = "session_token=; path=/; max-age=0; SameSite=Lax";
+      try {
+        localStorage.removeItem("session_token");
+        sessionStorage.clear();
+      } catch {}
+      window.location.href = "/login";
     }
   };
 

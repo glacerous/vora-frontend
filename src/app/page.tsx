@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Reveal from "@/components/Reveal";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 
 // Arrow icon for card footers and buttons
 const ArrowRight = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
@@ -25,6 +25,7 @@ const ArrowRight = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
 );
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
   const { t, language } = useSettings();
   // SaaS Drag-and-Drop animation sequence: 0 = Dragging from Tree to Terminal, 1 = Processing/Extracted
   const [animStep, setAnimStep] = useState(0);
@@ -67,18 +68,20 @@ export default function Home() {
           </p>
         </Reveal>
 
-        {/* CTA Pair */}
+        {/* CTA Section */}
         <Reveal delay={0.24}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 w-full sm:w-auto">
-            {/* Ghost Outline Button */}
-            <Link
-              href="/example"
-              className="w-full sm:w-auto px-6 py-3 border border-[#e7e5e4] hover:border-[#292524] text-[#292524] text-xs sm:text-sm font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors duration-150 text-center bg-transparent"
-            >
-              {t("hero.viewExample")}
-            </Link>
+            {/* Show Sign Up / Daftar button only if NOT logged in */}
+            {!authLoading && !user && (
+              <Link
+                href="/register"
+                className="w-full sm:w-auto px-6 py-3 border border-[#e7e5e4] hover:border-[#292524] text-[#292524] text-xs sm:text-sm font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors duration-150 text-center bg-transparent"
+              >
+                {t("nav.register")}
+              </Link>
+            )}
 
-            {/* Primary Filled Button (Forest Moss Green) */}
+            {/* Primary Filled Button (Mulai Analisis) - Centered when user is logged in */}
             <Link
               href="/reconstruct"
               className="w-full sm:w-auto px-6 py-3 bg-[#616c39] hover:bg-[#4e572c] text-white text-xs sm:text-sm font-semibold uppercase tracking-[0.04em] rounded-lg transition-colors duration-150 text-center flex items-center justify-center gap-2 shadow-none"
@@ -300,7 +303,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="mt-6 pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-xs font-mono text-[#292524]">
-                  <Link href="/example" className="uppercase tracking-[0.04em] hover:opacity-60 transition flex items-center gap-1">
+                  <Link href="/docs/pipeline" className="uppercase tracking-[0.04em] hover:opacity-60 transition flex items-center gap-1">
                     {t("subcard.docs")} <span className="text-[10px]">↗</span>
                   </Link>
                 </div>
@@ -334,7 +337,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="mt-6 pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-xs font-mono text-[#292524]">
-                  <Link href="/gallery" className="uppercase tracking-[0.04em] hover:opacity-60 transition flex items-center gap-1">
+                  <Link href="/docs/allometry" className="uppercase tracking-[0.04em] hover:opacity-60 transition flex items-center gap-1">
                     {t("subcard.docs")} <span className="text-[10px]">↗</span>
                   </Link>
                 </div>
@@ -518,8 +521,7 @@ export default function Home() {
         {/* Section Footer Link */}
         <div className="mt-8 text-center">
           <Link
-            href="/example"
-            className="font-mono text-xs uppercase tracking-[0.06em] text-[#616c39] hover:text-[#4e572c] font-semibold inline-flex items-center gap-1.5 transition"
+            href="/docs/pipeline" className="font-mono text-xs uppercase tracking-[0.06em] text-[#616c39] hover:text-[#4e572c] font-semibold inline-flex items-center gap-1.5 transition"
           >
             {t("feat1.link")}
           </Link>
@@ -623,8 +625,7 @@ export default function Home() {
         {/* Section Footer Link */}
         <div className="mt-8 text-center">
           <Link
-            href="/gallery"
-            className="font-mono text-xs uppercase tracking-[0.06em] text-[#616c39] hover:text-[#4e572c] font-semibold inline-flex items-center gap-1.5 transition"
+            href="/docs/allometry" className="font-mono text-xs uppercase tracking-[0.06em] text-[#616c39] hover:text-[#4e572c] font-semibold inline-flex items-center gap-1.5 transition"
           >
             {t("feat2.link")}
           </Link>
