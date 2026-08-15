@@ -92,38 +92,109 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* From Uiverse.io by AatreyuShau - Lively Fluid Vora Green */ 
+/* From Uiverse.io by AatreyuShau - Organic Chaotic Liquid Vora Green */ 
 .metaball-loader .joint {
   fill: #616c39;
 }
 
-.metaball-loader #mir {
-  scale: -0.52;
-  transform-origin: 250px 250px;
-}
-
 .metaball-loader .arm {
-  scale: 0.52;
   transform-origin: 250px 250px;
-  animation: metaball-rotate 4s ease-in-out infinite;
+  animation: metaball-orbit1 3.7s cubic-bezier(0.42, 0, 0.58, 1) infinite;
 }
 
-@keyframes metaball-rotate {
-  0% {
-    transform: rotate(-90deg);
-  }
-  25% {
-    transform: rotate(360deg);
-  }
-  50% {
-    transform: rotate(90deg);
-  }
-  75% {
-    transform: rotate(-360deg);
-  }
-  100% {
-    transform: rotate(-90deg);
-  }
+.metaball-loader #mir.arm {
+  transform-origin: 250px 250px;
+  animation: metaball-orbit2 4.6s cubic-bezier(0.35, 0.1, 0.25, 1) -1.8s infinite;
+}
+
+.metaball-loader .arm .arm1 {
+  transform-origin: 300px 200px;
+  animation: metaball-flow1 2.9s ease-in-out infinite;
+}
+
+.metaball-loader #mir .arm1 {
+  transform-origin: 300px 200px;
+  animation: metaball-flow2 3.4s ease-in-out -0.9s infinite;
+}
+
+.metaball-loader .arm .arm2 {
+  transform-origin: 400px 200px;
+  animation: metaball-flow3 2.1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.metaball-loader #mir .arm2 {
+  transform-origin: 400px 200px;
+  animation: metaball-flow1 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) -1.2s infinite;
+}
+
+.metaball-loader .arm .arm3 {
+  transform-origin: 490px 200px;
+  animation: metaball-flow4 1.4s ease-in-out infinite;
+}
+
+.metaball-loader #mir .arm3 {
+  transform-origin: 490px 200px;
+  animation: metaball-flow3 1.7s ease-in-out -0.6s infinite;
+}
+
+/* Organic random satellite droplets that orbit irregularly */
+.metaball-loader .satellite1 {
+  transform-origin: 250px 250px;
+  animation: metaball-sat1 2.3s cubic-bezier(0.5, 0.2, 0.3, 0.8) -0.5s infinite;
+}
+
+.metaball-loader .satellite2 {
+  transform-origin: 250px 250px;
+  animation: metaball-sat2 3.1s cubic-bezier(0.4, 0.1, 0.6, 0.9) -1.7s infinite;
+}
+
+@keyframes metaball-orbit1 {
+  0% { transform: rotate(-90deg) scale(0.52); }
+  25% { transform: rotate(180deg) scale(0.57); }
+  50% { transform: rotate(90deg) scale(0.48); }
+  75% { transform: rotate(-270deg) scale(0.54); }
+  100% { transform: rotate(-90deg) scale(0.52); }
+}
+
+@keyframes metaball-orbit2 {
+  0% { transform: rotate(90deg) scale(-0.48); }
+  33% { transform: rotate(-160deg) scale(-0.53); }
+  66% { transform: rotate(240deg) scale(-0.44); }
+  100% { transform: rotate(90deg) scale(-0.48); }
+}
+
+@keyframes metaball-flow1 {
+  0%, 100% { transform: rotate(-75deg); }
+  35% { transform: rotate(190deg); }
+  70% { transform: rotate(-20deg); }
+}
+
+@keyframes metaball-flow2 {
+  0%, 100% { transform: rotate(110deg); }
+  45% { transform: rotate(-140deg); }
+  80% { transform: rotate(45deg); }
+}
+
+@keyframes metaball-flow3 {
+  0%, 100% { transform: rotate(-110deg); }
+  50% { transform: rotate(135deg); }
+}
+
+@keyframes metaball-flow4 {
+  0%, 100% { transform: rotate(140deg); }
+  50% { transform: rotate(-95deg); }
+}
+
+@keyframes metaball-sat1 {
+  0% { transform: rotate(0deg) translate(80px, -40px); }
+  50% { transform: rotate(180deg) translate(-60px, 70px); }
+  100% { transform: rotate(360deg) translate(80px, -40px); }
+}
+
+@keyframes metaball-sat2 {
+  0% { transform: rotate(360deg) translate(-70px, -50px); }
+  50% { transform: rotate(180deg) translate(75px, 30px); }
+  100% { transform: rotate(0deg) translate(-70px, -50px); }
 }
 
 .metaball-loader .arm1 {

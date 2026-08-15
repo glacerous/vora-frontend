@@ -2,7 +2,7 @@
 
 import React, { useId } from "react";
 
-export default function Loader({ className = "", size = 84 }: { className?: string; size?: number }) {
+export default function Loader({ className = "", size = 88 }: { className?: string; size?: number }) {
   const id = useId().replace(/:/g, "");
   const filterId = `metaball-${id}`;
 
@@ -24,59 +24,71 @@ export default function Loader({ className = "", size = 84 }: { className?: stri
             <feComposite in="SourceGraphic" in2="fluid" operator="atop" />
           </filter>
         </defs>
+        
+        {/* Arm 1 (Organic main cluster) */}
         <g className="arm" style={{ filter: `url(#${filterId})` }}>
-          <circle className="joint" cx="250" cy="250" r="54" />
+          <circle className="joint" cx="250" cy="250" r="56" />
           <g className="arm1">
-            <circle className="joint" cx="300" cy="250" r="28" />
+            <circle className="joint" cx="305" cy="250" r="28" />
             <g className="arm2">
-              <circle className="joint" cx="400" cy="250" r="22" />
+              <circle className="joint" cx="395" cy="250" r="22" />
               <g className="arm3">
-                <circle className="joint" cx="490" cy="250" r="16" />
+                <circle className="joint" cx="485" cy="250" r="16" />
               </g>
             </g>
             <g className="arm1">
-              <circle className="joint" cx="300" cy="250" r="28" />
+              <circle className="joint" cx="310" cy="250" r="26" />
               <g className="arm2">
-                <circle className="joint" cx="400" cy="250" r="12" />
+                <circle className="joint" cx="390" cy="250" r="14" />
                 <g className="arm3">
-                  <circle className="joint" cx="490" cy="250" r="10" />
+                  <circle className="joint" cx="475" cy="250" r="11" />
                 </g>
                 <g className="arm2">
-                  <circle className="joint" cx="400" cy="250" r="12" />
+                  <circle className="joint" cx="385" cy="250" r="12" />
                   <g className="arm3">
-                    <circle className="joint" cx="490" cy="250" r="10" />
+                    <circle className="joint" cx="470" cy="250" r="10" />
                   </g>
                 </g>
               </g>
             </g>
           </g>
         </g>
+
+        {/* Arm 2 (Asymmetric chaotic counter-branch) */}
         <g id="mir" className="arm" style={{ filter: `url(#${filterId})` }}>
-          <circle className="joint" cx="250" cy="250" r="54" />
+          <circle className="joint" cx="250" cy="250" r="56" />
           <g className="arm1">
-            <circle className="joint" cx="300" cy="250" r="28" />
+            <circle className="joint" cx="295" cy="250" r="30" />
             <g className="arm2">
-              <circle className="joint" cx="400" cy="250" r="22" />
+              <circle className="joint" cx="405" cy="250" r="20" />
               <g className="arm3">
-                <circle className="joint" cx="490" cy="250" r="16" />
+                <circle className="joint" cx="495" cy="250" r="15" />
               </g>
             </g>
             <g className="arm1">
-              <circle className="joint" cx="300" cy="250" r="28" />
+              <circle className="joint" cx="290" cy="250" r="24" />
               <g className="arm2">
-                <circle className="joint" cx="400" cy="250" r="12" />
+                <circle className="joint" cx="395" cy="250" r="13" />
                 <g className="arm3">
-                  <circle className="joint" cx="490" cy="250" r="10" />
+                  <circle className="joint" cx="480" cy="250" r="10" />
                 </g>
                 <g className="arm2">
-                  <circle className="joint" cx="400" cy="250" r="12" />
+                  <circle className="joint" cx="400" cy="250" r="13" />
                   <g className="arm3">
-                    <circle className="joint" cx="490" cy="250" r="10" />
+                    <circle className="joint" cx="465" cy="250" r="9" />
                   </g>
                 </g>
               </g>
             </g>
           </g>
+        </g>
+
+        {/* Floating chaotic satellite droplets that fuse into the fluid pool */}
+        <g className="satellite1" style={{ filter: `url(#${filterId})` }}>
+          <circle className="joint" cx="250" cy="250" r="18" />
+        </g>
+        <g className="satellite2" style={{ filter: `url(#${filterId})` }}>
+          <circle className="joint" cx="250" cy="250" r="15" />
         </g>
       </svg>
     </div>
