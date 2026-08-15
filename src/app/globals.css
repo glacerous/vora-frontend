@@ -92,80 +92,53 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* From Uiverse.io by AatreyuShau - Ultra-smooth Vora Liquid Green */ 
-.metaball-loader .segment {
-  stroke: #616c39;
-  stroke-width: 22;
-  stroke-linecap: round;
-  opacity: 0.88;
-}
-
+/* From Uiverse.io by AatreyuShau - Lively Fluid Vora Green */ 
 .metaball-loader .joint {
   fill: #616c39;
-  stroke-width: 0;
 }
 
 .metaball-loader #mir {
-  scale: -0.36;
+  scale: -0.52;
+  transform-origin: 250px 250px;
 }
 
-/* Animate first arm segment rotation with silky smooth continuous loop */
 .metaball-loader .arm {
-  scale: 0.36;
+  scale: 0.52;
   transform-origin: 250px 250px;
-  animation: metaball-rotate 16s linear infinite;
+  animation: metaball-rotate 4s ease-in-out infinite;
 }
 
 @keyframes metaball-rotate {
   0% {
-    transform: rotate(0deg);
+    transform: rotate(-90deg);
   }
-  100% {
+  25% {
     transform: rotate(360deg);
   }
-}
-
-/* Animate second arm segment relative to elbow */
-.metaball-loader .arm1 {
-  transform-origin: 300px 200px;
-  animation: metaball-wave1 11s ease-in-out infinite alternate;
-}
-
-@keyframes metaball-wave1 {
-  0% {
-    transform: rotate(-60deg);
+  50% {
+    transform: rotate(90deg);
+  }
+  75% {
+    transform: rotate(-360deg);
   }
   100% {
-    transform: rotate(180deg);
+    transform: rotate(-90deg);
   }
+}
+
+.metaball-loader .arm1 {
+  transform-origin: 300px 200px;
+  animation: metaball-rotate 3s ease-in-out infinite;
 }
 
 .metaball-loader .arm2 {
   transform-origin: 400px 200px;
-  animation: metaball-wave2 7.5s ease-in-out infinite alternate;
-}
-
-@keyframes metaball-wave2 {
-  0% {
-    transform: rotate(90deg);
-  }
-  100% {
-    transform: rotate(-135deg);
-  }
+  animation: metaball-rotate 2.2s ease-in-out infinite;
 }
 
 .metaball-loader .arm3 {
   transform-origin: 490px 200px;
-  animation: metaball-wave3 5s ease-in-out infinite alternate;
-}
-
-@keyframes metaball-wave3 {
-  0% {
-    transform: rotate(-110deg);
-  }
-  100% {
-    transform: rotate(110deg);
-  }
+  animation: metaball-rotate 1.5s ease-in-out infinite;
 }
 
 /* Animate second arm segment relative to elbow */
