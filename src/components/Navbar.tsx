@@ -19,7 +19,7 @@ export default function Navbar() {
           alt="Vora"
           width={332}
           height={115}
-          className="h-8 sm:h-9 w-auto object-contain"
+          className="h-6 sm:h-7 w-auto object-contain"
           loading="eager"
           priority
         />
