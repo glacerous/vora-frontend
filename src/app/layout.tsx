@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Anton, Outfit } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
@@ -8,28 +8,28 @@ import { ScanProgressProvider } from "@/components/ScanProgressProvider";
 import ScanProgressPill from "@/components/ScanProgressPill";
 import Navbar from "@/components/Navbar";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  display: "swap",
-});
-
-const anton = Anton({
-  variable: "--font-anton",
-  weight: "400",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const loraSerif = Lora({
+  variable: "--font-serif-display",
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Vora - Measure Forest Carbon",
+  title: "Vora — Measure Forest Carbon",
   description: "3D Gaussian Splatting and carbon metrics estimation for environmental conservation.",
 };
 
@@ -41,9 +41,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${anton.variable} ${outfit.variable} h-full antialiased scroll-smooth`}
+      className={`${geistSans.variable} ${geistMono.variable} ${loraSerif.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-white text-[#191919]">
+      <body className="min-h-full flex flex-col font-sans bg-[#fafaf9] text-[#292524]">
         <AuthProvider>
           <ScanProgressProvider>
             <SmoothScrollProvider>
