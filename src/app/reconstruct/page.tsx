@@ -250,6 +250,7 @@ function ReconstructContent() {
 
   // Recalibration modal states (in Result phase)
   const [recalibModalOpen, setRecalibModalOpen] = useState(false);
+  const [recalibImgLoading, setRecalibImgLoading] = useState(true);
   const [clickedPoints, setClickedPoints] = useState<Array<{x: number, y: number, dispWidth: number, dispHeight: number}>>([]);
   const [imgDimensions, setImgDimensions] = useState<{width: number, height: number} | null>(null);
   const [recalibLoading, setRecalibLoading] = useState(false);
@@ -733,7 +734,8 @@ function ReconstructContent() {
     p1: number[] | null,
     p2: number[] | null,
     width: number | null,
-    height: number | null
+    height: number | null,
+    frame_idx: number | null = null
   ) => {
     try {
       const r = await fetch(`${BACKEND_URL}/reconstruct`, {
@@ -748,6 +750,7 @@ function ReconstructContent() {
           p2,
           width,
           height,
+          frame_idx: frame_idx !== null ? frame_idx : (p1 ? 0 : null),
         }),
       });
       if (!r.ok) {
@@ -774,7 +777,7 @@ function ReconstructContent() {
     setError(null);
     setLoading(true);
     setProgressMsg("Starting GPU reconstruction (Auto-detect)…");
-    await startReconstructPayload(calibrationCode, null, null, null, null);
+    await startReconstructPayload(calibrationCode, null, null, null, null, null);
   };
 
   const handleManualReconstruct = async () => {
@@ -805,7 +808,7 @@ function ReconstructContent() {
       (calibrationPoints[1].y / (calibrationPoints[1].dispHeight || 1)) * H_org,
     ];
 
-    await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org);
+    await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1673,6 +1676,7 @@ function ReconstructContent() {
                         setClickedPoints([]);
                         setRecalibError(null);
                         setMousePos(null);
+                        setRecalibImgLoading(true);
                         setRecalibModalOpen(true);
                       }}
                       className="w-full py-3 bg-[#191919] hover:bg-[#191919]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm flex items-center justify-center gap-2"
@@ -1912,13 +1916,29 @@ function ReconstructContent() {
                   </div>
 
                   <div
-                    className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none"
+                    className="relative border border-slate-200 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center select-none min-h-[220px]"
                     style={{ maxHeight: "50vh" }}
                   >
+                    {recalibImgLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-10 gap-2">
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[11px] text-slate-400 font-medium">Loading high-res frame…</span>
+                      </div>
+                    )}
                     <img
                       src={currentScan.thumbnail_url}
                       alt="Representative Scan Frame"
-                      onLoad={handleImageLoad}
+                      onLoad={(e) => {
+                        setRecalibImgLoading(false);
+                        handleImageLoad(e);
+                      }}
+                      onError={(e) => {
+                        setRecalibImgLoading(false);
+                        const fallbackUrl = `${BACKEND_URL}/frames/${currentScan.tree_code}/0000.jpg`;
+                        if (e.currentTarget.src !== fallbackUrl) {
+                          e.currentTarget.src = fallbackUrl;
+                        }
+                      }}
                       onClick={(e) => {
                         if (clickedPoints.length >= 2) return;
                         const rect = e.currentTarget.getBoundingClientRect();
