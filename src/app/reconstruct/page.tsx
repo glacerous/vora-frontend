@@ -729,25 +729,38 @@ function ReconstructContent() {
   };
 
   const handleSkipAndAutoReconstruct = async () => {
+    setError(null);
     setLoading(true);
     setProgressMsg("Starting GPU reconstruction (Auto-detect)…");
     await startReconstructPayload(calibrationCode, null, null, null, null);
   };
 
   const handleManualReconstruct = async () => {
-    if (calibrationPoints.length < 2 || !calibrationImgSize) return;
+    if (calibrationPoints.length < 2) return;
+    setError(null);
     setLoading(true);
     setProgressMsg("Starting GPU reconstruction (Manual axis)…");
 
-    const W_org = calibrationImgSize.width;
-    const H_org = calibrationImgSize.height;
+    let W_org = calibrationImgSize?.width;
+    let H_org = calibrationImgSize?.height;
+    if (!W_org || !H_org) {
+      const imgEl = document.querySelector('img[alt="Extracted Frame"]') as HTMLImageElement | null;
+      if (imgEl && imgEl.naturalWidth && imgEl.naturalHeight) {
+        W_org = imgEl.naturalWidth;
+        H_org = imgEl.naturalHeight;
+      } else {
+        W_org = calibrationPoints[0]?.dispWidth || 1920;
+        H_org = calibrationPoints[0]?.dispHeight || 1080;
+      }
+    }
+
     const p1_org = [
-      (calibrationPoints[0].x / calibrationPoints[0].dispWidth) * W_org,
-      (calibrationPoints[0].y / calibrationPoints[0].dispHeight) * H_org,
+      (calibrationPoints[0].x / (calibrationPoints[0].dispWidth || 1)) * W_org,
+      (calibrationPoints[0].y / (calibrationPoints[0].dispHeight || 1)) * H_org,
     ];
     const p2_org = [
-      (calibrationPoints[1].x / calibrationPoints[1].dispWidth) * W_org,
-      (calibrationPoints[1].y / calibrationPoints[1].dispHeight) * H_org,
+      (calibrationPoints[1].x / (calibrationPoints[1].dispWidth || 1)) * W_org,
+      (calibrationPoints[1].y / (calibrationPoints[1].dispHeight || 1)) * H_org,
     ];
 
     await startReconstructPayload(calibrationCode, p1_org, p2_org, W_org, H_org);
@@ -2210,6 +2223,10 @@ function ReconstructContent() {
                   </ul>
                 </div>
               </div>
+
+              {error && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
+              )}
 
               <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 mt-2">
                 <div className="flex justify-between items-center gap-2">
