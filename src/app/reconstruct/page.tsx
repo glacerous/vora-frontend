@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth, useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings, formatDbh, formatHeight, formatWeight, formatCo2e } from "@/components/AuthProvider";
 import { useScanProgress } from "@/components/ScanProgressProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -129,7 +129,7 @@ const Stepper = ({
 function ReconstructContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { language, t } = useSettings();
+  const { language, unit, t } = useSettings();
   const { startTrackingScan, resetScan: resetGlobalScan } = useScanProgress();
   const [frameLoadError, setFrameLoadError] = useState(false);
   const searchParams = useSearchParams();

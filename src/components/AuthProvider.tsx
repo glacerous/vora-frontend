@@ -31,6 +31,39 @@ export type Language = "id" | "en";
 export type UnitSystem = "metric" | "imperial";
 export type SplatQuality = "high" | "medium" | "low";
 
+export function formatDbh(dbh_cm: number | null | undefined, unit: UnitSystem = "metric"): string {
+  if (dbh_cm === null || dbh_cm === undefined) return "-";
+  if (unit === "imperial") {
+    return `${(dbh_cm / 2.54).toFixed(1)} in`;
+  }
+  return `${dbh_cm.toFixed(1)} cm`;
+}
+
+export function formatHeight(height_m: number | null | undefined, unit: UnitSystem = "metric"): string {
+  if (height_m === null || height_m === undefined) return "-";
+  if (unit === "imperial") {
+    return `${(height_m * 3.28084).toFixed(1)} ft`;
+  }
+  return `${height_m.toFixed(1)} m`;
+}
+
+export function formatWeight(weight_kg: number | null | undefined, unit: UnitSystem = "metric"): string {
+  if (weight_kg === null || weight_kg === undefined) return "-";
+  if (unit === "imperial") {
+    return `${(weight_kg * 2.20462).toFixed(1)} lb`;
+  }
+  return `${weight_kg.toFixed(1)} kg`;
+}
+
+export function formatCo2e(co2e_kg: number | null | undefined, unit: UnitSystem = "metric"): string {
+  if (co2e_kg === null || co2e_kg === undefined) return "-";
+  if (unit === "imperial") {
+    return `${(co2e_kg * 2.20462).toFixed(0)} lb CO₂e`;
+  }
+  return `${co2e_kg.toFixed(0)} kg CO₂e`;
+}
+
+
 export const translations: Record<string, { id: string; en: string }> = {
   // ── Navbar ──────────────────────────────────────────────────────────────
   "nav.gallery": { id: "Galeri", en: "Gallery" },

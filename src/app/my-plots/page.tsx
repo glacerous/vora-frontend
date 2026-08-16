@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth, useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings, formatDbh, formatHeight, formatCo2e } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -61,7 +61,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
 export default function MyPlotsPage() {
   const router = useRouter();
   const { user, loading: authLoading, isWakingUp } = useAuth();
-  const { language, t } = useSettings();
+  const { language, unit, t } = useSettings();
   
   const [activeTab, setActiveTab] = useState<"trees" | "plots">("trees");
   const [plots, setPlots] = useState<Plot[]>([]);
@@ -304,7 +304,7 @@ export default function MyPlotsPage() {
                       <div className="flex items-center justify-between gap-2 px-1 pt-1 pb-0.5">
                         <div className="flex flex-col">
                           <div className="font-serif text-base font-normal text-[#292524] leading-tight">
-                            {record.co2e_kg ? `${record.co2e_kg.toFixed(0)} kg CO₂e` : "-"}
+                            {formatCo2e(record.co2e_kg, unit)}
                           </div>
                           {isInvalid ? (
                             <span className="text-[10px] text-rose-500 font-semibold mt-0.5 font-sans">
@@ -312,7 +312,7 @@ export default function MyPlotsPage() {
                             </span>
                           ) : (
                             <span className="text-[11px] font-mono text-[#79716b] mt-0.5">
-                              {record.dbh_cm ? `${record.dbh_cm.toFixed(1)} cm DBH` : "-"} · {record.tinggi_m ? `${record.tinggi_m.toFixed(1)} m H` : "-"}
+                              {record.dbh_cm ? `${formatDbh(record.dbh_cm, unit)} DBH` : "-"} · {record.tinggi_m ? `${formatHeight(record.tinggi_m, unit)} H` : "-"}
                             </span>
                           )}
                         </div>
