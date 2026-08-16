@@ -171,8 +171,10 @@ export default function Home() {
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-md bg-[#616c39] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
-                                  ✓
+                                <div className="w-6 h-6 rounded-md bg-[#616c39] text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                  </svg>
                                 </div>
                                 <span className="font-mono text-xs font-semibold text-[#292524]">
                                   pohon_scan_360.mp4

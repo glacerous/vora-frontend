@@ -168,8 +168,11 @@ export default function MyPlotsPage() {
         <Loader size={110} className="mb-4" />
         
         {isWakingUp && (
-          <p className="text-xs text-amber-600 mt-3 max-w-xs animate-pulse leading-relaxed">
-            ⚡ Waking up backend servers (Render.com free tier cold start). This may take up to 50 seconds on first visit.
+          <p className="text-xs text-amber-700 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3.5 py-2 mt-4 max-w-sm flex items-center gap-2 leading-relaxed animate-pulse">
+            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Waking up backend servers (Render.com cold start). This may take up to 50 seconds on first visit.</span>
           </p>
         )}
       </main>

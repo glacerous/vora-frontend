@@ -1685,9 +1685,11 @@ export default function PlotDetailPage() {
                                         setIsLayoutDirty(true);
                                       }}
                                       title="Hapus area ini"
-                                      className="ml-1 text-white hover:text-red-200 font-bold"
+                                      className="ml-1 text-white hover:text-red-200 flex items-center justify-center"
                                     >
-                                      ✕
+                                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
                                     </button>
                                   )}
                                 </div>
@@ -1807,9 +1809,11 @@ export default function PlotDetailPage() {
                               </span>
                               <button
                                 onClick={() => setSelectedNode(null)}
-                                className="text-[#79716b] hover:text-[#292524] text-xs font-bold font-sans"
+                                className="text-[#79716b] hover:text-[#292524] p-0.5 rounded transition"
                               >
-                                ✕
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                               </button>
                             </div>
 
@@ -2016,9 +2020,11 @@ export default function PlotDetailPage() {
                                           setTreeToRemove(scan.tree_code);
                                         }}
                                         title="Keluarkan dari plot"
-                                        className="p-1 rounded text-red-500 hover:text-red-750 hover:bg-red-50 transition-all font-bold cursor-pointer"
+                                        className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer flex items-center justify-center"
                                       >
-                                        ✕
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                       </button>
                                     )}
                                   </div>
@@ -2103,9 +2109,11 @@ export default function PlotDetailPage() {
               </div>
               <button 
                 onClick={() => setIsAddTreeModalOpen(false)} 
-                className="text-[#79716b] hover:text-[#292524] text-sm font-semibold w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
+                className="text-[#79716b] hover:text-[#292524] w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -2209,9 +2217,11 @@ export default function PlotDetailPage() {
               <button 
                 type="button"
                 onClick={() => setIsEditPlotModalOpen(false)} 
-                className="text-[#79716b] hover:text-[#292524] text-sm font-semibold w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
+                className="text-[#79716b] hover:text-[#292524] w-8 h-8 rounded-full bg-[#fafaf9] flex items-center justify-center transition-colors cursor-pointer"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
