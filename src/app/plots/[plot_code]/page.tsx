@@ -1017,7 +1017,7 @@ export default function PlotDetailPage() {
           {/* Top toolbar matching dashboard reference */}
           <div className="flex justify-between items-center select-none pb-2 border-b border-[#e7e5e4]/40">
             <Link href="/my-plots" className="text-xs text-[#79716b] hover:text-[#616c39] transition-colors flex items-center gap-1.5 font-medium">
-              ← Back to Dashboard
+              {language === "id" ? "← Kembali ke Dasbor" : "← Back to Dashboard"}
             </Link>
 
             <div className="flex items-center gap-3">
@@ -1051,7 +1051,7 @@ export default function PlotDetailPage() {
                   <svg className="w-3.5 h-3.5 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                   </svg>
-                  <span>Download Carbon Data</span>
+                  <span>{language === "id" ? "Unduh Data Karbon" : "Download Carbon Data"}</span>
                 </button>
                 {exportDropdownOpen && (
                   <>
@@ -1084,7 +1084,7 @@ export default function PlotDetailPage() {
                         <span>Excel Spreadsheet</span>
                       </button>
                       <div className="border-t border-[#fafaf9] mt-1 px-3 py-2 text-[9px] text-[#79716b] leading-relaxed font-medium">
-                        Structured data suitable as a supporting attachment when registering a carbon project in SRN PPI or for carbon credit documentation.
+                        {language === "id" ? "Data terstruktur yang siap menjadi lampiran pendukung pendaftaran proyek karbon di SRN PPI atau dokumentasi kredit karbon." : "Structured data suitable as a supporting attachment when registering a carbon project in SRN PPI or for carbon credit documentation."}
                       </div>
                     </div>
                   </>
@@ -1097,7 +1097,7 @@ export default function PlotDetailPage() {
                     onClick={() => setIsAddTreeModalOpen(true)}
                     className="px-3 py-1.5 bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-[10px] rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="text-xs font-bold leading-none">+</span> Add Tree
+                    <span className="text-xs font-bold leading-none">+</span> {language === "id" ? "Tambah Pohon" : "Add Tree"}
                   </button>
                 </div>
               )}
@@ -2148,7 +2148,7 @@ export default function PlotDetailPage() {
                 <div className="ml-8 border-t border-[#fafaf9] pt-3 flex flex-col gap-2.5">
                   <input
                     type="text"
-                    placeholder="Search tree code (e.g. POHON-1234)..."
+                    placeholder={language === "id" ? "Cari kode pohon (contoh: POHON-1234)..." : "Search tree code (e.g. POHON-1234)..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#292524] rounded-lg px-3 py-1.5 text-xs text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#1c1917]/5 transition-all w-full"

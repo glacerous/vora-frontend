@@ -174,10 +174,10 @@ export default function HistoryPage() {
           {/* Heading Section */}
           <div className="mb-8 border-b border-[#e7e5e4] pb-6">
             <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-[#292524] mb-2">
-              Scan Gallery
+              {language === "id" ? "Galeri Scan" : "Scan Gallery"}
             </h1>
             <p className="text-sm text-[#292524]/60 max-w-2xl leading-relaxed">
-              Discover public 3D tree scans and forest plots mapped by the Vora community.
+              {language === "id" ? "Jelajahi pemindaian pohon 3D publik dan plot hutan yang dipetakan oleh komunitas Vora." : "Discover public 3D tree scans and forest plots mapped by the Vora community."}
             </p>
           </div>
 
@@ -191,7 +191,7 @@ export default function HistoryPage() {
                   : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
-              Public Trees
+              {language === "id" ? "Pohon Publik" : "Public Trees"}
             </button>
             <button
               onClick={() => setGalleryTab("plot")}
@@ -201,7 +201,7 @@ export default function HistoryPage() {
                   : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
-              Public Plots
+              {language === "id" ? "Plot Publik" : "Public Plots"}
             </button>
           </div>
 
@@ -225,7 +225,7 @@ export default function HistoryPage() {
                       <input
                         required
                         autoComplete="off"
-                        placeholder="Search tree code…"
+                        placeholder={language === "id" ? "Cari kode pohon..." : "Search tree code..."}
                         id="search"
                         type="text"
                         value={searchQuery}
@@ -255,9 +255,9 @@ export default function HistoryPage() {
                   {/* Segmented Filter Tabs */}
                   <div className="flex items-center gap-1 p-1 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl self-start md:self-auto select-none overflow-x-auto max-w-full flex-nowrap scrollbar-none shrink-0">
                     {[
-                      { id: "all", label: `All Scans (${scans.length})` },
-                      { id: "high-carbon", label: `High Carbon (${scans.filter(s => (s.co2e_kg || 0) >= 200).length})` },
-                      { id: "estimated", label: `Estimated (${validScans.length})` },
+                      { id: "all", label: language === "id" ? `Semua Scan (${scans.length})` : `All Scans (${scans.length})` },
+                      { id: "high-carbon", label: language === "id" ? `Karbon Tinggi (${scans.filter(s => (s.co2e_kg || 0) >= 200).length})` : `High Carbon (${scans.filter(s => (s.co2e_kg || 0) >= 200).length})` },
+                      { id: "estimated", label: language === "id" ? `Terestimasi (${validScans.length})` : `Estimated (${validScans.length})` },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -336,7 +336,7 @@ export default function HistoryPage() {
                                 href={`/reconstruct?code=${encodeURIComponent(record.tree_code)}&phase=result`}
                                 className="px-3.5 py-1.5 bg-[#292524] hover:bg-[#616c39] text-white text-xs font-semibold rounded-lg transition-colors duration-200 select-none shrink-0"
                               >
-                                View
+                                {language === "id" ? "Lihat" : "View"}
                               </Link>
                             </div>
                           </div>
@@ -355,7 +355,7 @@ export default function HistoryPage() {
                           {loading && (
                             <div className="w-3.5 h-3.5 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin" />
                           )}
-                          Load more scans
+                          {language === "id" ? "Muat lebih banyak scan" : "Load more scans"}
                         </button>
                       </div>
                     )}
@@ -363,8 +363,8 @@ export default function HistoryPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm">
                     <TreeIcon className="w-10 h-10 text-[#d6d3d1] mb-1" />
-                    <p className="text-sm font-semibold text-[#79716b]">No matching scans found</p>
-                    <p className="text-xs text-[#a8a29e] max-w-xs mt-0.5">Try searching for a different tree code or adjust your query filter.</p>
+                    <p className="text-sm font-semibold text-[#79716b]">{language === "id" ? "Tidak ada scan yang cocok" : "No matching scans found"}</p>
+                    <p className="text-xs text-[#a8a29e] max-w-xs mt-0.5">{language === "id" ? "Coba cari dengan kode pohon lain atau sesuaikan filter." : "Try searching for a different tree code or adjust your query filter."}</p>
                   </div>
                 )}
               </div>
@@ -372,7 +372,7 @@ export default function HistoryPage() {
               !loading && (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm animate-fadeIn">
                   <TreeIcon className="w-12 h-12 text-[#d6d3d1] mb-1" />
-                  <p className="text-sm font-semibold mt-2 text-[#79716b]">No scans found in the gallery</p>
+                  <p className="text-sm font-semibold mt-2 text-[#79716b]">{language === "id" ? "Belum ada scan di galeri" : "No scans found in the gallery"}</p>
                 </div>
               )
             )

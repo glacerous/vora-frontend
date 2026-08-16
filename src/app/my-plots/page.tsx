@@ -192,10 +192,10 @@ export default function MyPlotsPage() {
           <header className="flex justify-between items-center pb-6 border-b border-[#e7e5e4]/80 mb-8 select-none">
             <div>
               <h1 className="text-2xl font-serif font-normal tracking-tight text-[#292524]">
-                Dashboard
+                {language === "id" ? "Dasbor Plot" : "Dashboard"}
               </h1>
               <p className="text-xs text-[#79716b] mt-1 leading-relaxed">
-                Welcome back, <span className="text-[#616c39] font-semibold">{user?.display_name || user?.username}</span>
+                {language === "id" ? "Selamat datang kembali, " : "Welcome back, "}<span className="text-[#616c39] font-semibold">{user?.display_name || user?.username}</span>
               </p>
             </div>
 
@@ -204,7 +204,7 @@ export default function MyPlotsPage() {
                 href="/plots/create"
                 className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-4 py-2.5 shadow-sm transition-all"
               >
-                + Create New Plot
+                {language === "id" ? "+ Buat Plot Baru" : "+ Create New Plot"}
               </Link>
             </div>
           </header>
@@ -226,7 +226,7 @@ export default function MyPlotsPage() {
                   : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
-              My Trees ({scans.length})
+              {language === "id" ? `Pohon Saya (${scans.length})` : `My Trees (${scans.length})`}
             </button>
             <button
               onClick={() => setActiveTab("plots")}
@@ -236,7 +236,7 @@ export default function MyPlotsPage() {
                   : "border-transparent text-[#79716b] hover:text-[#292524]"
               }`}
             >
-              My Plots ({plots.length})
+              {language === "id" ? `Plot Saya (${plots.length})` : `My Plots (${plots.length})`}
             </button>
           </div>
 
@@ -249,15 +249,15 @@ export default function MyPlotsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-[#292524] mb-2">No Tree Records Yet</h2>
+                <h2 className="text-base font-semibold text-[#292524] mb-2">{language === "id" ? "Belum Ada Catatan Pohon" : "No Tree Records Yet"}</h2>
                 <p className="text-xs text-[#79716b] max-w-sm mx-auto leading-relaxed mb-6">
-                  Record a new tree using our reconstruct module to visualize biomass data.
+                  {language === "id" ? "Pindai pohon baru dengan modul rekonstruksi untuk memvisualisasikan data biomassa." : "Record a new tree using our reconstruct module to visualize biomass data."}
                 </p>
                 <Link
                   href="/reconstruct"
                   className="inline-block bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
-                  Start Tree Scan
+                  {language === "id" ? "Mulai Scan Pohon" : "Start Tree Scan"}
                 </Link>
               </div>
             ) : (

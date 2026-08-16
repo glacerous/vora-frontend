@@ -11,6 +11,7 @@ import { useAuth, useSettings } from "@/components/AuthProvider";
 export default function CreatePlotPage() {
   const router = useRouter();
   const { user: currentUser, loading: authLoading } = useAuth();
+  const { language } = useSettings();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -101,7 +102,7 @@ export default function CreatePlotPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                  Plot Name
+                  {language === "id" ? "Nama Plot" : "Plot Name"}
                 </label>
                 <input
                   type="text"
@@ -211,7 +212,7 @@ export default function CreatePlotPage() {
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  "Save & Create Plot"
+                  language === "id" ? "Simpan & Buat Plot" : "Save & Create Plot"
                 )}
               </button>
             </form>
