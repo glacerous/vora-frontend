@@ -61,6 +61,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
 export default function MyPlotsPage() {
   const router = useRouter();
   const { user, loading: authLoading, isWakingUp } = useAuth();
+  const { language, t } = useSettings();
   
   const [activeTab, setActiveTab] = useState<"trees" | "plots">("trees");
   const [plots, setPlots] = useState<Plot[]>([]);
