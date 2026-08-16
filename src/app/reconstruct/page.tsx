@@ -2121,6 +2121,19 @@ function ReconstructContent() {
                       </p>
                       <p className="text-xs text-[#79716b] mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
                     </div>
+
+                    {/* Sensor Scale Telemetry Notice / Disclosure */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3 mt-1">
+                      <span className="text-base mt-0.5">⚠️</span>
+                      <div className="flex flex-col gap-0.5 text-left">
+                        <span className="text-[11px] font-bold text-amber-950 uppercase tracking-wide">
+                          Informasi Kalibrasi Sensor Skala
+                        </span>
+                        <p className="text-[11px] text-amber-900/80 leading-relaxed">
+                          Video upload tidak menyertakan data sensor gerak langsung. Estimasi skala menggunakan model geometri standar MASt3R dan belum divalidasi sensor fisik. Untuk hasil tervalidasi presisi tinggi, gunakan rekam langsung di aplikasi mobile Android (dengan ARCore VIO hardware tracking).
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
