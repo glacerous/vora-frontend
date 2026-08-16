@@ -63,11 +63,12 @@ const Stepper = ({
 }: {
   currentPhase: "upload" | "marking" | "processing" | "result";
 }) => {
+  const { language } = useSettings();
   const steps = [
-    { key: "upload", label: "Upload Walkthrough" },
-    { key: "marking", label: "Mark Trunk Axis" },
-    { key: "processing", label: "GPU Processing" },
-    { key: "result", label: "3D Analytics" },
+    { key: "upload", label: language === "id" ? "Unggah Video" : "Upload Walkthrough" },
+    { key: "marking", label: language === "id" ? "Tandai Batang" : "Mark Trunk Axis" },
+    { key: "processing", label: language === "id" ? "Pemrosesan GPU" : "GPU Processing" },
+    { key: "result", label: language === "id" ? "Analisis 3D" : "3D Analytics" },
   ];
   return (
     <div className="w-full max-w-lg mb-8 bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 flex items-center justify-between shadow-sm select-none">
@@ -127,6 +128,8 @@ const Stepper = ({
 
 function ReconstructContent() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { language, t } = useSettings();
   const { startTrackingScan, resetScan: resetGlobalScan } = useScanProgress();
   const [frameLoadError, setFrameLoadError] = useState(false);
   const searchParams = useSearchParams();
