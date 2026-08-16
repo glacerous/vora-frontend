@@ -20,6 +20,7 @@ interface ScanRecord {
   scan_date: string;
   tree_code: string;
   dbh_cm: number | null;
+  dbh_equivalent_cm?: number | null;
   tinggi_m: number | null;
   biomassa_kg: number | null;
   karbon_kg: number | null;
@@ -1537,12 +1538,24 @@ function ReconstructContent() {
 
                 {calcOpen && (
                   <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-[#e7e5e4] bg-white font-sans divide-y divide-[#fafaf9]">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
-                      <div className="grid grid-cols-2 gap-2 text-[#79716b] font-medium">
-                        <div>Diameter (DBH): <span className="font-semibold text-[#292524]">{currentScan.dbh_cm?.toFixed(1) ?? "-"} cm</span></div>
-                        <div>Tree Height: <span className="font-semibold text-[#292524]">{currentScan.tinggi_m?.toFixed(1) ?? "-"} m</span></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#79716b] font-medium">
+                        <div>Diameter (DBH - Circle Fit, Utama): <span className="font-semibold text-[#292524]">{formatDbh(currentScan.dbh_cm, unit)}</span></div>
+                        <div>Tree Height: <span className="font-semibold text-[#292524]">{formatHeight(currentScan.tinggi_m, unit)}</span></div>
                       </div>
+                      {currentScan.dbh_equivalent_cm != null && (
+                        <div className="pt-1 border-t border-dashed border-[#fafaf9] flex flex-col gap-0.5">
+                          <div className="text-[#79716b] text-xs">
+                            Diameter Ekuivalen (Concave Hull Area): <span className="font-semibold text-[#616c39]">{formatDbh(currentScan.dbh_equivalent_cm, unit)}</span>
+                          </div>
+                          <span className="text-[10px] text-[#79716b]/80 italic">
+                            {language === "id"
+                              ? "D_eq dihitung dari luas area penampang melintang alpha shape (2√(A/π)) untuk evaluasi pohon berbatang non-bulat/elips."
+                              : "D_eq is computed from alpha shape cross-section area (2√(A/π)) to evaluate non-circular/elliptical trunk cross-sections."}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-3 space-y-1.5">
