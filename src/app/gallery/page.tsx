@@ -336,7 +336,7 @@ export default function HistoryPage() {
                                 href={`/reconstruct?code=${encodeURIComponent(record.tree_code)}&phase=result`}
                                 className="px-3.5 py-1.5 bg-[#292524] hover:bg-[#616c39] text-white text-xs font-semibold rounded-lg transition-colors duration-200 select-none shrink-0"
                               >
-                                {language === "id" ? "Buka 3D" : "View 3D"}
+                                {language === "id" ? "Lihat" : "View"}
                               </Link>
                             </div>
                           </div>
