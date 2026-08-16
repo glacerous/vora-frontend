@@ -5,7 +5,7 @@ import Loader from "@/components/Loader";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -88,6 +88,7 @@ export default function PlotDetailPage() {
   const plotCode = params.plot_code as string;
 
   const { user: currentUser } = useAuth();
+  const { language, t } = useSettings();
   const [plot, setPlot] = useState<Plot | null>(null);
   const [scans, setScans] = useState<Scan[]>([]);
   const [aggregation, setAggregation] = useState<Aggregation | null>(null);
@@ -100,7 +101,7 @@ export default function PlotDetailPage() {
   // State for custom delete confirmation modal
   const [treeToRemove, setTreeToRemove] = useState<string | null>(null);
 
-  // Edit Plot metadata modal states
+  // {language === "id" ? "Edit Plot" : "Edit Plot"} metadata modal states
   const [isEditPlotModalOpen, setIsEditPlotModalOpen] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -1032,7 +1033,7 @@ export default function PlotDetailPage() {
                   <button
                     onClick={() => setIsEditPlotModalOpen(true)}
                     className="p-1 rounded hover:bg-[#fafaf9] transition-colors text-[#79716b] hover:text-[#292524] cursor-pointer flex items-center justify-center"
-                    title="Edit Plot"
+                    title={language === "id" ? "Edit Plot" : "Edit Plot"}
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.83 18.291a8.96 8.96 0 01-3.06 1.981l-3.068 1.024 1.024-3.068a8.96 8.96 0 011.98-3.061L16.863 4.487zm0 0L19.5 7.125" />
@@ -2197,7 +2198,7 @@ export default function PlotDetailPage() {
         </div>
       )}
 
-      {/* Modal Edit Plot */}
+      {/* Modal {language === "id" ? "Edit Plot" : "Edit Plot"} */}
       {isEditPlotModalOpen && plot && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
@@ -2211,7 +2212,7 @@ export default function PlotDetailPage() {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#292524] font-normal">Edit Plot Info</h3>
+                <h3 className="font-serif text-lg text-[#292524] font-normal">{language === "id" ? "Edit Plot" : "Edit Plot"} Info</h3>
                 <p className="text-xs text-[#79716b] mt-1">Change the name, description, and privacy of this plot.</p>
               </div>
               <button 

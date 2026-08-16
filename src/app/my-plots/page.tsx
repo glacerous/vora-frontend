@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 

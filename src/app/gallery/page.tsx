@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 
 interface ScanRecord {
   id: number;
@@ -60,6 +60,7 @@ const TreeIcon = ({ className = "w-8 h-8 text-[#a8a29e]" }) => (
 
 export default function HistoryPage() {
   const { isWakingUp } = useAuth();
+  const { language, t } = useSettings();
   const [galleryTab, setGalleryTab] = useState<"tree" | "plot">("tree");
   
   // Scans tab states

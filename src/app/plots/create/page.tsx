@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 
 export default function CreatePlotPage() {
   const router = useRouter();

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth, useSettings } from "@/components/AuthProvider";
 import { useScanProgress } from "@/components/ScanProgressProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -1469,7 +1469,7 @@ function ReconstructContent() {
                             <span className="text-sm font-bold text-[#616c39] font-serif">
                               {(predictions[0]?.confidence ?? 0).toFixed(1)}%
                             </span>
-                            <span className="text-[9px] text-[#616c39]/70 font-medium">Confidence</span>
+                            <span className="text-[9px] text-[#616c39]/70 font-medium">{language === "id" ? "Keyakinan" : "Confidence"}</span>
                           </div>
                         </div>
                         <div className="w-full h-1.5 bg-[#616c39]/15 rounded-full overflow-hidden mt-3">
@@ -1484,7 +1484,7 @@ function ReconstructContent() {
                     {predictions.length > 1 && (
                       <div className="space-y-2 pt-1">
                         <span className="text-[10px] font-medium text-[#79716b] block px-1">
-                          Other Probable Candidates
+                          {language === "id" ? "Kandidat Lain yang Mungkin" : "Other Probable Candidates"}
                         </span>
                         <div className="divide-y divide-[#fafaf9]">
                           {predictions.slice(1).map((pred, idx) => (
@@ -1527,7 +1527,7 @@ function ReconstructContent() {
                     <svg className="w-3.5 h-3.5 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 7h.01M15 11h.01M15 7h.01M12 14h.01M9 11h.01M18 20V4a1 1 0 00-1-1H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1z" />
                     </svg>
-                    How this was calculated
+                    {language === "id" ? "Cara perhitungan ini dilakukan" : "How this was calculated"}
                   </span>
                   <span className="text-[#79716b] text-[10px] font-bold">{calcOpen ? "▲" : "▼"}</span>
                 </button>
@@ -1635,7 +1635,7 @@ function ReconstructContent() {
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      Save 3D Alignment
+                      {language === "id" ? "Simpan Penyelarasan 3D" : "Save 3D Alignment"}
                     </button>
                     <button
                       onClick={() => {
@@ -1647,7 +1647,7 @@ function ReconstructContent() {
                       }}
                       className="w-full py-3 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2"
                     >
-                      Cancel Edit
+                      {language === "id" ? "Batal Edit" : "Cancel Edit"}
                     </button>
                   </>
                 ) : (
@@ -1665,7 +1665,7 @@ function ReconstructContent() {
                       <svg className="w-4 h-4 text-[#616c39]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.24 11.54a3 3 0 00-4.24-4.24m0 0a3 3 0 00-4.24 4.24m4.24-4.24V3m0 0L8 5.5M11 3l3 2.5M3 12h18m-3 0a3 3 0 01-3 3H9a3 3 0 01-3-3" />
                       </svg>
-                      Recalibrate Trunk (2D Photo)
+                      {language === "id" ? "Kalibrasi Ulang Batang (Foto 2D)" : "Recalibrate Trunk (2D Photo)"}
                     </button>
                     {/* On Desktop/Tablet: Show Manual 3D Alignment Button */}
                     <button
@@ -1681,7 +1681,7 @@ function ReconstructContent() {
                       <svg className="w-4 h-4 text-[#79716b]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Edit 3D Alignment (Manual)
+                      {language === "id" ? "Edit Penyelarasan 3D (Manual)" : "Edit 3D Alignment (Manual)"}
                     </button>
                     {/* On Mobile: Show touchscreen limitation message */}
                     <div className="flex md:hidden w-full text-center py-2.5 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl justify-center items-center">
@@ -1702,7 +1702,7 @@ function ReconstructContent() {
                       </div>
                     )}
 
-                    {/* Download Carbon Certificate Button */}
+                    {/* {language === "id" ? "Unduh Sertifikat Karbon" : "Download Carbon Certificate"} Button */}
                     <button
                       onClick={() => {
                         if (currentScan) {
@@ -1714,18 +1714,18 @@ function ReconstructContent() {
                       <svg className="w-4 h-4 text-[#616c39]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                       </svg>
-                      Download Carbon Certificate
+                      {language === "id" ? "Unduh Sertifikat Karbon" : "Download Carbon Certificate"}
                     </button>
                   </>
                 )}
               </div>
             )}
 
-            {/* Scan History Timeline */}
+            {/* {language === "id" ? "Riwayat Pemindaian" : "Scan History Timeline"} */}
             {history.length > 0 && (
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] mb-3">
-                  Scan History Timeline
+                  {language === "id" ? "Riwayat Pemindaian" : "Scan History Timeline"}
                 </h3>
 
                 {loading ? (
@@ -1883,7 +1883,7 @@ function ReconstructContent() {
               }}
               className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#292524] text-white text-xs font-medium rounded-xl hover:bg-[#292524]/90 transition-all shadow-sm"
             >
-              <span>+ Upload New Scan</span>
+              <span>+ {language === "id" ? "Unggah Scan Baru" : "Upload New Scan"}</span>
             </button>
           </div>
         </div>
@@ -1907,8 +1907,8 @@ function ReconstructContent() {
             <div data-lenis-prevent className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-[#fafaf9] pb-4">
                 <div>
-                  <h3 className="font-serif text-xl text-[#292524] font-normal">Recalibrate Trunk Axis</h3>
-                  <p className="text-xs text-[#79716b] mt-1 font-medium">Click two points on the 2D image to set the trunk direction.</p>
+                  <h3 className="font-serif text-xl text-[#292524] font-normal">{language === "id" ? "Kalibrasi Ulang Sumbu Batang" : "Recalibrate Trunk Axis"}</h3>
+                  <p className="text-xs text-[#79716b] mt-1 font-medium">{language === "id" ? "Klik dua titik pada foto 2D untuk menentukan arah sumbu batang." : "Click two points on the 2D image to set the trunk direction."}</p>
                 </div>
                 <button
                   onClick={() => { setRecalibModalOpen(false); setClickedPoints([]); }}
@@ -1929,9 +1929,9 @@ function ReconstructContent() {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
                 <div className="flex flex-col gap-2">
                   <div className="text-xs font-semibold text-[#79716b] uppercase tracking-wider mb-1">
-                    {clickedPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
-                    {clickedPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
-                    {clickedPoints.length >= 2 && "Step 3: Ready to Recalibrate"}
+                    {clickedPoints.length === 0 && (language === "id" ? "Langkah 1: Klik bagian PANGKAL batang" : "Step 1: Click the BASE of the trunk")}
+                    {clickedPoints.length === 1 && (language === "id" ? "Langkah 2: Klik bagian ATAS batang" : "Step 2: Click the TOP/UPPER part of the trunk")}
+                    {clickedPoints.length >= 2 && (language === "id" ? "Langkah 3: Siap Kalibrasi Ulang" : "Step 3: Ready to Recalibrate")}
                   </div>
 
                   <div
@@ -1997,7 +1997,7 @@ function ReconstructContent() {
 
                 {/* VISUAL GUIDE CARD */}
                 <div className="bg-[#fafaf9] border border-[#fafaf9] rounded-2xl p-4 flex flex-col gap-3 h-fit">
-                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">Trunk Click Guide</h4>
+                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">{language === "id" ? "Panduan Klik Batang" : "Trunk Click Guide"}</h4>
                   <div className="flex justify-center py-2 bg-white rounded-xl border border-[#fafaf9]">
                     <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
                       {/* Ground */}
@@ -2039,19 +2039,19 @@ function ReconstructContent() {
                       <svg className="w-3.5 h-3.5 text-[#616c39] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
+                      <span>{language === "id" ? <><b>Titik 1 (Pangkal):</b> Klik di bagian batang yang lurus, sedikit <b>di atas tanah & pelebaran akar</b>.</> : <><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</>}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="w-3.5 h-3.5 text-[#616c39] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
+                      <span>{language === "id" ? <><b>Titik 2 (Atas):</b> Klik lebih tinggi pada garis tengah batang yang lurus.</> : <><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</>}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      <span className="text-red-600/80"><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</span>
+                      <span className="text-red-600/80">{language === "id" ? <><b>Hindari:</b> Mengklik bagian banir/akar yang melebar di paling bawah.</> : <><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</>}</span>
                     </li>
                   </ul>
                 </div>
@@ -2064,7 +2064,7 @@ function ReconstructContent() {
                   disabled={clickedPoints.length === 0 || recalibLoading}
                   className="px-5 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Reset Points
+                  {language === "id" ? "Reset Titik" : "Reset Points"}
                 </button>
 
                 <div className="flex gap-3">
@@ -2074,7 +2074,7 @@ function ReconstructContent() {
                     disabled={recalibLoading}
                     className="px-5 py-2.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#292524] text-xs font-semibold rounded-xl transition"
                   >
-                    Cancel
+                    {language === "id" ? "Batal" : "Cancel"}
                   </button>
                   <button
                     type="button"
@@ -2085,10 +2085,10 @@ function ReconstructContent() {
                     {recalibLoading ? (
                       <>
                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Recalculating...
+                        {language === "id" ? "Menghitung Ulang..." : "Recalculating..."}
                       </>
                     ) : (
-                      "Confirm Recalibration"
+                      language === "id" ? "Konfirmasi Kalibrasi" : "Confirm Recalibration"
                     )}
                   </button>
                 </div>
@@ -2315,7 +2315,7 @@ function ReconstructContent() {
 
                 {/* VISUAL GUIDE CARD */}
                 <div className="bg-[#fafaf9] border border-[#fafaf9] rounded-2xl p-4 flex flex-col gap-3 h-fit">
-                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">Trunk Click Guide</h4>
+                  <h4 className="text-xs font-bold text-[#292524] uppercase tracking-wide">{language === "id" ? "Panduan Klik Batang" : "Trunk Click Guide"}</h4>
                   <div className="flex justify-center py-2 bg-white rounded-xl border border-[#fafaf9]">
                     <svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
                       {/* Ground */}
@@ -2357,19 +2357,19 @@ function ReconstructContent() {
                       <svg className="w-3.5 h-3.5 text-[#616c39] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      <span><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</span>
+                      <span>{language === "id" ? <><b>Titik 1 (Pangkal):</b> Klik di bagian batang yang lurus, sedikit <b>di atas tanah & pelebaran akar</b>.</> : <><b>Point 1 (Base):</b> Click where the trunk becomes a straight cylinder, slightly <b>above the ground & root flares</b>.</>}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="w-3.5 h-3.5 text-[#616c39] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      <span><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</span>
+                      <span>{language === "id" ? <><b>Titik 2 (Atas):</b> Klik lebih tinggi pada garis tengah batang yang lurus.</> : <><b>Point 2 (Top):</b> Click higher up on the straight trunk center line.</>}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <svg className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      <span className="text-red-600/80"><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</span>
+                      <span className="text-red-600/80">{language === "id" ? <><b>Hindari:</b> Mengklik bagian banir/akar yang melebar di paling bawah.</> : <><b>Avoid:</b> Clicking the flared root buttress at the absolute bottom.</>}</span>
                     </li>
                   </ul>
                 </div>
@@ -2387,7 +2387,7 @@ function ReconstructContent() {
                     disabled={calibrationPoints.length === 0}
                     className="px-4 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition"
                   >
-                    Reset Points
+                    {language === "id" ? "Reset Titik" : "Reset Points"}
                   </button>
                   <button
                     type="button"
