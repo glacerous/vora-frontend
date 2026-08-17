@@ -323,7 +323,7 @@ export default function HistoryPage() {
                                 </div>
                                 {isInvalid ? (
                                   <span className="text-[10px] text-rose-500 font-semibold mt-0.5 font-sans">
-                                    Invalid scan
+                                    {language === "id" ? "Scan tidak valid" : "Invalid scan"}
                                   </span>
                                 ) : (
                                   <span className="text-[11px] font-mono text-[#79716b] mt-0.5">
@@ -389,7 +389,11 @@ export default function HistoryPage() {
                     <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    <span>Waking up backend servers (Render.com cold start). This may take up to 50 seconds.</span>
+                    <span>
+                      {language === "id"
+                        ? "Membangunkan server backend (cold start Render.com). Ini mungkin memakan waktu hingga 50 detik."
+                        : "Waking up backend servers (Render.com cold start). This may take up to 50 seconds."}
+                    </span>
                   </p>
                 )}
               </div>
@@ -405,8 +409,12 @@ export default function HistoryPage() {
                         <span className="text-[10px] font-mono tracking-wider bg-[#fafaf9] text-[#79716b] border border-[#e7e5e4] px-2 py-0.5 rounded font-bold">
                           {plot.plot_code}
                         </span>
-                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded border bg-sky-50 text-sky-700 border-sky-100">
-                          {plot.privacy}
+                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${
+                          plot.privacy === "public"
+                            ? "bg-sky-50 text-sky-700 border-sky-100"
+                            : "bg-[#fafaf9] text-[#79716b] border-[#e7e5e4]"
+                        }`}>
+                          {plot.privacy === "public" ? (language === "id" ? "Publik" : "Public") : (language === "id" ? "Privat" : "Private")}
                         </span>
                       </div>
 
@@ -417,7 +425,7 @@ export default function HistoryPage() {
                       </h3>
 
                       <p className="text-xs text-[#79716b] leading-relaxed mb-6 line-clamp-2">
-                        {plot.description || "No location description."}
+                        {plot.description || (language === "id" ? "Tidak ada deskripsi lokasi." : "No location description.")}
                       </p>
                     </div>
 
@@ -449,7 +457,7 @@ export default function HistoryPage() {
                         </div>
 
                         <div className="flex flex-col text-[10px] text-[#79716b] leading-tight">
-                          <span>Trees: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
+                          <span>{language === "id" ? "Pohon" : "Trees"}: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
                           <span className="mt-0.5">CO₂e: <span className="font-bold text-[#292524]">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
@@ -458,7 +466,7 @@ export default function HistoryPage() {
                         href={`/plots/${plot.plot_code}`}
                         className="text-xs text-[#616c39] font-bold hover:text-[#616c39] flex items-center gap-1 transition-colors"
                       >
-                        Plot Details &rarr;
+                        {language === "id" ? "Detail Plot →" : "Plot Details →"}
                       </Link>
                     </div>
                   </div>
@@ -467,7 +475,9 @@ export default function HistoryPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center text-[#a8a29e] gap-2 bg-white rounded-2xl border border-[#e7e5e4] shadow-sm animate-fadeIn">
                 <TreeIcon className="w-12 h-12 text-[#d6d3d1] mb-1" />
-                <p className="text-sm font-semibold mt-2 text-[#79716b]">No public plots found in the gallery</p>
+                <p className="text-sm font-semibold mt-2 text-[#79716b]">
+                  {language === "id" ? "Belum ada plot publik di galeri" : "No public plots found in the gallery"}
+                </p>
               </div>
             )
           )}
@@ -482,7 +492,11 @@ export default function HistoryPage() {
                   <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span>Waking up backend servers (Render.com cold start). This may take up to 50 seconds.</span>
+                  <span>
+                    {language === "id"
+                      ? "Membangunkan server backend (cold start Render.com). Ini mungkin memakan waktu hingga 50 detik."
+                      : "Waking up backend servers (Render.com cold start). This may take up to 50 seconds."}
+                  </span>
                 </p>
               )}
             </div>

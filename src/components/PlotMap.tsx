@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useSettings } from "@/components/AuthProvider";
 
 interface Scan {
   id: number;
@@ -31,6 +32,7 @@ const customIcon = new L.Icon({
 });
 
 export default function PlotMap({ scans, centroidLat, centroidLon }: PlotMapProps) {
+  const { language } = useSettings();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -86,7 +88,7 @@ export default function PlotMap({ scans, centroidLat, centroidLon }: PlotMapProp
       const popupContent = `
         <div style="color: #0d0f12; font-family: sans-serif; padding: 4px;">
           <h4 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600;">${scan.tree_code}</h4>
-          <p style="margin: 0 0 6px 0; font-size: 11px; color: #4a5568;">Biomass CO₂e: <b>${scan.co2e_kg.toFixed(2)} kg</b></p>
+          <p style="margin: 0 0 6px 0; font-size: 11px; color: #4a5568;">${language === "id" ? "Biomassa CO₂e:" : "Biomass CO₂e:"} <b>${scan.co2e_kg.toFixed(2)} kg</b></p>
           ${scan.thumbnail_url ? `<img src="${scan.thumbnail_url}" loading="lazy" style="width: 100%; max-height: 80px; object-fit: cover; border-radius: 6px;" />` : ""}
         </div>
       `;
@@ -108,7 +110,7 @@ export default function PlotMap({ scans, centroidLat, centroidLon }: PlotMapProp
       // We don't necessarily need to destroy map here to avoid flash,
       // but let's keep it clean or handle tab changes
     };
-  }, [scans, centroidLat, centroidLon]);
+  }, [scans, centroidLat, centroidLon, language]);
 
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden border border-[#e7e5e4] shadow-inner relative">

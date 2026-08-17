@@ -77,7 +77,7 @@ export default function CreatePlotPage() {
           {/* Back Link */}
           <div className="mb-8">
             <Link href="/my-plots" className="text-xs text-[#79716b] hover:text-[#616c39] transition-colors flex items-center gap-1.5 font-medium">
-              ← Back to Dashboard
+              {language === "id" ? "← Kembali ke Dasbor" : "← Back to Dashboard"}
             </Link>
           </div>
 
@@ -85,10 +85,12 @@ export default function CreatePlotPage() {
           <div className="bg-white border border-[#e7e5e4]/85 rounded-3xl p-8 shadow-sm">
             <div className="mb-8">
               <h1 className="text-xl font-semibold tracking-tight text-[#292524]">
-                Create New Forest Plot
+                {language === "id" ? "Buat Plot Hutan Baru" : "Create New Forest Plot"}
               </h1>
               <p className="text-xs text-[#79716b] mt-1.5 leading-relaxed">
-                Define your tree grouping area for accurate carbon biomass data aggregation.
+                {language === "id"
+                  ? "Tentukan area kelompok pohon Anda untuk agregasi data biomassa karbon yang akurat."
+                  : "Define your tree grouping area for accurate carbon biomass data aggregation."}
               </p>
             </div>
 
@@ -109,19 +111,19 @@ export default function CreatePlotPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Mangrove Plot A1"
+                  placeholder={language === "id" ? "cth. Plot Mangrove A1" : "e.g. Mangrove Plot A1"}
                   className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                  Description
+                  {language === "id" ? "Deskripsi" : "Description"}
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Write details about the location or characteristics of this tree plot..."
+                  placeholder={language === "id" ? "Tulis detail tentang lokasi atau karakteristik plot pohon ini..." : "Write details about the location or characteristics of this tree plot..."}
                   rows={3}
                   className="bg-[#fafaf9] border border-[#e7e5e4] focus:border-[#616c39] rounded-xl px-4 py-3 text-sm text-[#292524] placeholder-[#a8a29e] focus:outline-none focus:ring-4 focus:ring-[#616c39]/10 transition-all w-full resize-none"
                 />
@@ -129,7 +131,7 @@ export default function CreatePlotPage() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                  Plot Privacy
+                  {language === "id" ? "Privasi Plot" : "Plot Privacy"}
                 </label>
                 <div className="grid grid-cols-2 gap-4 mt-1">
                   <button
@@ -141,8 +143,8 @@ export default function CreatePlotPage() {
                         : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
-                    <span className="text-xs font-semibold">Private</span>
-                    <span className="text-[9px] text-center leading-normal opacity-85">Only accessible by you</span>
+                    <span className="text-xs font-semibold">{language === "id" ? "Privat" : "Private"}</span>
+                    <span className="text-[9px] text-center leading-normal opacity-85">{language === "id" ? "Hanya dapat diakses oleh Anda" : "Only accessible by you"}</span>
                   </button>
 
                   <button
@@ -154,15 +156,15 @@ export default function CreatePlotPage() {
                         : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
-                    <span className="text-xs font-semibold">Public</span>
-                    <span className="text-[9px] text-center leading-normal opacity-85">Visible to judges/the public</span>
+                    <span className="text-xs font-semibold">{language === "id" ? "Publik" : "Public"}</span>
+                    <span className="text-[9px] text-center leading-normal opacity-85">{language === "id" ? "Dapat dilihat oleh publik" : "Visible to the public"}</span>
                   </button>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                  Target CO₂e Estimation (kg) (Optional)
+                  {language === "id" ? "Target Estimasi CO₂e (kg) (Opsional)" : "Target CO₂e Estimation (kg) (Optional)"}
                 </label>
                 <input
                   type="number"
@@ -177,7 +179,7 @@ export default function CreatePlotPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                    GPS Centroid Lat (Optional)
+                    {language === "id" ? "Lat Centroid GPS (Opsional)" : "GPS Centroid Lat (Optional)"}
                   </label>
                   <input
                     type="number"
@@ -191,7 +193,7 @@ export default function CreatePlotPage() {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
-                    GPS Centroid Lon (Optional)
+                    {language === "id" ? "Lon Centroid GPS (Opsional)" : "GPS Centroid Lon (Optional)"}
                   </label>
                   <input
                     type="number"

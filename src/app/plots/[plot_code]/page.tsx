@@ -5,7 +5,7 @@ import Loader from "@/components/Loader";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useAuth, useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings, getAuthHeaders } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -842,7 +842,7 @@ export default function PlotDetailPage() {
     return (
       <main className="min-h-screen bg-[#fafaf9]/60 text-[#292524] flex flex-col items-center justify-center font-sans">
         <Loader size={110} className="mb-4" />
-        <p className="text-sm text-[#79716b] font-medium">Mengambil informasi detail plot...</p>
+        <p className="text-sm text-[#79716b] font-medium">{language === "id" ? "Mengambil informasi detail plot..." : "Fetching plot details..."}</p>
       </main>
     );
   }
@@ -856,14 +856,14 @@ export default function PlotDetailPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-sm font-bold text-[#292524] mb-1.5">Akses Terbatas</h2>
+          <h2 className="text-sm font-bold text-[#292524] mb-1.5">{language === "id" ? "Akses Terbatas" : "Restricted Access"}</h2>
           <p className="text-xs text-[#79716b] leading-relaxed mb-5">{error}</p>
           <div className="flex gap-3 justify-center">
             <Link href="/my-plots" className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-lg px-4 py-2 transition-all shadow-sm">
-              Dashboard
+              {language === "id" ? "Dasbor" : "Dashboard"}
             </Link>
             <Link href="/login" className="border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#79716b] text-xs rounded-lg px-4 py-2 transition-all">
-              Login
+              {language === "id" ? "Masuk" : "Login"}
             </Link>
           </div>
         </div>
@@ -935,7 +935,7 @@ export default function PlotDetailPage() {
     
     const density = ha > 0 ? (insideCo2e / 1000) / ha : 0;
     return {
-      name: area.name || `Area ${idx + 1}`,
+      name: area.name || `${language === "id" ? "Area" : "Area"} ${idx + 1}`,
       ha,
       co2eKg: insideCo2e,
       density
@@ -973,14 +973,21 @@ export default function PlotDetailPage() {
     shannonIndex = -sum;
   }
 
-  let diversityLevel = "Low Diversity";
-  let diversityDesc = "This plot has low species diversity, meaning it is dominated by one or a few species.";
+  const isId = language === "id";
+  let diversityLevel = isId ? "Keanekaragaman Rendah" : "Low Diversity";
+  let diversityDesc = isId 
+    ? "Plot ini memiliki keanekaragaman spesies yang rendah, didominasi oleh satu atau sedikit spesies." 
+    : "This plot has low species diversity, meaning it is dominated by one or a few species.";
   if (shannonIndex >= 1.5 && shannonIndex <= 3.0) {
-    diversityLevel = "Medium Diversity";
-    diversityDesc = "This plot has moderate species diversity, indicating a healthy mix of species.";
+    diversityLevel = isId ? "Keanekaragaman Sedang" : "Medium Diversity";
+    diversityDesc = isId 
+      ? "Plot ini memiliki keanekaragaman spesies yang moderat, menunjukkan campuran spesies yang sehat." 
+      : "This plot has moderate species diversity, indicating a healthy mix of species.";
   } else if (shannonIndex > 3.0) {
-    diversityLevel = "High Diversity";
-    diversityDesc = "This plot has high species diversity, reflecting a highly resilient ecological structure.";
+    diversityLevel = isId ? "Keanekaragaman Tinggi" : "High Diversity";
+    diversityDesc = isId 
+      ? "Plot ini memiliki keanekaragaman spesies yang tinggi, mencerminkan struktur ekologis yang sangat resilien." 
+      : "This plot has high species diversity, reflecting a highly resilient ecological structure.";
   }
   const colorPalettes = [
     { bg: "bg-[#616c39] hover:bg-[#4e572c]", text: "text-[#616c39]", border: "border-[#616c39]/30", lightBg: "bg-[#616c39]/10" },
@@ -1028,7 +1035,7 @@ export default function PlotDetailPage() {
                     ? "bg-sky-50 text-sky-700 border-sky-100"
                     : "bg-[#fafaf9] text-[#79716b] border-[#e7e5e4]"
                 }`}>
-                  {plot?.privacy}
+                  {plot?.privacy === "public" ? (language === "id" ? "Publik" : "Public") : (language === "id" ? "Privat" : "Private")}
                 </span>
                 {isOwner && (
                   <button
@@ -1116,15 +1123,17 @@ export default function PlotDetailPage() {
                 <div className="w-full border-b border-[#fafaf9] pb-3.5 mb-4 flex flex-col gap-1 text-left select-none">
                   <span className="text-[9px] font-mono text-[#616c39] font-bold block mb-0.5">{plot?.plot_code}</span>
                   <h1 className="text-lg font-bold tracking-tight text-[#292524] font-serif leading-tight">{plot?.name}</h1>
-                  <p className="text-[10px] text-[#79716b] leading-normal line-clamp-3 mt-1.5">{plot?.description || "No location description."}</p>
+                  <p className="text-[10px] text-[#79716b] leading-normal line-clamp-3 mt-1.5">{plot?.description || (language === "id" ? "Tidak ada deskripsi lokasi." : "No location description.")}</p>
                   <span className="text-[9px] text-[#79716b] mt-2 block font-medium">
-                    Oleh <span className="text-[#79716b] font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                    {language === "id" ? "Oleh" : "By"} <span className="text-[#79716b] font-semibold">{plot?.owner.display_name}</span> &bull; {plot && new Date(plot.created_at).toLocaleDateString(language === "id" ? "id-ID" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
 
                 {plot?.target_co2e_kg && plot.target_co2e_kg > 0 ? (
                   <>
-                    <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest self-start mb-1 select-none">Carbon Target Progress</h3>
+                    <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest self-start mb-1 select-none">
+                      {language === "id" ? "Progres Target Karbon" : "Carbon Target Progress"}
+                    </h3>
                     
                     {/* Curved SVG Gauge */}
                     <div className="relative flex flex-col items-center justify-center py-3 select-none">
@@ -1155,7 +1164,9 @@ export default function PlotDetailPage() {
                       </svg>
                       <div className="absolute bottom-1 text-center">
                         <span className="text-xl font-semibold text-[#292524]">{Math.round(Math.min(totalCo2e / plot.target_co2e_kg, 1) * 100)}%</span>
-                        <span className="text-[9px] text-[#79716b] block font-medium mt-0.5">dari target {plot.target_co2e_kg >= 1000 ? `${(plot.target_co2e_kg / 1000).toFixed(0)}k` : plot.target_co2e_kg} kg</span>
+                        <span className="text-[9px] text-[#79716b] block font-medium mt-0.5">
+                          {language === "id" ? "dari target" : "of target"} {plot.target_co2e_kg >= 1000 ? `${(plot.target_co2e_kg / 1000).toFixed(0)}k` : plot.target_co2e_kg} kg
+                        </span>
                       </div>
                     </div>
                   </>
@@ -1164,14 +1175,16 @@ export default function PlotDetailPage() {
                 <div className="w-full border-t border-[#fafaf9] pt-3 mt-1.5 select-none flex flex-col gap-3">
                   <div className="grid grid-cols-2 gap-4 text-center items-start">
                     <div className="border-r border-[#fafaf9] pr-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">Total Estimasi CO₂e</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">
+                        {language === "id" ? "Total Estimasi CO₂e" : "Total Estimated CO₂e"}
+                      </span>
                       <h2 className="font-serif text-2xl font-normal text-[#292524] tracking-tight">
-                        {totalCo2e.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
+                        {totalCo2e.toLocaleString(language === "id" ? "id-ID" : "en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}{" "}
                         <span className="text-xs font-sans text-[#79716b] font-medium">kg</span>
                       </h2>
                       <div className="mt-2 flex justify-center gap-1.5">
                         <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
-                          Trees: {scans.length}
+                          {language === "id" ? "Pohon" : "Trees"}: {scans.length}
                         </span>
                         {aggregation && (
                           <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
@@ -1182,16 +1195,18 @@ export default function PlotDetailPage() {
                     </div>
 
                     <div className="pl-2 flex flex-col items-center justify-center min-h-[64px] w-full">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">Carbon Density</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#79716b] block mb-0.5">
+                        {language === "id" ? "Kerapatan Karbon" : "Carbon Density"}
+                      </span>
                       {hasBounds && plotAreas.length === 1 ? (
                         <>
                           <h2 className="font-serif text-2xl font-normal text-[#292524] tracking-tight">
-                            {areaStats[0].density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                            {areaStats[0].density.toLocaleString(language === "id" ? "id-ID" : "en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
                             <span className="text-xs font-sans text-[#79716b] font-medium font-bold">t/ha</span>
                           </h2>
                           <div className="mt-2 flex justify-center gap-1.5">
                             <span className="text-[9px] font-bold text-[#79716b] bg-[#fafaf9] border border-[#e7e5e4] px-2 py-0.5 rounded-md">
-                              Area: {areaStats[0].ha.toFixed(3)} ha
+                              {language === "id" ? "Area" : "Area"}: {areaStats[0].ha.toFixed(3)} ha
                             </span>
                           </div>
                         </>
@@ -1211,7 +1226,7 @@ export default function PlotDetailPage() {
                               >
                                 <span className="truncate max-w-[50%]">{stat.name}</span>
                                 <div className="text-right">
-                                  <span className="font-serif font-bold text-[#292524]">{stat.density.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/ha</span>
+                                  <span className="font-serif font-bold text-[#292524]">{stat.density.toLocaleString(language === "id" ? "id-ID" : "en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t/ha</span>
                                   <span className="text-[8px] text-[#79716b] block">({stat.ha.toFixed(3)} ha)</span>
                                 </div>
                               </div>
@@ -1220,7 +1235,7 @@ export default function PlotDetailPage() {
                         </div>
                       ) : (
                         <p className="text-[9px] text-[#79716b] font-medium italic text-center leading-normal max-w-[150px] mt-1">
-                          Draw plot area to view carbon density per hectare
+                          {language === "id" ? "Tandai area plot untuk melihat kerapatan karbon per hektar" : "Draw plot area to view carbon density per hectare"}
                         </p>
                       )}
                     </div>
@@ -1232,7 +1247,9 @@ export default function PlotDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <span>
-                        {treesOutsideCount} trees are outside the marked area, excluded from density calculation
+                        {language === "id"
+                          ? `${treesOutsideCount} pohon berada di luar area yang ditandai, tidak dihitung dalam kerapatan`
+                          : `${treesOutsideCount} trees are outside the marked area, excluded from density calculation`}
                       </span>
                     </div>
                   )}
@@ -1242,7 +1259,9 @@ export default function PlotDetailPage() {
               {/* Card 2: Distribusi Spesies (Fleet Distribution By Type) */}
               <section className="bg-white border border-[#e7e5e4]/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-center select-none border-b border-[#fafaf9] pb-2">
-                  <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest">Species Distribution & Biodiversity</h3>
+                  <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest">
+                    {language === "id" ? "Distribusi Spesies & Keanekaragaman Hayati" : "Species Distribution & Biodiversity"}
+                  </h3>
                 </div>
 
                 {/* Shannon-Wiener Biodiversity Index Display */}
@@ -1259,15 +1278,21 @@ export default function PlotDetailPage() {
                     {diversityDesc}
                   </p>
                   <div className="border-t border-[#e7e5e4] mt-1 pt-1.5 text-[9px] text-[#79716b] leading-relaxed italic font-medium">
-                    Note: Higher biodiversity forests are generally associated with premium pricing in voluntary carbon markets due to ecological resilience and environmental co-benefits.
+                    {language === "id"
+                      ? "Catatan: Hutan dengan keanekaragaman hayati lebih tinggi umumnya dihargai lebih tinggi di pasar karbon sukarela karena ketahanan ekologis dan manfaat lingkungan tambahan."
+                      : "Note: Higher biodiversity forests are generally associated with premium pricing in voluntary carbon markets due to ecological resilience and environmental co-benefits."}
                   </div>
                 </div>
 
-                <h4 className="font-bold text-[9px] text-[#79716b] uppercase tracking-widest mt-1 select-none">Contribution per Species</h4>
+                <h4 className="font-bold text-[9px] text-[#79716b] uppercase tracking-widest mt-1 select-none">
+                  {language === "id" ? "Kontribusi per Spesies" : "Contribution per Species"}
+                </h4>
                 
                 <div data-lenis-prevent className="flex flex-col gap-3 max-h-[160px] overflow-y-auto pr-1">
                   {speciesList.length === 0 ? (
-                    <p className="text-xs text-[#79716b] italic py-4 text-center">Species not classified yet</p>
+                    <p className="text-xs text-[#79716b] italic py-4 text-center">
+                      {language === "id" ? "Spesies belum terklasifikasi" : "Species not classified yet"}
+                    </p>
                   ) : (
                     speciesList.map((spec, idx) => {
                       const specScans = scans.filter(s => getSpeciesName(s)?.trim().toLowerCase() === spec);
@@ -1280,7 +1305,7 @@ export default function PlotDetailPage() {
                             <div className="flex items-center gap-1.5 truncate max-w-[80%]">
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.bg.split(' ')[0]}`} />
                               <span className="italic truncate">{spec}</span>
-                              <span className="text-[9px] text-[#79716b] font-normal shrink-0">({specScans.length} trees)</span>
+                              <span className="text-[9px] text-[#79716b] font-normal shrink-0">({specScans.length} {language === "id" ? "pohon" : "trees"})</span>
                             </div>
                             <span className="font-bold text-[#292524] shrink-0">{specPct.toFixed(0)}%</span>
                           </div>
@@ -1300,15 +1325,21 @@ export default function PlotDetailPage() {
 
               {/* Card 3: Rata-rata & Visual Wave Dist (Fuel Usage & Cost) */}
               <section className="bg-white border border-[#e7e5e4]/80 rounded-xl p-4.5 shadow-sm flex flex-col gap-3">
-                <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest select-none">Dimensi Rata-rata & Kerapatan DBH</h3>
+                <h3 className="font-bold text-[10px] text-[#79716b] uppercase tracking-widest select-none">
+                  {language === "id" ? "Dimensi Rata-rata & Kerapatan DBH" : "Average Dimensions & DBH Distribution"}
+                </h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">Avg DBH</span>
+                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">
+                      {language === "id" ? "Rata-rata DBH" : "Avg DBH"}
+                    </span>
                     <span className="text-lg font-bold font-serif text-[#292524]">{avgDbh.toFixed(1)} cm</span>
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">Avg Tinggi</span>
+                    <span className="text-[9px] font-bold text-[#79716b] uppercase tracking-wider block select-none">
+                      {language === "id" ? "Rata-rata Tinggi" : "Avg Height"}
+                    </span>
                     <span className="text-lg font-bold font-serif text-[#292524]">{avgTinggi.toFixed(1)} m</span>
                   </div>
                 </div>
@@ -1326,7 +1357,7 @@ export default function PlotDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-12 bg-[#fafbfd] border border-[#e7e5e4] rounded-lg p-2.5 mt-0.5 text-[10px] text-[#79716b] font-medium italic select-none text-center">
-                    Requires at least 5 trees to view DBH distribution
+                    {language === "id" ? "Memerlukan minimal 5 pohon untuk melihat distribusi DBH" : "Requires at least 5 trees to view DBH distribution"}
                   </div>
                 )}
               </section>
@@ -1343,12 +1374,14 @@ export default function PlotDetailPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="font-bold text-xs text-[#79716b] uppercase tracking-widest">
-                      {spatialMode === "grid" ? "Forest Spatial Grid Map" : "GPS Satellite Distribution Map"}
+                      {spatialMode === "grid" 
+                        ? (language === "id" ? "Peta Grid Spasial Hutan" : "Forest Spatial Grid Map") 
+                        : (language === "id" ? "Peta Satelit Distribusi GPS" : "GPS Satellite Distribution Map")}
                     </h3>
                     <p className="text-[11px] text-[#79716b] mt-0.5">
                       {spatialMode === "grid" 
-                        ? "Drag 48x48px nodes (2x2 cells) to position the actual tree location" 
-                        : "Displays the geographical distribution of actual tree GPS coordinates on the map"}
+                        ? (language === "id" ? "Geser node 48x48px (2x2 kotak) untuk memposisikan letak pohon sebenarnya" : "Drag 48x48px nodes (2x2 cells) to position the actual tree location") 
+                        : (language === "id" ? "Menampilkan distribusi geografis koordinat GPS pohon pada peta" : "Displays the geographical distribution of actual tree GPS coordinates on the map")}
                     </p>
                   </div>
 
@@ -1358,12 +1391,12 @@ export default function PlotDetailPage() {
                       {saveStatus === "saving" ? (
                         <>
                           <span className="w-3 h-3 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin inline-block" />
-                          <span className="text-[#79716b]">Menyimpan...</span>
+                          <span className="text-[#79716b]">{language === "id" ? "Menyimpan..." : "Saving..."}</span>
                         </>
                       ) : (
                         <>
                           <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] inline-block animate-pulse" />
-                          <span className="text-[#616c39] font-bold">Perubahan disimpan</span>
+                          <span className="text-[#616c39] font-bold">{language === "id" ? "Perubahan disimpan" : "Changes saved"}</span>
                         </>
                       )}
                     </div>
@@ -1389,7 +1422,7 @@ export default function PlotDetailPage() {
                         </svg>
                       </button>
                       <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                        Grid Spasial
+                        {language === "id" ? "Grid Spasial" : "Spatial Grid"}
                       </div>
                     </div>
 
@@ -1408,7 +1441,7 @@ export default function PlotDetailPage() {
                         </svg>
                       </button>
                       <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                        GPS Map
+                        {language === "id" ? "Peta GPS" : "GPS Map"}
                       </div>
                     </div>
 
@@ -1432,7 +1465,7 @@ export default function PlotDetailPage() {
                           </svg>
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                          Zoom In ({zoomLevel * 100}%)
+                          {language === "id" ? "Perbesar" : "Zoom In"} ({zoomLevel * 100}%)
                         </div>
                       </div>
                     )}
@@ -1454,7 +1487,7 @@ export default function PlotDetailPage() {
                           </svg>
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                          Zoom Out ({zoomLevel * 100}%)
+                          {language === "id" ? "Perkecil" : "Zoom Out"} ({zoomLevel * 100}%)
                         </div>
                       </div>
                     )}
@@ -1478,7 +1511,7 @@ export default function PlotDetailPage() {
                           </svg>
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                          {isDrawingMode ? "Selesai Menandai" : "Tandai Area Plot"}
+                          {isDrawingMode ? (language === "id" ? "Selesai Menandai" : "Finish Marking") : (language === "id" ? "Tandai Area Plot" : "Mark Plot Area")}
                         </div>
                       </div>
                     )}
@@ -1500,7 +1533,7 @@ export default function PlotDetailPage() {
                           </svg>
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 md:left-14 md:-translate-x-0 md:top-1/2 md:-translate-y-1/2 hidden group-hover:block bg-[#292524] text-white text-[9px] font-semibold px-2 py-1 rounded shadow-md whitespace-nowrap z-30">
-                          Hapus Semua Area
+                          {language === "id" ? "Hapus Semua Area" : "Clear All Areas"}
                         </div>
                       </div>
                     )}
@@ -1640,7 +1673,7 @@ export default function PlotDetailPage() {
                                   {editingAreaIndex === index ? (
                                     <input
                                       type="text"
-                                      defaultValue={area.name || `Area ${index + 1}`}
+                                      defaultValue={area.name || `${language === "id" ? "Area" : "Area"} ${index + 1}`}
                                       autoFocus
                                       onClick={(e) => e.stopPropagation()}
                                       onBlur={(e) => {
@@ -1670,10 +1703,10 @@ export default function PlotDetailPage() {
                                           setEditingAreaIndex(index);
                                         }
                                       }}
-                                      title="Click to change name"
+                                      title={language === "id" ? "Klik untuk mengubah nama" : "Click to change name"}
                                       className="cursor-pointer hover:underline"
                                     >
-                                      {area.name || `Area ${index + 1}`}
+                                      {area.name || `${language === "id" ? "Area" : "Area"} ${index + 1}`}
                                     </span>
                                   )}
                                   
@@ -1686,7 +1719,7 @@ export default function PlotDetailPage() {
                                         setSelectedAreaIndex(null);
                                         setIsLayoutDirty(true);
                                       }}
-                                      title="Hapus area ini"
+                                      title={language === "id" ? "Hapus area ini" : "Delete this area"}
                                       className="ml-1 text-white hover:text-red-200 flex items-center justify-center"
                                     >
                                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -1811,7 +1844,7 @@ export default function PlotDetailPage() {
                               </span>
                               <button
                                 onClick={() => setSelectedNode(null)}
-                                className="text-[#79716b] hover:text-[#292524] p-0.5 rounded transition"
+                                className="text-[#79716b] hover:text-[#292524] p-0.5 rounded transition cursor-pointer"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1830,7 +1863,7 @@ export default function PlotDetailPage() {
                                 <span className="font-bold text-[#292524]">{selectedNode.dbh_cm.toFixed(1)} cm</span>
                               </div>
                               <div className="flex justify-between border-b border-[#fafaf9] pb-1">
-                                <span>Tinggi:</span>
+                                <span>{language === "id" ? "Tinggi:" : "Height:"}</span>
                                 <span className="font-bold text-[#292524]">{selectedNode.tinggi_m.toFixed(1)} m</span>
                               </div>
                               <div className="flex justify-between text-[#4e572c] font-semibold mt-0.5">
@@ -1843,7 +1876,7 @@ export default function PlotDetailPage() {
                               href={`/reconstruct?code=${selectedNode.tree_code}&phase=result`}
                               className="bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-[10px] rounded py-1.5 text-center shadow-sm transition-all"
                             >
-                              Buka detail →
+                              {language === "id" ? "Buka detail →" : "View detail →"}
                             </Link>
                             {isOwner && (
                               <button
@@ -1853,7 +1886,7 @@ export default function PlotDetailPage() {
                                 }}
                                 className="border border-red-250 hover:border-red-350 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-[10px] rounded py-1.5 text-center shadow-sm transition-all cursor-pointer"
                               >
-                                Keluarkan dari Plot
+                                {language === "id" ? "Keluarkan dari Plot" : "Remove from Plot"}
                               </button>
                             )}
                           </div>
@@ -1867,7 +1900,7 @@ export default function PlotDetailPage() {
                       {/* Explicit Scale Indicator Label (Anchored in place, never scales or scrolls) */}
                       <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-xs border border-[#e7e5e4] rounded px-2.5 py-1 text-[9px] font-bold text-[#79716b] shadow-sm select-none z-30 pointer-events-none flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] animate-pulse" />
-                        <span>1 kotak grid = 2 meter</span>
+                        <span>{language === "id" ? "1 kotak grid = 2 meter" : "1 grid cell = 2 meters"}</span>
                       </div>
                     </>
                   ) : (
@@ -1875,7 +1908,11 @@ export default function PlotDetailPage() {
                       {gpsScans.length < scans.length && (
                         <div className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 border border-amber-100 text-[10px] font-semibold text-amber-800 rounded-lg select-none">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          <span>Showing {gpsScans.length} of {scans.length} trees — the rest do not have GPS data</span>
+                          <span>
+                            {language === "id"
+                              ? `Menampilkan ${gpsScans.length} dari ${scans.length} pohon — sisanya tidak memiliki data GPS`
+                              : `Showing ${gpsScans.length} of ${scans.length} trees — the rest do not have GPS data`}
+                          </span>
                         </div>
                       )}
                       <div style={{ height: `${DEFAULT_ROWS * CELL_SIZE}px` }} className="border border-[#e7e5e4] rounded-lg overflow-hidden relative">
@@ -1895,7 +1932,9 @@ export default function PlotDetailPage() {
               <section className="bg-white border border-[#e7e5e4] rounded-xl p-4 shadow-sm flex flex-col gap-4 overflow-hidden">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="font-bold text-xs text-[#79716b] uppercase tracking-widest select-none">Tree Records List ({filteredScans.length})</h3>
+                    <h3 className="font-bold text-xs text-[#79716b] uppercase tracking-widest select-none">
+                      {language === "id" ? "Daftar Rekaman Pohon" : "Tree Records List"} ({filteredScans.length})
+                    </h3>
                   </div>
                   
                   {/* Tab Filters */}
@@ -1906,7 +1945,7 @@ export default function PlotDetailPage() {
                         filterTab === "all" ? "bg-white text-[#292524] shadow-xs" : "text-[#79716b] hover:text-[#292524]"
                       }`}
                     >
-                      Semua
+                      {language === "id" ? "Semua" : "All"}
                     </button>
                     <button 
                       onClick={() => setFilterTab("large")} 
@@ -1932,10 +1971,10 @@ export default function PlotDetailPage() {
                   <table className="w-full border-collapse text-left text-xs text-[#79716b]">
                     <thead>
                       <tr className="border-b border-[#fafaf9] text-[#79716b] font-bold uppercase tracking-wider text-[9px] select-none sticky top-0 bg-white z-10 shadow-xs">
-                        <th className="py-2.5 px-3">Tree</th>
-                        <th className="py-2.5 px-3">Species Classification</th>
-                        <th className="py-2.5 px-3">Metrik Fisik</th>
-                        <th className="py-2.5 px-3 text-right">Biomass</th>
+                        <th className="py-2.5 px-3">{language === "id" ? "Pohon" : "Tree"}</th>
+                        <th className="py-2.5 px-3">{language === "id" ? "Klasifikasi Spesies" : "Species Classification"}</th>
+                        <th className="py-2.5 px-3">{language === "id" ? "Metrik Fisik" : "Physical Metrics"}</th>
+                        <th className="py-2.5 px-3 text-right">{language === "id" ? "Biomassa" : "Biomass"}</th>
                         <th className="py-2.5 px-3 text-right">CO₂e</th>
                         <th className="py-2.5 px-3"></th>
                       </tr>
@@ -1944,7 +1983,7 @@ export default function PlotDetailPage() {
                       {filteredScans.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="py-8 text-center italic text-[#79716b]">
-                            No tree records found for this criteria.
+                            {language === "id" ? "Tidak ada rekaman pohon yang sesuai dengan kriteria ini." : "No tree records found for this criteria."}
                           </td>
                         </tr>
                       ) : (
@@ -1979,7 +2018,7 @@ export default function PlotDetailPage() {
                                     <div>
                                       <span className="font-bold text-[#292524] block text-xs">{scan.tree_code}</span>
                                       <span className="text-[10px] text-[#79716b] block font-mono">
-                                        {new Date(scan.scan_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                        {new Date(scan.scan_date).toLocaleDateString(language === "id" ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short' })}
                                       </span>
                                     </div>
                                   </div>
@@ -1994,14 +2033,16 @@ export default function PlotDetailPage() {
                                       {specCommon && <span className="text-[9px] text-[#79716b]">{specCommon}</span>}
                                     </div>
                                   ) : (
-                                    <span className="text-[#79716b] italic">Tidak terklasifikasi</span>
+                                    <span className="text-[#79716b] italic">
+                                      {language === "id" ? "Tidak terklasifikasi" : "Unclassified"}
+                                    </span>
                                   )}
                                 </td>
                                 
                                 <td className="py-3 px-3">
                                   <div className="flex flex-col gap-0.5">
                                     <span>DBH: <span className="font-semibold text-[#292524]">{scan.dbh_cm.toFixed(1)} cm</span></span>
-                                    <span>Tinggi: <span className="font-semibold text-[#292524]">{scan.tinggi_m.toFixed(1)} m</span></span>
+                                    <span>{language === "id" ? "Tinggi:" : "Height:"} <span className="font-semibold text-[#292524]">{scan.tinggi_m.toFixed(1)} m</span></span>
                                   </div>
                                 </td>
                                 
@@ -2021,7 +2062,7 @@ export default function PlotDetailPage() {
                                           e.stopPropagation();
                                           setTreeToRemove(scan.tree_code);
                                         }}
-                                        title="Keluarkan dari plot"
+                                        title={language === "id" ? "Keluarkan dari plot" : "Remove from plot"}
                                         className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer flex items-center justify-center"
                                       >
                                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -2062,13 +2103,21 @@ export default function PlotDetailPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-serif text-base text-[#292524] font-bold">Remove Tree</h3>
-                <p className="text-[10px] text-[#79716b] mt-0.5">This action will remove the tree from the plot.</p>
+                <h3 className="font-serif text-base text-[#292524] font-bold">
+                  {language === "id" ? "Keluarkan Pohon" : "Remove Tree"}
+                </h3>
+                <p className="text-[10px] text-[#79716b] mt-0.5">
+                  {language === "id" ? "Tindakan ini akan mengeluarkan pohon dari plot hutan." : "This action will remove the tree from the plot."}
+                </p>
               </div>
             </div>
             
             <p className="text-xs text-[#79716b] leading-relaxed">
-              Are you sure you want to remove tree <span className="font-bold text-[#292524]">{treeToRemove}</span> from this plot?
+              {language === "id" ? (
+                <>Apakah Anda yakin ingin mengeluarkan pohon <span className="font-bold text-[#292524]">{treeToRemove}</span> dari plot ini?</>
+              ) : (
+                <>Are you sure you want to remove tree <span className="font-bold text-[#292524]">{treeToRemove}</span> from this plot?</>
+              )}
             </p>
             
             <div className="flex justify-end gap-2 mt-2">
@@ -2077,7 +2126,7 @@ export default function PlotDetailPage() {
                 onClick={() => setTreeToRemove(null)}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] hover:text-[#292524] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
-                Cancel
+                {language === "id" ? "Batal" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -2088,7 +2137,7 @@ export default function PlotDetailPage() {
                 }}
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
               >
-                Keluarkan
+                {language === "id" ? "Keluarkan" : "Remove"}
               </button>
             </div>
           </div>
@@ -2106,8 +2155,12 @@ export default function PlotDetailPage() {
           <div className="bg-white border border-[#e7e5e4] rounded-xl p-5 shadow-2xl relative z-10 w-full max-w-lg max-h-[85vh] flex flex-col gap-5 animate-fadeIn">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#292524] font-normal">Add Tree to Plot</h3>
-                <p className="text-xs text-[#79716b] mt-1">Select a method to add tree biomass records.</p>
+                <h3 className="font-serif text-lg text-[#292524] font-normal">
+                  {language === "id" ? "Tambah Pohon ke Plot" : "Add Tree to Plot"}
+                </h3>
+                <p className="text-xs text-[#79716b] mt-1">
+                  {language === "id" ? "Pilih metode untuk menambahkan rekaman biomassa pohon." : "Select a method to add tree biomass records."}
+                </p>
               </div>
               <button 
                 onClick={() => setIsAddTreeModalOpen(false)} 
@@ -2126,10 +2179,12 @@ export default function PlotDetailPage() {
               >
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-[#616c39]/10 text-[#616c39] flex items-center justify-center font-bold text-base leading-none">+</span>
-                  <span className="font-semibold text-xs text-[#292524]">Start New Scan</span>
+                  <span className="font-semibold text-xs text-[#292524]">
+                    {language === "id" ? "Mulai Rekonstruksi Baru" : "Start New Scan"}
+                  </span>
                 </div>
                 <p className="text-[11px] text-[#79716b] leading-relaxed ml-8">
-                  Record video/photos of a new tree directly with your camera.
+                  {language === "id" ? "Unggah video pemindaian pohon baru untuk direkonstruksi." : "Upload walkthrough video of a new tree to reconstruct."}
                 </p>
               </div>
 
@@ -2140,10 +2195,12 @@ export default function PlotDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                     </svg>
                   </span>
-                  <span className="font-semibold text-xs text-[#292524]">Hubungkan Scan Lama</span>
+                  <span className="font-semibold text-xs text-[#292524]">
+                    {language === "id" ? "Hubungkan Scan yang Ada" : "Link Existing Scan"}
+                  </span>
                 </div>
                 <p className="text-[11px] text-[#79716b] leading-relaxed ml-8">
-                  Select a previous tree recording not yet associated with any plot.
+                  {language === "id" ? "Pilih rekaman pohon sebelumnya yang belum terhubung dengan plot manapun." : "Select a previous tree recording not yet associated with any plot."}
                 </p>
                 
                 <div className="ml-8 border-t border-[#fafaf9] pt-3 flex flex-col gap-2.5">
@@ -2163,11 +2220,11 @@ export default function PlotDetailPage() {
                     {unclaimedLoading ? (
                       <div className="text-center py-3 text-[#79716b] text-[10px] font-semibold flex items-center justify-center gap-1.5">
                         <span className="w-3 h-3 border-2 border-[#a8a29e] border-t-transparent rounded-full animate-spin" />
-                        Loading scan data...
+                        {language === "id" ? "Memuat data scan..." : "Loading scan data..."}
                       </div>
                     ) : unclaimedScans.length === 0 ? (
                       <div className="text-center py-3 text-[#79716b] text-[10px] italic">
-                        No unclaimed scans available.
+                        {language === "id" ? "Tidak ada scan belum terhubung yang tersedia." : "No unclaimed scans available."}
                       </div>
                     ) : (
                       unclaimedScans
@@ -2186,7 +2243,7 @@ export default function PlotDetailPage() {
                               disabled={claimLoading !== null}
                               className="px-2 py-0.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] font-bold text-[9px] rounded transition-colors cursor-pointer"
                             >
-                              {claimLoading === scan.id ? "Menghubungkan..." : "Hubungkan"}
+                              {claimLoading === scan.id ? (language === "id" ? "Menghubungkan..." : "Linking...") : (language === "id" ? "Hubungkan" : "Link")}
                             </button>
                           </div>
                         ))
@@ -2199,7 +2256,7 @@ export default function PlotDetailPage() {
         </div>
       )}
 
-      {/* Modal {language === "id" ? "Edit Plot" : "Edit Plot"} */}
+      {/* Modal Edit Plot */}
       {isEditPlotModalOpen && plot && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div 
@@ -2213,8 +2270,12 @@ export default function PlotDetailPage() {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-lg text-[#292524] font-normal">{language === "id" ? "Edit Plot" : "Edit Plot"} Info</h3>
-                <p className="text-xs text-[#79716b] mt-1">Change the name, description, and privacy of this plot.</p>
+                <h3 className="font-serif text-lg text-[#292524] font-normal">
+                  {language === "id" ? "Edit Informasi Plot" : "Edit Plot Info"}
+                </h3>
+                <p className="text-xs text-[#79716b] mt-1">
+                  {language === "id" ? "Ubah nama, deskripsi, dan privasi plot hutan ini." : "Change the name, description, and privacy of this plot."}
+                </p>
               </div>
               <button 
                 type="button"
@@ -2229,7 +2290,9 @@ export default function PlotDetailPage() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Plot Name</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
+                  {language === "id" ? "Nama Plot" : "Plot Name"}
+                </label>
                 <input
                   type="text"
                   required
@@ -2240,7 +2303,9 @@ export default function PlotDetailPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Description</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
+                  {language === "id" ? "Deskripsi" : "Description"}
+                </label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -2250,7 +2315,9 @@ export default function PlotDetailPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">Plot Privacy</label>
+                <label className="text-[10px] uppercase tracking-wider font-bold text-[#79716b]">
+                  {language === "id" ? "Privasi Plot" : "Plot Privacy"}
+                </label>
                 <div className="grid grid-cols-2 gap-3 mt-0.5">
                   <button
                     type="button"
@@ -2261,8 +2328,8 @@ export default function PlotDetailPage() {
                         : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
-                    <span className="text-xs font-semibold">Private</span>
-                    <span className="text-[9px] text-center opacity-85 leading-none">Only the owner</span>
+                    <span className="text-xs font-semibold">{language === "id" ? "Privat" : "Private"}</span>
+                    <span className="text-[9px] text-center opacity-85 leading-none">{language === "id" ? "Hanya pemilik" : "Only the owner"}</span>
                   </button>
 
                   <button
@@ -2274,8 +2341,8 @@ export default function PlotDetailPage() {
                         : "border-[#e7e5e4] bg-white text-[#79716b] hover:border-[#e7e5e4]"
                     }`}
                   >
-                    <span className="text-xs font-semibold">Public</span>
-                    <span className="text-[9px] text-center opacity-85 leading-none">Open to everyone</span>
+                    <span className="text-xs font-semibold">{language === "id" ? "Publik" : "Public"}</span>
+                    <span className="text-[9px] text-center opacity-85 leading-none">{language === "id" ? "Terbuka untuk semua" : "Open to everyone"}</span>
                   </button>
                 </div>
               </div>
@@ -2287,7 +2354,7 @@ export default function PlotDetailPage() {
                 onClick={() => setIsEditPlotModalOpen(false)}
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
-                Cancel
+                {language === "id" ? "Batal" : "Cancel"}
               </button>
               <button
                 type="submit"
@@ -2295,7 +2362,7 @@ export default function PlotDetailPage() {
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#292524] hover:bg-[#292524]/90 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
               >
                 {actionLoading && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />}
-                Save Changes
+                {language === "id" ? "Simpan Perubahan" : "Save Changes"}
               </button>
             </div>
           </form>

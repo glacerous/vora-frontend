@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth, useSettings, formatDbh, formatHeight, formatWeight, formatCo2e, getAuthHeaders } from "@/components/AuthProvider";
+import { useAuth, useSettings, formatDbh, formatHeight, formatWeight, formatCo2e, getAuthHeaders, translateConfidenceNote } from "@/components/AuthProvider";
 import { useScanProgress } from "@/components/ScanProgressProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -930,13 +930,14 @@ function ReconstructContent() {
   // ── Processing phase render ──────────────────────────────────────────────
 
   const renderProcessing = () => {
+    const isId = language === "id";
     const stages = [
-      { id: "upload", label: "Upload walkthrough and extract frames" },
-      { id: "init_geo", label: "Initialize 3D camera geometry (MASt3R)" },
-      { id: "train_gs", label: "Fast 3D-Gaussian Splat optimization" },
-      { id: "extract_pc", label: "Extract high-density point cloud" },
-      { id: "fit_dbh", label: "Fit trunk cylinder and compute carbon stock" },
-      { id: "upload_res", label: "Upload 3D assets to cloud storage" },
+      { id: "upload", label: isId ? "Unggah video pemindaian dan ekstraksi frame" : "Upload walkthrough and extract frames" },
+      { id: "init_geo", label: isId ? "Inisialisasi geometri kamera 3D (MASt3R)" : "Initialize 3D camera geometry (MASt3R)" },
+      { id: "train_gs", label: isId ? "Optimasi cepat 3D-Gaussian Splatting" : "Fast 3D-Gaussian Splat optimization" },
+      { id: "extract_pc", label: isId ? "Ekstraksi point cloud densitas tinggi" : "Extract high-density point cloud" },
+      { id: "fit_dbh", label: isId ? "Pengepasan silinder batang & kalkulasi karbon" : "Fit trunk cylinder and compute carbon stock" },
+      { id: "upload_res", label: isId ? "Unggah aset 3D ke penyimpanan cloud" : "Upload 3D assets to cloud storage" },
     ];
 
     const currentMsg = pipelineStatus?.message || "";
@@ -959,7 +960,7 @@ function ReconstructContent() {
         <div className="flex justify-between items-center pb-4 border-b border-[#fafaf9]">
           <div>
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39] bg-[#616c39]/10 px-2.5 py-1 rounded-full border border-[#616c39]/20">
-              Active Pipeline
+              {isId ? "Pipeline Aktif" : "Active Pipeline"}
             </span>
             <h3 className="font-serif text-xl text-[#292524] font-normal mt-2 tracking-tight">
               {calibrationCode}
@@ -967,7 +968,7 @@ function ReconstructContent() {
           </div>
           <div className="text-right">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b] block">
-              Elapsed Time
+              {isId ? "Waktu Berjalan" : "Elapsed Time"}
             </span>
             <span
               className="text-4xl text-[#292524] tracking-wider leading-none"
@@ -985,10 +986,14 @@ function ReconstructContent() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="font-bold text-xs uppercase tracking-wider">Processing Hard Timeout (210s)</span>
+              <span className="font-bold text-xs uppercase tracking-wider">
+                {isId ? "Batas Waktu Pemrosesan Terlampaui (210d)" : "Processing Hard Timeout (210s)"}
+              </span>
             </div>
             <p className="text-xs text-amber-900 leading-relaxed font-medium">
-              This reconstruction is taking longer than 3.5 minutes. The GPU cluster may be experiencing a transient queue delay.
+              {isId
+                ? "Rekonstruksi ini membutuhkan waktu lebih dari 3,5 menit. Kluster GPU mungkin sedang mengalami antrean pemrosesan."
+                : "This reconstruction is taking longer than 3.5 minutes. The GPU cluster may be experiencing a transient queue delay."}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               <button
@@ -999,20 +1004,20 @@ function ReconstructContent() {
                 }}
                 className="px-4 py-2 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition"
               >
-                Retry Scan
+                {isId ? "Coba Lagi" : "Retry Scan"}
               </button>
               <button
                 type="button"
                 onClick={() => router.push("/gallery")}
                 className="px-4 py-2 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#292524] text-xs font-semibold rounded-xl transition"
               >
-                Check Gallery
+                {isId ? "Cek Galeri" : "Check Gallery"}
               </button>
               <a
                 href={`mailto:support@vora.app?subject=Scan%20Timeout%20${calibrationCode}&body=Scan%20${calibrationCode}%20timed%20out%20after%20${elapsedTime}s.`}
                 className="px-4 py-2 bg-transparent hover:bg-[#fafaf9] text-[#79716b] text-xs font-medium rounded-xl transition"
               >
-                Report Issue
+                {isId ? "Laporkan Masalah" : "Report Issue"}
               </a>
             </div>
           </div>
@@ -1021,7 +1026,7 @@ function ReconstructContent() {
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
           <div className="sm:col-span-5 flex flex-col gap-2">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
-              Processing Asset
+              {isId ? "Aset yang Diproses" : "Processing Asset"}
             </span>
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-[#e7e5e4]/80 bg-[#1c1917] shadow-inner flex items-center justify-center">
               <img
@@ -1032,14 +1037,14 @@ function ReconstructContent() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-lg px-2 py-1 text-[10px] text-white font-medium border border-white/10">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c] animate-pulse" />
-                <span>Live processing</span>
+                <span>{isId ? "Sedang diproses" : "Live processing"}</span>
               </div>
             </div>
           </div>
 
           <div className="sm:col-span-7 flex flex-col gap-3">
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
-              Pipeline Stages
+              {isId ? "Tahapan Pipeline" : "Pipeline Stages"}
             </span>
             <div className="flex flex-col gap-3.5">
               {stages.map((st, idx) => {
@@ -1107,8 +1112,9 @@ function ReconstructContent() {
             </svg>
           </div>
           <p className="text-[10px] text-[#79716b] leading-normal">
-            Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization.
-            Please keep this browser window open until analysis completes.
+            {isId
+              ? "Kluster GPU Modal menangani penyelarasan geometri multi-sudut pandang dan optimasi Gaussian. Harap tetap buka jendela peramban ini hingga analisis selesai."
+              : "Modal GPU cluster handles multi-view geometry alignment and Gaussian optimization. Please keep this browser window open until analysis completes."}
           </p>
         </div>
       </div>
@@ -1139,16 +1145,16 @@ function ReconstructContent() {
                 <>
                   <UiverseLoader />
                   <p className="text-xs text-[#79716b] font-medium animate-pulse">
-                    Loading 3D analytics canvas…
+                    {language === "id" ? "Memuat kanvas analisis 3D…" : "Loading 3D analytics canvas…"}
                   </p>
                 </>
               ) : (
                 <div className="text-center">
                   <p className="text-sm text-[#79716b] font-medium tracking-wide mb-1">
-                    No scan loaded
+                    {language === "id" ? "Belum ada scan yang dimuat" : "No scan loaded"}
                   </p>
                   <p className="text-xs text-[#d6d3d1]">
-                    Open the details drawer to search a tree code
+                    {language === "id" ? "Buka panel detail untuk mencari kode pohon" : "Open the details drawer to search a tree code"}
                   </p>
                 </div>
               )}
@@ -1194,7 +1200,7 @@ function ReconstructContent() {
                   <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">DBH</span>
                   {currentScan.confidence_note?.includes("WARNING") && (
                     <svg className="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <title>Warning: insufficient height</title>
+                      <title>{language === "id" ? "Peringatan: tinggi batang kurang" : "Warning: insufficient height"}</title>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   )}
@@ -1206,7 +1212,7 @@ function ReconstructContent() {
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Height</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">{language === "id" ? "Tinggi" : "Height"}</span>
                 <div className="flex items-baseline">
                   <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
                   <span className="text-[11px] text-[#79716b] font-medium ml-1">m</span>
@@ -1214,7 +1220,7 @@ function ReconstructContent() {
               </div>
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Biomass</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">{language === "id" ? "Biomassa" : "Biomass"}</span>
                 <div className="flex items-baseline">
                   <span className="font-serif text-2xl text-[#292524] leading-none">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
                   <span className="text-[11px] text-[#79716b] font-medium ml-1">kg</span>
@@ -1223,7 +1229,7 @@ function ReconstructContent() {
 
               <div className="flex flex-col gap-0.5 pl-4 sm:pl-6">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">Carbon</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">{language === "id" ? "Karbon" : "Carbon"}</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#4e572c]" />
                 </div>
                 <div className="flex items-baseline">
@@ -1245,7 +1251,9 @@ function ReconstructContent() {
             {currentUser && (
               <div className="bg-white/95 backdrop-blur-xl border border-[#e7e5e4]/80 rounded-2xl shadow-xl px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex flex-col gap-0.5 w-full sm:w-auto">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Plot & Claim Status</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
+                    {language === "id" ? "Status Plot & Klaim" : "Plot & Claim Status"}
+                  </span>
                   <div className="text-xs text-[#292524] font-medium mt-0.5">
                     {currentScan.plot_id ? (
                       <span className="text-[#616c39] flex items-center gap-1.5 font-medium">
@@ -1305,9 +1313,9 @@ function ReconstructContent() {
             {/* Prompt to log in for guest users */}
             {!currentUser && !currentScan.claimed_by_user_id && (
               <div className="bg-[#161920]/95 backdrop-blur-xl border border-[#292524] text-[#d6d3d1] text-xs rounded-2xl shadow-xl px-5 py-3 flex items-center justify-between gap-4">
-                <span>Want to save this scan result to your plot?</span>
+                <span>{language === "id" ? "Ingin menyimpan hasil scan ini ke plot Anda?" : "Want to save this scan result to your plot?"}</span>
                 <Link href="/login?redirect=/reconstruct" className="text-[#616c39] font-bold hover:underline shrink-0">
-                  Log In & Claim
+                  {language === "id" ? "Masuk & Klaim" : "Log In & Claim"}
                 </Link>
               </div>
             )}
@@ -1335,13 +1343,13 @@ function ReconstructContent() {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#4e572c]" />
                 <span className="text-xs font-bold tracking-wider text-[#292524] uppercase">
-                  {activeTreeCode || "Search Tree"}
+                  {activeTreeCode || (language === "id" ? "Cari Pohon" : "Search Tree")}
                 </span>
               </div>
               <p className="text-[11px] text-[#79716b] mt-0.5 font-medium">
                 {history.length > 0
-                  ? `${history.length} scan record${history.length !== 1 ? "s" : ""} found`
-                  : "No active scan"}
+                  ? (language === "id" ? `${history.length} data scan ditemukan` : `${history.length} scan record${history.length !== 1 ? "s" : ""} found`)
+                  : (language === "id" ? "Tidak ada scan aktif" : "No active scan")}
               </p>
             </div>
             <button
@@ -1371,28 +1379,28 @@ function ReconstructContent() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Height</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">{language === "id" ? "Tinggi" : "Height"}</span>
                     <div className="flex items-baseline">
                       <span className="font-serif text-xl text-[#292524] font-bold">{currentScan.tinggi_m?.toFixed(1) ?? "--"}</span>
                       <span className="text-[10px] text-[#79716b] font-medium ml-1">m</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-0.5 border-t border-[#e7e5e4] pt-2.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Biomass</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">{language === "id" ? "Biomassa" : "Biomass"}</span>
                     <div className="flex items-baseline">
                       <span className="font-serif text-xl text-[#292524] font-bold">{currentScan.biomassa_kg?.toFixed(1) ?? "--"}</span>
                       <span className="text-[10px] text-[#79716b] font-medium ml-1">kg</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-0.5 border-t border-[#e7e5e4] pt-2.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">Carbon</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#616c39]">{language === "id" ? "Karbon" : "Carbon"}</span>
                     <div className="flex items-baseline">
                       <span className="font-serif text-xl text-[#1c1917] font-bold">{currentScan.karbon_kg?.toFixed(1) ?? "--"}</span>
                       <span className="text-[10px] text-[#616c39]/70 font-medium ml-1">kg</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-0.5 col-span-2 border-t border-[#e7e5e4] pt-3">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">CO₂ Equivalent (CO₂e)</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">{language === "id" ? "Setara Karbon Dioksida (CO₂e)" : "CO₂ Equivalent (CO₂e)"}</span>
                     <div className="flex items-baseline">
                       <span className="font-serif text-2xl text-[#292524] font-extrabold">{currentScan.co2e_kg?.toFixed(1) ?? "--"}</span>
                       <span className="text-[11px] text-[#79716b] font-medium ml-1">kg</span>
@@ -1404,7 +1412,9 @@ function ReconstructContent() {
                 {currentUser && (
                   <div className="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-4 flex flex-col gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">Plot & Claim Status</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-[#79716b]">
+                        {language === "id" ? "Status Plot & Klaim" : "Plot & Claim Status"}
+                      </span>
                       <div className="text-xs text-[#292524] font-medium mt-0.5">
                         {currentScan.plot_id ? (
                           <span className="text-[#616c39] flex items-center gap-1.5 font-medium">
@@ -1453,9 +1463,9 @@ function ReconstructContent() {
                 {/* Mobile Login Prompt */}
                 {!currentUser && !currentScan.claimed_by_user_id && (
                   <div className="bg-[#161920] border border-[#292524] text-[#a8a29e] text-xs rounded-2xl p-4 flex justify-between items-center gap-4">
-                    <span>Want to save this scan result to your plot?</span>
+                    <span>{language === "id" ? "Ingin menyimpan hasil scan ini ke plot Anda?" : "Want to save this scan result to your plot?"}</span>
                     <Link href="/login?redirect=/reconstruct" className="text-[#616c39] font-bold hover:underline shrink-0">
-                      Log In & Claim
+                      {language === "id" ? "Masuk & Klaim" : "Log In & Claim"}
                     </Link>
                   </div>
                 )}
@@ -1469,7 +1479,7 @@ function ReconstructContent() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b]">
-                    Species Classification
+                    {language === "id" ? "Klasifikasi Spesies" : "Species Classification"}
                   </h3>
                   <span className="text-[9px] font-semibold text-[#79716b] bg-[#fafaf9] px-2 py-0.5 rounded-full">
                     Pl@ntNet AI
@@ -1483,7 +1493,7 @@ function ReconstructContent() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-[#616c39] block mb-0.5">
-                              Top Specimen Match
+                              {language === "id" ? "Spesimen Utama Cocok" : "Top Specimen Match"}
                             </span>
                             <h4 className="text-sm font-semibold text-[#292524] italic font-serif">
                               {predictions[0]?.scientific_name ?? "Unknown"}
@@ -1539,7 +1549,7 @@ function ReconstructContent() {
                   </div>
                 ) : (
                   <div className="p-4 rounded-2xl bg-[#fafaf9]/60 border border-[#fafaf9] text-center">
-                    <span className="text-xs text-[#79716b]">Species classification unavailable for this scan</span>
+                    <span className="text-xs text-[#79716b]">{language === "id" ? "Klasifikasi spesies tidak tersedia untuk scan ini" : "Species classification unavailable for this scan"}</span>
                   </div>
                 )}
               </div>
@@ -1564,15 +1574,17 @@ function ReconstructContent() {
                 {calcOpen && (
                   <div className="px-4 pb-4 pt-3 text-xs space-y-3.5 border-t border-[#e7e5e4] bg-white font-sans divide-y divide-[#fafaf9]">
                     <div className="space-y-2">
-                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">1. Input Tree Dimensions</p>
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">
+                        {language === "id" ? "1. Dimensi Pohon Terukur" : "1. Input Tree Dimensions"}
+                      </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#79716b] font-medium">
-                        <div>Diameter (DBH - Circle Fit, Utama): <span className="font-semibold text-[#292524]">{formatDbh(currentScan.dbh_cm, unit)}</span></div>
-                        <div>Tree Height: <span className="font-semibold text-[#292524]">{formatHeight(currentScan.tinggi_m, unit)}</span></div>
+                        <div>{language === "id" ? "Diameter (DBH - Pengepasan Lingkaran, Utama):" : "Diameter (DBH - Circle Fit, Primary):"} <span className="font-semibold text-[#292524]">{formatDbh(currentScan.dbh_cm, unit)}</span></div>
+                        <div>{language === "id" ? "Tinggi Pohon:" : "Tree Height:"} <span className="font-semibold text-[#292524]">{formatHeight(currentScan.tinggi_m, unit)}</span></div>
                       </div>
                       {currentScan.dbh_equivalent_cm != null && (
                         <div className="pt-1 border-t border-dashed border-[#fafaf9] flex flex-col gap-0.5">
                           <div className="text-[#79716b] text-xs">
-                            Diameter Ekuivalen (Concave Hull Area): <span className="font-semibold text-[#616c39]">{formatDbh(currentScan.dbh_equivalent_cm, unit)}</span>
+                            {language === "id" ? "Diameter Ekuivalen (Luas Area Hull):" : "Equivalent Diameter (Concave Hull Area):"} <span className="font-semibold text-[#616c39]">{formatDbh(currentScan.dbh_equivalent_cm, unit)}</span>
                           </div>
                           <span className="text-[10px] text-[#79716b]/80 italic">
                             {language === "id"
@@ -1584,72 +1596,78 @@ function ReconstructContent() {
                     </div>
 
                     <div className="pt-3 space-y-1.5">
-                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">2. Wood Density Match</p>
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">
+                        {language === "id" ? "2. Berat Jenis Kayu (Wood Density)" : "2. Wood Density Match"}
+                      </p>
                       <div className="space-y-1 text-[#79716b] font-medium">
-                        <div>Species Matched: <span className="font-semibold text-[#292524] italic">
+                        <div>{language === "id" ? "Spesies Cocok:" : "Species Matched:"} <span className="font-semibold text-[#292524] italic">
                           {predictions?.[0]
                             ? `${predictions[0].scientific_name ?? "Unknown"} (${(predictions[0].confidence ?? 0).toFixed(1)}%)`
-                            : "None (Generic Fallback)"}
+                            : (language === "id" ? "Tidak Ada (Bawaan Generik)" : "None (Generic Fallback)")}
                         </span></div>
-                        <div>Wood Density (ρ): <span className="font-semibold text-[#292524]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
-                        <div>Source: <span className="font-semibold text-[#292524] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
+                        <div>{language === "id" ? "Berat Jenis Kayu (ρ):" : "Wood Density (ρ):"} <span className="font-semibold text-[#292524]">{currentScan.wood_density_used?.toFixed(2) ?? "0.60"} g/cm³</span></div>
+                        <div>{language === "id" ? "Sumber Data:" : "Source:"} <span className="font-semibold text-[#292524] capitalize">{currentScan.wood_density_source?.replace("-", " ") ?? "generic default"}</span></div>
                       </div>
                     </div>
 
                     <div className="pt-3 space-y-1.5">
-                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">3. Climate & Allometric Formula</p>
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">
+                        {language === "id" ? "3. Iklim & Formula Alometrik" : "3. Climate & Allometric Formula"}
+                      </p>
                       <div className="space-y-1 text-[#79716b] font-medium">
-                        <div>GPS Coordinates: <span className="font-semibold text-[#292524]">
+                        <div>{language === "id" ? "Koordinat GPS:" : "GPS Coordinates:"} <span className="font-semibold text-[#292524]">
                           {currentScan.gps_lat != null && currentScan.gps_lon != null
                             ? `${currentScan.gps_lat.toFixed(4)}, ${currentScan.gps_lon.toFixed(4)}`
-                            : "Not Available"}
+                            : (language === "id" ? "Tidak Tersedia" : "Not Available")}
                         </span></div>
-                        <div>Climate Zone (Köppen): <span className="font-semibold text-[#292524]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
-                        <div>Formula Used: <span className="font-semibold text-[#4e572c]">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
-                        <div>Height Usage: <span className="font-semibold text-[#292524]">
+                        <div>{language === "id" ? "Zona Iklim (Köppen):" : "Climate Zone (Köppen):"} <span className="font-semibold text-[#292524]">{currentScan.climate_zone_detected ?? "Unknown"}</span></div>
+                        <div>{language === "id" ? "Formula yang Digunakan:" : "Formula Used:"} <span className="font-semibold text-[#4e572c]">{currentScan.formula_used ?? "Chave 2005 (moist)"}</span></div>
+                        <div>{language === "id" ? "Penggunaan Tinggi:" : "Height Usage:"} <span className="font-semibold text-[#292524]">
                           {currentScan.height_used === "full_height"
-                            ? `Full tree height (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`
+                            ? (language === "id" ? `Tinggi pohon penuh (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)` : `Full tree height (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`)
                             : currentScan.height_used === "user_manual_height"
-                              ? `Manual height input (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`
-                              : "DBH-only (tinggi tidak dipakai)"}
+                              ? (language === "id" ? `Input tinggi manual (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)` : `Manual height input (${currentScan.total_height_used_m?.toFixed(1) ?? "-"} m)`)
+                              : (language === "id" ? "Hanya DBH (tinggi tidak dipakai)" : "DBH-only (height unused)")}
                         </span></div>
                         {currentScan.height_validated === false && currentScan.height_validation_reason && (
-                          <div className="text-[10px] text-amber-700/80">Catatan validasi: {currentScan.height_validation_reason}</div>
+                          <div className="text-[10px] text-amber-700/80">{language === "id" ? "Catatan validasi: " : "Validation note: "}{currentScan.height_validation_reason}</div>
                         )}
                         {currentScan.height_used === "dbh_only_fallback" && currentScan.height_fallback_reason && (
-                          <div className="text-[10px] text-amber-700/80">Alasan: {currentScan.height_fallback_reason}</div>
+                          <div className="text-[10px] text-amber-700/80">{language === "id" ? "Alasan: " : "Reason: "}{currentScan.height_fallback_reason}</div>
                         )}
-                        <div>Root-to-Shoot Ratio: <span className="font-semibold text-[#292524]">{currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"}</span></div>
-                        <div>Scale Status: <span className={`font-semibold ${currentScan.scale_status === "calibrated" ? "text-[#616c39]" : "text-red-600"}`}>{currentScan.scale_status === "calibrated" ? "Calibrated" : "Uncalibrated"}</span>{currentScan.scale_factor_used != null && currentScan.scale_factor_used !== 1.0 ? ` (×${currentScan.scale_factor_used?.toFixed(4)})` : ""}</div>
+                        <div>{language === "id" ? "Rasio Akar-ke-Pucuk (BGB):" : "Root-to-Shoot Ratio:"} <span className="font-semibold text-[#292524]">{currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"}</span></div>
+                        <div>{language === "id" ? "Status Skala:" : "Scale Status:"} <span className={`font-semibold ${currentScan.scale_status === "calibrated" ? "text-[#616c39]" : "text-red-600"}`}>{currentScan.scale_status === "calibrated" ? (language === "id" ? "Terkalibrasi" : "Calibrated") : (language === "id" ? "Belum Terkalibrasi" : "Uncalibrated")}</span>{currentScan.scale_factor_used != null && currentScan.scale_factor_used !== 1.0 ? ` (×${currentScan.scale_factor_used?.toFixed(4)})` : ""}</div>
                       </div>
                     </div>
 
                     <div className="pt-3 space-y-2">
-                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">4. Calculation Steps</p>
+                      <p className="font-semibold text-[#292524] uppercase text-[9px] tracking-wide">
+                        {language === "id" ? "4. Langkah-langkah Kalkulasi" : "4. Calculation Steps"}
+                      </p>
                       <div className="space-y-1.5 text-[#79716b] font-medium font-sans">
                         <div className="flex justify-between">
-                          <span>Above-Ground Biomass (AGB):</span>
+                          <span>{language === "id" ? "Biomassa Atas Tanah (AGB):" : "Above-Ground Biomass (AGB):"}</span>
                           <span className="font-semibold text-[#292524]">{currentScan.agb_kg?.toFixed(1) ?? "-"} kg</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Below-Ground Biomass (BGB):</span>
+                          <span>{language === "id" ? "Biomassa Bawah Tanah (BGB):" : "Below-Ground Biomass (BGB):"}</span>
                           <span className="font-semibold text-[#292524]">{currentScan.bgb_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#79716b] font-normal">(AGB × {currentScan.root_to_shoot_ratio?.toFixed(2) ?? "0.37"})</span></span>
                         </div>
                         <div className="flex justify-between border-t border-dashed border-[#fafaf9] pt-1.5 font-bold">
-                          <span className="text-[#292524]">Total Dry Biomass:</span>
+                          <span className="text-[#292524]">{language === "id" ? "Total Biomassa Kering:" : "Total Dry Biomass:"}</span>
                           <span className="text-[#292524]">{currentScan.biomassa_kg?.toFixed(1) ?? "-"} kg</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Stored Carbon Stock:</span>
-                          <span className="font-semibold text-[#4e572c]">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#616c39]/70 font-normal">(Biomass × 0.47)</span></span>
+                          <span>{language === "id" ? "Stok Karbon Tersimpan:" : "Stored Carbon Stock:"}</span>
+                          <span className="font-semibold text-[#4e572c]">{currentScan.karbon_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#616c39]/70 font-normal">({language === "id" ? "Biomassa" : "Biomass"} × 0.47)</span></span>
                         </div>
                         <div className="flex justify-between border-t border-[#fafaf9] pt-1.5 font-bold text-[#1c1917]">
-                          <span>CO₂ Equivalent (CO₂e):</span>
-                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#79716b] font-normal">(Carbon × 3.67)</span></span>
+                          <span>{language === "id" ? "Setara Karbon Dioksida (CO₂e):" : "CO₂ Equivalent (CO₂e):"}</span>
+                          <span>{currentScan.co2e_kg?.toFixed(1) ?? "-"} kg <span className="text-[10px] text-[#79716b] font-normal">({language === "id" ? "Karbon" : "Carbon"} × 3.67)</span></span>
                         </div>
                         {currentScan.co2e_low_kg != null && currentScan.co2e_high_kg != null && (
                           <div className="text-[10px] text-[#79716b]">
-                            Rentang ±{currentScan.co2e_uncertainty_pct?.toFixed(0) ?? "10"}%: {currentScan.co2e_low_kg.toFixed(1)} – {currentScan.co2e_high_kg.toFixed(1)} kg
+                            {language === "id" ? "Rentang" : "Range"} ±{currentScan.co2e_uncertainty_pct?.toFixed(0) ?? "10"}%: {currentScan.co2e_low_kg.toFixed(1)} – {currentScan.co2e_high_kg.toFixed(1)} kg
                           </div>
                         )}
                       </div>
@@ -1727,7 +1745,7 @@ function ReconstructContent() {
                     {/* On Mobile: Show touchscreen limitation message */}
                     <div className="flex md:hidden w-full text-center py-2.5 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl justify-center items-center">
                       <span className="text-[10px] text-[#79716b] font-medium leading-relaxed">
-                        Fitur Edit 3D Alignment memerlukan layar lebih besar (Tablet/Desktop)
+                        {language === "id" ? "Fitur Edit 3D Alignment memerlukan layar lebih besar (Tablet/Desktop)" : "Edit 3D Alignment feature requires a larger screen (Tablet/Desktop)"}
                       </span>
                     </div>
 
@@ -1738,12 +1756,20 @@ function ReconstructContent() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <p className="text-[10px] text-amber-900 leading-tight">
-                          <span className="font-semibold">Preliminary Data:</span> Scan ini belum divalidasi sensor metrik (skala uncalibrated/tinggi parsial). Sertifikat yang di-download memuat watermark <span className="font-semibold">PRELIMINARY DRAFT</span>.
+                          {language === "id" ? (
+                            <>
+                              <span className="font-semibold">Data Preliminary:</span> Scan ini belum divalidasi sensor metrik (skala uncalibrated/tinggi parsial). Sertifikat yang di-download memuat watermark <span className="font-semibold">PRELIMINARY DRAFT</span>.
+                            </>
+                          ) : (
+                            <>
+                              <span className="font-semibold">Preliminary Data:</span> This scan has not been validated by metric sensors (uncalibrated scale/partial height). The downloaded certificate contains a <span className="font-semibold">PRELIMINARY DRAFT</span> watermark.
+                            </>
+                          )}
                         </p>
                       </div>
                     )}
 
-                    {/* {language === "id" ? "Unduh Sertifikat Karbon" : "Download Carbon Certificate"} Button */}
+                    {/* Download Carbon Certificate Button */}
                     <button
                       onClick={() => {
                         if (currentScan) {
@@ -1762,7 +1788,7 @@ function ReconstructContent() {
               </div>
             )}
 
-            {/* {language === "id" ? "Riwayat Pemindaian" : "Scan History Timeline"} */}
+            {/* Scan History Timeline */}
             {history.length > 0 && (
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b] mb-3">
@@ -1828,7 +1854,7 @@ function ReconstructContent() {
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                   <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#79716b]">
-                    Scan Alerts & Warnings
+                    {language === "id" ? "Peringatan & Catatan Pemindaian" : "Scan Alerts & Warnings"}
                   </h3>
                 </div>
                 <div className="space-y-2">
@@ -1838,8 +1864,12 @@ function ReconstructContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <div>
-                        <strong className="block text-red-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">Uncalibrated Scale</strong>
-                        DBH/carbon values use default PLY units and are UNRELIABLE. Perform scale calibration (calibrate_scale.py / auto-pose).
+                        <strong className="block text-red-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">
+                          {language === "id" ? "Skala Belum Terkalibrasi" : "Uncalibrated Scale"}
+                        </strong>
+                        {language === "id"
+                          ? "Nilai DBH/karbon menggunakan unit PLY bawaan dan BELUM DAPAT DIANDALKAN. Lakukan kalibrasi skala (ARCore VIO atau calibrate_scale.py)."
+                          : "DBH/carbon values use default PLY units and are UNRELIABLE. Perform scale calibration (calibrate_scale.py / auto-pose)."}
                       </div>
                     </div>
                   )}
@@ -1847,20 +1877,20 @@ function ReconstructContent() {
                   {currentScan.quality_status && currentScan.quality_status !== "ok" && currentScan.quality_status !== "failed" && (() => {
                     const qualityStatusWarnings: Record<string, { title: string; desc: string }> = {
                       low_points: {
-                        title: "Low Quality (Point Count)",
-                        desc: "Too few points on the DBH slice. Results may be inaccurate.",
+                        title: language === "id" ? "Kualitas Rendah (Jumlah Titik)" : "Low Quality (Point Count)",
+                        desc: language === "id" ? "Terlalu sedikit titik pada irisan DBH. Hasil estimasi mungkin kurang akurat." : "Too few points on the DBH slice. Results may be inaccurate.",
                       },
                       high_fit_error: {
-                        title: "Low Quality (High Fit Error)",
-                        desc: "Average cylinder fitting error exceeds tolerance. Trunk shape is not perfectly circular.",
+                        title: language === "id" ? "Kualitas Rendah (Toleransi Error Tinggi)" : "Low Quality (High Fit Error)",
+                        desc: language === "id" ? "Rata-rata kesalahan pengepasan silinder melampaui batas toleransi. Bentuk batang tidak sepenuhnya silindris." : "Average cylinder fitting error exceeds tolerance. Trunk shape is not perfectly circular.",
                       },
                       low_inlier_ratio: {
-                        title: "Low Quality (Inlier Ratio)",
-                        desc: "The ratio of valid points (inliers) to noise is too low (< 15%). Fitting results may be affected by noise.",
+                        title: language === "id" ? "Kualitas Rendah (Rasio Inlier Rendah)" : "Low Quality (Inlier Ratio)",
+                        desc: language === "id" ? "Rasio titik valid (inliers) terhadap noise terlalu rendah (< 15%). Pengepasan mungkin dipengaruhi noise." : "The ratio of valid points (inliers) to noise is too low (< 15%). Fitting results may be affected by noise.",
                       },
                       invalid_orientation: {
-                        title: "Low Quality (Invalid Orientation)",
-                        desc: "The cylinder axis deviates significantly from the tree growth axis, or is detected as flat ground/grass.",
+                        title: language === "id" ? "Kualitas Rendah (Orientasi Tidak Valid)" : "Low Quality (Invalid Orientation)",
+                        desc: language === "id" ? "Sumbu silinder menyimpang dari orientasi pertumbuhan pohon, atau terdeteksi permukaan tanah datar." : "The cylinder axis deviates significantly from the tree growth axis, or is detected as flat ground/grass.",
                       },
                     };
                     const warning = qualityStatusWarnings[currentScan.quality_status];
@@ -1886,8 +1916,10 @@ function ReconstructContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div>
-                        <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">Tinggi Input Manual</strong>
-                        Tinggi diinput manual oleh user — nilai tidak divalidasi otomatis terhadap point cloud.
+                        <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">
+                          {language === "id" ? "Tinggi Input Manual" : "Manual Height Input"}
+                        </strong>
+                        {language === "id" ? "Tinggi diinput manual oleh user — nilai tidak divalidasi otomatis terhadap point cloud." : "Height was manually input by user — value is not validated against the 3D point cloud."}
                       </div>
                     </div>
                   )}
@@ -1898,8 +1930,10 @@ function ReconstructContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
                       <div>
-                        <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">Tinggi Batang Kurang</strong>
-                        {currentScan.confidence_note}
+                        <strong className="block text-amber-800 text-[10px] uppercase font-bold tracking-wider mb-0.5">
+                          {language === "id" ? "Tinggi Batang Kurang" : "Trunk Height Insufficient"}
+                        </strong>
+                        {translateConfidenceNote(currentScan.confidence_note, language)}
                       </div>
                     </div>
                   )}
@@ -1982,7 +2016,7 @@ function ReconstructContent() {
                     {recalibImgLoading && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0c0a09]/80 z-10 gap-2">
                         <div className="w-6 h-6 border-2 border-[#616c39] border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[11px] text-[#79716b] font-medium">Loading high-res frame…</span>
+                        <span className="text-[11px] text-[#79716b] font-medium">{language === "id" ? "Memuat frame resolusi tinggi…" : "Loading high-res frame…"}</span>
                       </div>
                     )}
                     <img
@@ -2023,7 +2057,7 @@ function ReconstructContent() {
                       ))}
                       {clickedPoints.map((pt, idx) => (
                         <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
-                          {idx === 0 ? "1: Base" : "2: Top"}
+                          {idx === 0 ? (language === "id" ? "1: Pangkal" : "1: Base") : (language === "id" ? "2: Atas" : "2: Top")}
                         </text>
                       ))}
                       {clickedPoints.length === 2 && (
@@ -2159,10 +2193,10 @@ function ReconstructContent() {
             <>
               <div className="mb-8">
                 <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight mb-2">
-                  New reconstruction
+                  {language === "id" ? "Rekonstruksi Baru" : "New reconstruction"}
                 </h1>
                 <p className="text-xs text-[#292524]/50 leading-relaxed font-medium">
-                  Upload a video walkthrough to start the 3D pipeline.
+                  {language === "id" ? "Unggah video pemindaian 360° pohon untuk memulai pipeline 3D." : "Upload a video walkthrough to start the 3D pipeline."}
                 </p>
               </div>
 
@@ -2170,13 +2204,16 @@ function ReconstructContent() {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
-                      Tree identifier <span className="normal-case tracking-normal font-normal text-[#d6d3d1]">(optional)</span>
+                      {language === "id" ? "Kode Pohon" : "Tree identifier"}{" "}
+                      <span className="normal-case tracking-normal font-normal text-[#d6d3d1]">
+                        {language === "id" ? "(opsional)" : "(optional)"}
+                      </span>
                     </label>
                     <input
                       type="text"
                       value={treeCode}
                       onChange={(e) => setTreeCode(e.target.value)}
-                      placeholder="e.g. POHON-0042"
+                      placeholder={language === "id" ? "cth. POHON-0042" : "e.g. POHON-0042"}
                       className="px-4 py-2.5 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] focus:outline-none focus:border-[#a8a29e] text-sm font-medium transition"
                       disabled={loading}
                     />
@@ -2221,16 +2258,20 @@ function ReconstructContent() {
                     />
                     <div className="flex flex-col">
                       <label htmlFor="removeBackground" className="text-xs font-bold text-[#292524] cursor-pointer">
-                        Remove Background (rembg)
+                        {language === "id" ? "Hapus Latar Belakang (rembg)" : "Remove Background (rembg)"}
                       </label>
                       <span className="text-[10px] text-[#79716b] leading-normal">
-                        Recommendation. Isolate the tree and remove background objects for a clean 3D visualization.
+                        {language === "id"
+                          ? "Rekomendasi: Isolasi pohon dan bersihkan objek latar belakang untuk visualisasi 3D yang jernih."
+                          : "Recommendation. Isolate the tree and remove background objects for a clean 3D visualization."}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">Video file</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
+                      {language === "id" ? "File video" : "Video file"}
+                    </label>
                     <div className="relative border-2 border-dashed border-[#e7e5e4] hover:border-[#a8a29e] rounded-2xl p-8 text-center cursor-pointer transition">
                       <input
                         type="file"
@@ -2240,9 +2281,11 @@ function ReconstructContent() {
                         disabled={loading}
                       />
                       <p className="text-sm font-medium text-[#79716b]">
-                        {videoFile ? videoFile.name : "Click or drag to upload"}
+                        {videoFile ? videoFile.name : (language === "id" ? "Klik atau tarik file ke sini untuk mengunggah" : "Click or drag to upload")}
                       </p>
-                      <p className="text-xs text-[#79716b] mt-1">MP4, MOV, AVI walkthrough — up to 4 GB</p>
+                      <p className="text-xs text-[#79716b] mt-1">
+                        {language === "id" ? "Format MP4, MOV, AVI — hingga 4 GB" : "MP4, MOV, AVI walkthrough — up to 4 GB"}
+                      </p>
                     </div>
 
                     {/* Sensor Scale Telemetry Notice / Disclosure */}
@@ -2254,10 +2297,12 @@ function ReconstructContent() {
                       </div>
                       <div className="flex flex-col gap-0.5 text-left">
                         <span className="text-[11px] font-bold text-amber-950 uppercase tracking-wide">
-                          Informasi Kalibrasi Sensor Skala
+                          {language === "id" ? "Informasi Kalibrasi Sensor Skala" : "Sensor Scale Calibration Notice"}
                         </span>
                         <p className="text-[11px] text-amber-900/80 leading-relaxed">
-                          Video upload tidak menyertakan data sensor gerak langsung. Estimasi skala menggunakan model geometri standar MASt3R dan belum divalidasi sensor fisik. Untuk hasil tervalidasi presisi tinggi, gunakan rekam langsung di aplikasi mobile Android (dengan ARCore VIO hardware tracking).
+                          {language === "id"
+                            ? "Video upload tidak menyertakan data sensor gerak langsung. Estimasi skala menggunakan model geometri standar MASt3R dan belum divalidasi sensor fisik. Untuk hasil tervalidasi presisi tinggi, gunakan rekam langsung di aplikasi mobile Android (dengan ARCore VIO hardware tracking)."
+                            : "Uploaded video does not include direct motion sensor telemetry. Scale estimation uses MASt3R standard geometry and is not validated against physical sensors. For certified high-precision metric data, record directly with the mobile Android app (with ARCore VIO hardware tracking)."}
                         </p>
                       </div>
                     </div>
@@ -2274,7 +2319,7 @@ function ReconstructContent() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-[#79716b]">
-                        <span>Blur filter</span><span className="text-[#292524]">{blurThresh}</span>
+                        <span>{language === "id" ? "Filter keburaman" : "Blur filter"}</span><span className="text-[#292524]">{blurThresh}</span>
                       </div>
                       <input type="range" min="10" max="200" step="10" value={blurThresh}
                         onChange={(e) => setBlurThresh(+e.target.value)}
@@ -2291,9 +2336,9 @@ function ReconstructContent() {
                       <button
                         type="button"
                         onClick={handleCancel}
-                        className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-100 transition"
+                        className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-100 transition cursor-pointer"
                       >
-                        Cancel Reconstruction
+                        {language === "id" ? "Batalkan Rekonstruksi" : "Cancel Reconstruction"}
                       </button>
                     </div>
                   )}
@@ -2305,9 +2350,9 @@ function ReconstructContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-sm font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1"
+                    className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-sm font-semibold rounded-xl transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed mt-1 cursor-pointer"
                   >
-                    {loading ? "Processing Upload..." : "Upload & Reconstruct"}
+                    {loading ? (language === "id" ? "Memproses Unggahan..." : "Processing Upload...") : (language === "id" ? "Unggah & Rekonstruksi" : "Upload & Reconstruct")}
                   </button>
                 </form>
               </div>
@@ -2318,20 +2363,32 @@ function ReconstructContent() {
           {phase === "marking" && (
             <div className="bg-white border border-[#e7e5e4] rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 animate-fadeIn">
               <div>
-                <h3 className="font-serif text-xl text-[#292524] font-normal">Mark Trunk Axis (Recommended)</h3>
+                <h3 className="font-serif text-xl text-[#292524] font-normal">
+                  {language === "id" ? "Tandai Sumbu Batang (Direkomendasikan)" : "Mark Trunk Axis (Recommended)"}
+                </h3>
                 <p className="text-xs text-[#79716b] mt-1.5 font-medium leading-relaxed">
-                  Click two points on the extracted first frame image:<br />
-                  1. The <b>BASE/ROOT</b> of the trunk (Green marker).<br />
-                  2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
+                  {language === "id" ? (
+                    <>
+                      Klik dua titik pada gambar frame pertama yang diekstrak:<br />
+                      1. Bagian <b>PANGKAL/AKAR</b> batang (penanda hijau).<br />
+                      2. Bagian <b>ATAS</b> batang (penanda biru).
+                    </>
+                  ) : (
+                    <>
+                      Click two points on the extracted first frame image:<br />
+                      1. The <b>BASE/ROOT</b> of the trunk (Green marker).<br />
+                      2. The <b>TOP/UPPER</b> part of the trunk (Blue marker).
+                    </>
+                  )}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6">
                 <div className="flex flex-col gap-2">
                   <div className="text-[10px] font-bold text-[#616c39] uppercase tracking-wider mb-1">
-                    {calibrationPoints.length === 0 && "Step 1: Click the BASE of the trunk"}
-                    {calibrationPoints.length === 1 && "Step 2: Click the TOP/UPPER part of the trunk"}
-                    {calibrationPoints.length >= 2 && "Step 3: Ready to Reconstruct"}
+                    {calibrationPoints.length === 0 && (language === "id" ? "Langkah 1: Klik bagian PANGKAL batang" : "Step 1: Click the BASE of the trunk")}
+                    {calibrationPoints.length === 1 && (language === "id" ? "Langkah 2: Klik bagian ATAS batang" : "Step 2: Click the TOP/UPPER part of the trunk")}
+                    {calibrationPoints.length >= 2 && (language === "id" ? "Langkah 3: Siap Rekonstruksi" : "Step 3: Ready to Reconstruct")}
                   </div>
 
                   <div className="relative border border-[#e7e5e4] rounded-2xl overflow-hidden bg-[#0c0a09] flex items-center justify-center select-none" style={{ maxHeight: "40vh" }}>
@@ -2367,7 +2424,7 @@ function ReconstructContent() {
                       ))}
                       {calibrationPoints.map((pt, idx) => (
                         <text key={`lbl-${idx}`} x={pt.x + 10} y={pt.y + 4} fill="white" fontSize="10" fontWeight="bold" style={{ textShadow: "1px 1px 2px black" }}>
-                          {idx === 0 ? "1: Base" : "2: Top"}
+                          {idx === 0 ? (language === "id" ? "1: Pangkal" : "1: Base") : (language === "id" ? "2: Atas" : "2: Top")}
                         </text>
                       ))}
                       {calibrationPoints.length === 2 && (
@@ -2452,7 +2509,7 @@ function ReconstructContent() {
                     type="button"
                     onClick={() => { setCalibrationPoints([]); setCalibrationMousePos(null); }}
                     disabled={calibrationPoints.length === 0}
-                    className="px-4 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition"
+                    className="px-4 py-2.5 bg-[#fafaf9] hover:bg-[#e7e5e4] text-[#292524] text-xs font-semibold rounded-xl transition cursor-pointer"
                   >
                     {language === "id" ? "Reset Titik" : "Reset Points"}
                   </button>
@@ -2460,24 +2517,24 @@ function ReconstructContent() {
                     type="button"
                     onClick={handleSkipAndAutoReconstruct}
                     disabled={loading}
-                    className="px-4 py-2.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#79716b] text-xs font-bold rounded-xl transition disabled:opacity-40"
+                    className="px-4 py-2.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] text-[#79716b] text-xs font-bold rounded-xl transition disabled:opacity-40 cursor-pointer"
                   >
-                    {loading ? "Starting…" : "Skip & Auto-detect"}
+                    {loading ? (language === "id" ? "Memulai…" : "Starting…") : (language === "id" ? "Lewati & Deteksi Otomatis" : "Skip & Auto-detect")}
                   </button>
                 </div>
                 <button
                   type="button"
                   onClick={handleManualReconstruct}
                   disabled={calibrationPoints.length < 2 || loading}
-                  className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#292524] hover:bg-[#292524]/90 text-white text-xs font-semibold rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading ? (
                     <>
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Starting…
+                      {language === "id" ? "Memulai…" : "Starting…"}
                     </>
                   ) : (
-                    "Use Manual Selection & Reconstruct"
+                    language === "id" ? "Gunakan Pilihan Manual & Rekonstruksi" : "Use Manual Selection & Reconstruct"
                   )}
                 </button>
               </div>

@@ -173,7 +173,11 @@ export default function MyPlotsPage() {
             <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span>Waking up backend servers (Render.com cold start). This may take up to 50 seconds on first visit.</span>
+            <span>
+              {language === "id"
+                ? "Membangunkan server backend (cold start Render.com). Ini mungkin memakan waktu hingga 50 detik pada kunjungan pertama."
+                : "Waking up backend servers (Render.com cold start). This may take up to 50 seconds on first visit."}
+            </span>
           </p>
         )}
       </main>
@@ -266,7 +270,7 @@ export default function MyPlotsPage() {
                 {scans.map((record) => {
                   const isInvalid = record.dbh_cm === null || record.dbh_cm === undefined;
                   return (
-                                        <div
+                    <div
                       key={record.id}
                       className="bg-white border border-[#e7e5e4] hover:border-[#292524] rounded-2xl p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group w-full"
                     >
@@ -308,7 +312,7 @@ export default function MyPlotsPage() {
                           </div>
                           {isInvalid ? (
                             <span className="text-[10px] text-rose-500 font-semibold mt-0.5 font-sans">
-                              Invalid scan
+                              {language === "id" ? "Scan tidak valid" : "Invalid scan"}
                             </span>
                           ) : (
                             <span className="text-[11px] font-mono text-[#79716b] mt-0.5">
@@ -326,8 +330,8 @@ export default function MyPlotsPage() {
                           </Link>
                           <button
                             onClick={() => handleDeleteScan(record.tree_code)}
-                            className="p-1.5 text-[#79716b] hover:text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition-colors"
-                            title="Delete tree scan"
+                            className="p-1.5 text-[#79716b] hover:text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                            title={language === "id" ? "Hapus rekaman pohon" : "Delete tree scan"}
                           >
                             <svg 
                               viewBox="0 0 24 24" 
@@ -362,15 +366,17 @@ export default function MyPlotsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
                 </div>
-                <h2 className="text-base font-semibold text-[#292524] mb-2">No Forest Plots Yet</h2>
+                <h2 className="text-base font-semibold text-[#292524] mb-2">{language === "id" ? "Belum Ada Plot Hutan" : "No Forest Plots Yet"}</h2>
                 <p className="text-xs text-[#79716b] max-w-sm mx-auto leading-relaxed mb-6">
-                  Create a new plot to aggregate spread coordinates, average DBH, and total estimated carbon target.
+                  {language === "id"
+                    ? "Buat plot baru untuk menggabungkan koordinat pohon, rata-rata DBH, dan estimasi total target karbon."
+                    : "Create a new plot to aggregate spread coordinates, average DBH, and total estimated carbon target."}
                 </p>
                 <Link
                   href="/plots/create"
                   className="inline-block bg-[#292524] hover:bg-[#292524]/90 text-white font-semibold text-xs rounded-xl px-5 py-3 transition-all"
                 >
-                  Create Your First Plot
+                  {language === "id" ? "Buat Plot Pertama Anda" : "Create Your First Plot"}
                 </Link>
               </div>
             ) : (
@@ -391,7 +397,7 @@ export default function MyPlotsPage() {
                               ? "bg-sky-50 text-sky-700 border-sky-100"
                               : "bg-[#fafaf9] text-[#79716b] border-[#e7e5e4]"
                           }`}>
-                            {plot.privacy}
+                            {plot.privacy === "public" ? (language === "id" ? "Publik" : "Public") : (language === "id" ? "Privat" : "Private")}
                           </span>
                         </div>
                       </div>
@@ -403,7 +409,7 @@ export default function MyPlotsPage() {
                       </h3>
 
                       <p className="text-xs text-[#79716b] leading-relaxed mb-6 line-clamp-2">
-                        {plot.description || "No location description."}
+                        {plot.description || (language === "id" ? "Tidak ada deskripsi lokasi." : "No location description.")}
                       </p>
                     </div>
 
@@ -436,7 +442,7 @@ export default function MyPlotsPage() {
                         </div>
 
                         <div className="flex flex-col text-[10px] text-[#79716b] leading-tight">
-                          <span>Trees: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
+                          <span>{language === "id" ? "Pohon" : "Trees"}: <span className="font-semibold text-[#292524]">{plot.scans_count}</span></span>
                           <span className="mt-0.5">CO₂e: <span className="font-bold text-[#292524]">{plot.total_co2e_kg ? plot.total_co2e_kg.toFixed(1) : 0} kg</span></span>
                         </div>
                       </div>
@@ -445,7 +451,7 @@ export default function MyPlotsPage() {
                         href={`/plots/${plot.plot_code}`}
                         className="text-xs text-[#616c39] font-bold hover:text-[#616c39] flex items-center gap-1 transition-colors"
                       >
-                        Plot Details &rarr;
+                        {language === "id" ? "Detail Plot →" : "Plot Details →"}
                       </Link>
                     </div>
                   </div>
@@ -473,13 +479,21 @@ export default function MyPlotsPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-serif text-base text-[#292524] font-bold">Delete Tree</h3>
-                <p className="text-[10px] text-[#79716b] mt-0.5">This action cannot be undone.</p>
+                <h3 className="font-serif text-base text-[#292524] font-bold">
+                  {language === "id" ? "Hapus Rekaman Pohon" : "Delete Tree"}
+                </h3>
+                <p className="text-[10px] text-[#79716b] mt-0.5">
+                  {language === "id" ? "Tindakan ini tidak dapat dibatalkan." : "This action cannot be undone."}
+                </p>
               </div>
             </div>
             
             <p className="text-xs text-[#79716b] leading-relaxed font-sans">
-              Are you sure you want to delete tree <span className="font-bold text-[#292524]">{treeToDelete}</span> and all of its reconstruction data?
+              {language === "id" ? (
+                <>Apakah Anda yakin ingin menghapus pohon <span className="font-bold text-[#292524]">{treeToDelete}</span> dan semua data hasil rekonstruksinya?</>
+              ) : (
+                <>Are you sure you want to delete tree <span className="font-bold text-[#292524]">{treeToDelete}</span> and all of its reconstruction data?</>
+              )}
             </p>
             
             <div className="flex justify-end gap-2 mt-2 font-sans">
@@ -488,7 +502,7 @@ export default function MyPlotsPage() {
                 onClick={() => setTreeToDelete(null)}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#79716b] hover:text-[#292524] bg-[#fafaf9] hover:bg-[#fafaf9] border border-[#e7e5e4] transition-colors cursor-pointer"
               >
-                Cancel
+                {language === "id" ? "Batal" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -499,7 +513,7 @@ export default function MyPlotsPage() {
                 }}
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
               >
-                Delete
+                {language === "id" ? "Hapus" : "Delete"}
               </button>
             </div>
           </div>

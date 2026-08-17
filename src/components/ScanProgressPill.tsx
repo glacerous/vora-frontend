@@ -4,9 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useScanProgress } from "./ScanProgressProvider";
+import { useSettings } from "@/components/AuthProvider";
 
 export default function ScanProgressPill() {
   const { scan, resetScan } = useScanProgress();
+  const { language } = useSettings();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -78,7 +80,7 @@ export default function ScanProgressPill() {
               onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}&phase=processing`)}
               className="px-3 py-1.5 bg-[#616c39] hover:bg-[#616c39] text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
-              View
+              {language === "id" ? "Lihat" : "View"}
             </button>
           )}
           {isDone && (
@@ -86,14 +88,14 @@ export default function ScanProgressPill() {
               onClick={() => router.push(`/reconstruct?code=${encodeURIComponent(scan.treeCode || "")}`)}
               className="px-3 py-1.5 bg-[#616c39] hover:bg-[#616c39] text-black font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
             >
-              Open 3D
+              {language === "id" ? "Buka 3D" : "Open 3D"}
             </button>
           )}
           {(isErr || isDone) && (
             <button
               onClick={resetScan}
-              className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition"
-              title="Dismiss"
+              className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer"
+              title={language === "id" ? "Tutup" : "Dismiss"}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

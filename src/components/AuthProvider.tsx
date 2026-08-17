@@ -105,6 +105,40 @@ export function formatCo2e(co2e_kg: number | null | undefined, unit: UnitSystem 
   return `${co2e_kg.toFixed(0)} kg CO₂e`;
 }
 
+export function translateConfidenceNote(note: string | null | undefined, language: Language = "id"): string {
+  if (!note) return "";
+  if (language === "id") {
+    let res = note;
+    res = res.replace(
+      /WARNING:\s*Trunk segment captured is only ([\d\.]+)m tall, insufficient to reach standard breast height \(1\.3m\)\./gi,
+      "PERINGATAN: Segmen batang yang terekam hanya setinggi $1m, belum mencapai standar tinggi dada (1,3m)."
+    );
+    res = res.replace(
+      /UNCALIBRATED:\s*default PLY scale \(1\.0\) used — results are UNRELIABLE without scale calibration \(ARCore VIO or calibrate_scale\.py\)/gi,
+      "SKALA BELUM TERKALIBRASI: skala PLY default (1.0) dipakai — hasil TIDAK dapat diandalkan tanpa kalibrasi skala (ARCore VIO atau calibrate_scale.py)"
+    );
+    res = res.replace(
+      /Fallback DBH-only \(only lower trunk captured, height not representative:\s*captured height ([\d\.]+)m\s*<\s*([\d\.]+)m minimum \(only trunk segment, not total tree height\)\)/gi,
+      "Fallback DBH-only (hanya batang bagian bawah terekam, tinggi tidak representatif: tinggi terekam $1m < $2m minimum (hanya segmen batang, bukan tinggi total))"
+    );
+    return res;
+  } else {
+    let res = note;
+    res = res.replace(
+      /PERINGATAN:\s*Segmen batang yang terekam hanya setinggi ([\d\.]+)m, belum mencapai standar tinggi dada \(1,3m\)\./gi,
+      "WARNING: Trunk segment captured is only $1m tall, insufficient to reach standard breast height (1.3m)."
+    );
+    res = res.replace(
+      /UNKALIBRASI:\s*skala PLY default \(1\.0\) dipakai — hasil TIDAK dapat diandalkan tanpa kalibrasi skala \(ARCore VIO atau calibrate_scale\.py\)/gi,
+      "UNCALIBRATED SCALE: default PLY scale (1.0) used — results are UNRELIABLE without scale calibration (ARCore VIO or calibrate_scale.py)"
+    );
+    res = res.replace(
+      /Fallback DBH-only \(hanya batang bagian bawah terekam, tinggi tidak representatif:\s*tinggi terekam ([\d\.]+)m\s*<\s*([\d\.]+)m minimum \(hanya segmen batang, bukan tinggi(?:\.\.\.| total)?\)\)/gi,
+      "Fallback DBH-only (only lower trunk captured, recorded height $1m < $2m minimum (trunk segment only, not total height))"
+    );
+    return res;
+  }
+}
 
 export const translations: Record<string, { id: string; en: string }> = {
   // ── Navbar ──────────────────────────────────────────────────────────────
@@ -415,15 +449,6 @@ export const translations: Record<string, { id: string; en: string }> = {
   "upload.arcore": { id: "Validasi Skala Sensor ARCore / ARKit VIO", en: "ARCore / ARKit VIO Sensor Validation" },
   "upload.iterations": { id: "Iterasi Rekonstruksi", en: "Reconstruction Iterations" },
   "upload.start": { id: "Mulai Rekonstruksi 3D", en: "Start 3D Reconstruction" },
-  "reconstruct.step1": { id: "Unggah Video", en: "Upload Walkthrough" },
-  "reconstruct.step2": { id: "Tandai Batang", en: "Mark Trunk Axis" },
-  "reconstruct.step3": { id: "Pemrosesan GPU", en: "GPU Processing" },
-  "reconstruct.step4": { id: "Analisis 3D", en: "3D Analytics" },
-  "reconstruct.dropTitle": { id: "Tarik & Lepas Video 360° Pohon di Sini", en: "Drag & Drop 360° Tree Video Here" },
-  "reconstruct.dropSub": { id: "Format MP4/MOV, durasi disarankan 20–60 detik", en: "MP4/MOV format, recommended 20–60 seconds duration" },
-  "reconstruct.selectFile": { id: "Pilih File dari Komputer", en: "Select File from Device" },
-  "reconstruct.processing": { id: "Sedang memproses rekonstruksi di cloud GPU...", en: "Processing 3D reconstruction on cloud GPU..." },
-  "reconstruct.viewResult": { id: "Lihat Hasil Analisis 3D", en: "View 3D Analytics Result" },
 
   // ── Auth (Login & Register) ─────────────────────────────────────────────
   "auth.loginTitle": { id: "Masuk ke Akun Vora", en: "Log in to your Vora account" },
