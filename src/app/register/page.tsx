@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth, useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings, setAuthToken } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -51,7 +51,23 @@ export default function RegisterPage() {
         throw new Error(data.detail || (isId ? "Registrasi akun gagal" : "Registration failed"));
       }
 
-      document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+      // Automatically login after successful registration
+      try {
+        const tokenRes = await fetch(BACKEND_URL + "/auth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+          credentials: "include",
+        });
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          if (tokenData.access_token) {
+            setAuthToken(tokenData.access_token);
+          }
+        }
+      } catch (tokenErr) {
+        console.warn("Auto-login token fetch:", tokenErr);
+      }
 
       await refreshUser();
       window.location.href = "/my-plots";

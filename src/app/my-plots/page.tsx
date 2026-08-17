@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth, useSettings, formatDbh, formatHeight, formatCo2e } from "@/components/AuthProvider";
+import { useAuth, useSettings, formatDbh, formatHeight, formatCo2e, getAuthHeaders } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -84,8 +84,8 @@ export default function MyPlotsPage() {
     setError(null);
     try {
       const [plotsRes, scansRes] = await Promise.all([
-        fetch(`${BACKEND_URL}/users/${user.id}/plots`, { credentials: "include" }),
-        fetch(`${BACKEND_URL}/users/${user.id}/scans`, { credentials: "include" })
+        fetch(`${BACKEND_URL}/users/${user.id}/plots`, { headers: getAuthHeaders(), credentials: "include" }),
+        fetch(`${BACKEND_URL}/users/${user.id}/scans`, { headers: getAuthHeaders(), credentials: "include" })
       ]);
 
       if (!plotsRes.ok) throw new Error("Failed to fetch plots.");

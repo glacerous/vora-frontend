@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth, useSettings } from "@/components/AuthProvider";
+import { useAuth, useSettings, setAuthToken, getAuthHeaders } from "@/components/AuthProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
 
@@ -34,7 +34,7 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await fetch(BACKEND_URL + "/auth/login", {
+      const res = await fetch(BACKEND_URL + "/auth/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +48,11 @@ function LoginForm() {
         throw new Error(data.detail || (isId ? "Nama pengguna atau kata sandi salah" : "Invalid username or password"));
       }
 
-      document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+      if (data.access_token) {
+        setAuthToken(data.access_token);
+      } else {
+        document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+      }
 
       await refreshUser();
       window.location.href = redirectPath;

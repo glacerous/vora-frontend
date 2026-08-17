@@ -25,6 +25,48 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// ── Token Management & Auth Headers ──────────────────────────────────────────
+
+export const TOKEN_STORAGE_KEY = "vora_access_token";
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(TOKEN_STORAGE_KEY) || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    document.cookie = `session_token=${token}; path=/; max-age=31536000; SameSite=Lax`;
+  } catch {}
+}
+
+export function removeAuthToken(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem("session_token");
+    sessionStorage.clear();
+    document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+    document.cookie = "session_token=; path=/; max-age=0; SameSite=Lax";
+  } catch {}
+}
+
+export function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { ...customHeaders };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+
 // ── Translation Dictionary ───────────────────────────────────────────────────
 
 export type Language = "id" | "en";
@@ -758,8 +800,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsWakingUp(true);
     }, 1500);
 
+    const token = getAuthToken();
+
     try {
       const res = await fetch(BACKEND_URL + "/auth/me", {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
       clearTimeout(wakeupTimer);
@@ -768,10 +813,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
-        document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+        if (token) {
+          setAuthToken(token);
+        } else {
+          document.cookie = "session_token=true; path=/; max-age=31536000; SameSite=Lax";
+        }
       } else {
         setUser(null);
-        document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+        removeAuthToken();
       }
     } catch (err) {
       clearTimeout(wakeupTimer);
@@ -791,19 +840,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch(BACKEND_URL + "/auth/logout", {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include",
       });
     } catch (err) {
       console.warn("Backend logout ping:", err);
     } finally {
       setUser(null);
-      // Aggressively clear cookie across paths and max-age
-      document.cookie = "session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
-      document.cookie = "session_token=; path=/; max-age=0; SameSite=Lax";
-      try {
-        localStorage.removeItem("session_token");
-        sessionStorage.clear();
-      } catch {}
+      removeAuthToken();
       window.location.href = "/login";
     }
   };

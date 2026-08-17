@@ -238,6 +238,7 @@ export default function PlotDetailPage() {
   const fetchPlotDetails = async () => {
     try {
       const plotRes = await fetch(`${BACKEND_URL}/plots/${plotCode}`, {
+        headers: getAuthHeaders(),
         credentials: "include",
       });
 

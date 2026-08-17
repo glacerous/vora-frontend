@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth, useSettings, formatDbh, formatHeight, formatWeight, formatCo2e } from "@/components/AuthProvider";
+import { useAuth, useSettings, formatDbh, formatHeight, formatWeight, formatCo2e, getAuthHeaders } from "@/components/AuthProvider";
 import { useScanProgress } from "@/components/ScanProgressProvider";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://vora-52k9.onrender.com";
@@ -214,6 +214,7 @@ function ReconstructContent() {
     const fetchPlots = async () => {
       try {
         const plotsRes = await fetch(`${BACKEND_URL}/users/${currentUser.id}/plots`, {
+          headers: getAuthHeaders(),
           credentials: "include",
         });
         if (plotsRes.ok) {
@@ -730,6 +731,7 @@ function ReconstructContent() {
       setProgressMsg("Cancelling active job...");
       await fetch(`${BACKEND_URL}/cancel`, {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include",
       });
     } catch {}
@@ -749,7 +751,7 @@ function ReconstructContent() {
     try {
       const r = await fetch(`${BACKEND_URL}/reconstruct`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         credentials: "include",
         body: JSON.stringify({
           tree_code: code,
@@ -843,7 +845,7 @@ function ReconstructContent() {
       const contentType = videoFile.type || "video/mp4";
       const uploadUrlRes = await fetch(
         `${BACKEND_URL}/video_upload_url?filename=${encodeURIComponent(videoFile.name)}&content_type=${encodeURIComponent(contentType)}`,
-        { credentials: "include" }
+        { headers: getAuthHeaders(), credentials: "include" }
       );
       if (!uploadUrlRes.ok) {
         const d = await uploadUrlRes.json();
@@ -867,10 +869,10 @@ function ReconstructContent() {
       setProgressMsg("Upload complete. Starting frame extraction on Modal…");
       const r = await fetch(`${BACKEND_URL}/upload_video`, {
         method: "POST",
-        headers: {
+        headers: getAuthHeaders({
           "Content-Type": "application/json",
           "X-Upload-Start-Time": uploadStartTime.toString(),
-        },
+        }),
         credentials: "include",
         body: JSON.stringify({ r2_key: r2Key, frames, blur_thresh: blurThresh, tree_code: treeCode.trim() || undefined }),
       });
