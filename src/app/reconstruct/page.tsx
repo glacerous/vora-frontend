@@ -1134,7 +1134,7 @@ function ReconstructContent() {
           <div className="w-full lg:flex-1 h-[45vh] lg:h-full relative bg-white shrink-0">
           {currentScan && renderViewer ? (
             <iframe
-              src={`${BACKEND_URL}/viewer.html?v=17&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
+              src={`${BACKEND_URL}/viewer.html?v=18&code=${currentScan.tree_code}&url=${encodeURIComponent(currentScan.splat_file_url)}&proxy=false`}
               allow="xr-spatial-tracking; autoplay; fullscreen"
               className="w-full h-full border-none"
               title="3D Tree Gaussian Splat Viewer"
